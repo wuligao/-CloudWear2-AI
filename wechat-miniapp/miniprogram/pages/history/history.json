@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "历史记录",
+  "usingComponents": {
+    "outfit-card": "/components/outfit-card/outfit-card"
+  }
+}

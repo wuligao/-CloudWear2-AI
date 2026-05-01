@@ -1,0 +1,232 @@
+.cloudwear-login {
+  display: grid;
+  grid-template-columns: minmax(460px, 1.1fr) minmax(420px, 0.9fr);
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 8%, rgb(35 195 255 / 18%), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgb(79 107 255 / 14%), transparent 28%),
+    linear-gradient(135deg, #f7faff, #eef4ff);
+
+  .login-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    padding: 56px;
+    overflow: hidden;
+    color: #162033;
+
+    &::before {
+      position: absolute;
+      inset: 0;
+      content: '';
+      background-image:
+        linear-gradient(rgb(79 107 255 / 6%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(79 107 255 / 6%) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: radial-gradient(circle at 52% 48%, #000 0%, transparent 72%);
+    }
+  }
+
+  .brand-mark,
+  .login-claim,
+  .login-orbit,
+  .login-metrics {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    padding: 9px 12px;
+    color: #24304a;
+    font-weight: 800;
+    background: rgb(255 255 255 / 72%);
+    border: 1px solid rgb(216 224 239 / 76%);
+    border-radius: 999px;
+    box-shadow: var(--cw-shadow-sm);
+
+    span {
+      display: inline-grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 10px;
+    }
+
+    img {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  .login-claim {
+    max-width: 600px;
+    margin-top: 42px;
+
+    h1.ant-typography {
+      margin: 0;
+      color: #111827;
+      font-size: 56px;
+      font-weight: 860;
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .ant-typography {
+      max-width: 460px;
+      margin-top: 18px;
+      color: #5f6f89;
+      font-size: 16px;
+    }
+  }
+
+  .login-orbit {
+    position: absolute;
+    right: 8%;
+    bottom: 18%;
+    width: 330px;
+    height: 330px;
+    border-radius: 999px;
+    filter: drop-shadow(0 28px 50px rgb(79 107 255 / 22%));
+
+    i,
+    span {
+      position: absolute;
+      border-radius: 999px;
+    }
+
+    .orbit-a,
+    .orbit-b {
+      inset: 0;
+      border: 1px solid rgb(79 107 255 / 22%);
+    }
+
+    .orbit-a {
+      border-top-color: #4f6bff;
+      animation: cw-spin 8s linear infinite;
+    }
+
+    .orbit-b {
+      inset: 44px;
+      border-right-color: #23c3ff;
+      animation: cw-spin-reverse 6s linear infinite;
+    }
+
+    .orbit-core {
+      inset: 118px;
+      background:
+        radial-gradient(circle, rgb(35 195 255 / 28%), transparent 58%),
+        rgb(255 255 255 / 72%);
+      border: 1px solid rgb(79 107 255 / 16%);
+      backdrop-filter: blur(12px);
+    }
+
+    .node {
+      width: 13px;
+      height: 13px;
+      background: #4f6bff;
+      box-shadow: 0 0 24px rgb(79 107 255 / 60%);
+    }
+
+    .node-one {
+      top: 36px;
+      left: 150px;
+    }
+
+    .node-two {
+      right: 42px;
+      bottom: 92px;
+      background: #23c3ff;
+    }
+
+    .node-three {
+      bottom: 56px;
+      left: 68px;
+      background: #20d9a4;
+    }
+  }
+
+  .login-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    span {
+      padding: 10px 12px;
+      color: #44546d;
+      font-weight: 700;
+      background: rgb(255 255 255 / 70%);
+      border: 1px solid rgb(216 224 239 / 70%);
+      border-radius: 8px;
+      box-shadow: var(--cw-shadow-sm);
+      backdrop-filter: blur(12px);
+    }
+
+    strong {
+      color: var(--cw-primary);
+    }
+  }
+
+  .login-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 44px 8vw;
+    background: rgb(255 255 255 / 78%);
+    border-left: 1px solid rgb(216 224 239 / 76%);
+    box-shadow: -18px 0 48px rgb(22 35 63 / 6%);
+    backdrop-filter: blur(18px);
+
+    .ant-pro-form-login-container {
+      width: 100%;
+      max-width: 390px;
+      padding: 0;
+    }
+
+    .ant-pro-form-login-logo {
+      display: none;
+    }
+
+    .ant-pro-form-login-title {
+      color: #162033;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .ant-pro-form-login-desc {
+      color: #667085;
+    }
+  }
+}
+
+@media (max-width: 960px) {
+  .cloudwear-login {
+    grid-template-columns: 1fr;
+
+    .login-visual {
+      min-height: 360px;
+      padding: 32px;
+    }
+
+    .login-claim h1.ant-typography {
+      font-size: 40px;
+    }
+
+    .login-orbit {
+      opacity: 0.45;
+    }
+
+    .login-panel {
+      min-height: auto;
+      padding: 32px 24px;
+      border-left: 0;
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "生成中",
+  "usingComponents": {
+    "loading-steps": "/components/loading-steps/loading-steps"
+  }
+}

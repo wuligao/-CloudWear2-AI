@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - main [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]
+        - generic [ref=e11]
+      - generic [ref=e19]:
+        - button "关键词生成穿搭 输入关键词，AI 为你生成穿搭方案 去生成" [ref=e20] [cursor=pointer]
+        - button "上传照片生成穿搭 上传你的照片，AI 为你一键换装 去上传" [ref=e31] [cursor=pointer]
+      - generic [ref=e43]:
+        - generic [ref=e44]
+        - generic [ref=e52]
+      - navigation "底部导航" [ref=e59]:
+        - link "首页" [ref=e60] [cursor=pointer]:
+          - /url: /
+        - link "发现" [ref=e64] [cursor=pointer]:
+          - /url: /history
+        - link "我的衣橱" [ref=e68] [cursor=pointer]:
+          - /url: /history
+        - link "我的" [ref=e73] [cursor=pointer]:
+          - /url: /profile
+  - button "Open Next.js Dev Tools" [ref=e82] [cursor=pointer]:
+    - img [ref=e83]
+  - alert [ref=e86]

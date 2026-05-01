@@ -1,0 +1,30 @@
+<view class="page result-page">
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+
+  <block wx:else>
+    <view class="card result-hero">
+      <image class="poster" src="{{record.imageFileId || record.imageUrl}}" mode="aspectFill" />
+      <view class="section-title">穿搭建议</view>
+      <view class="muted">{{record.suggestion}}</view>
+      <view class="reason">{{record.recommendationReason}}</view>
+      <view class="chip-row keywords">
+        <text wx:for="{{record.keywords}}" wx:key="*this" class="chip">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">商品清单</view>
+      <view class="product-list">
+        <product-card wx:for="{{record.items}}" wx:key="id" product="{{item}}" bind:buy="buyProduct" />
+      </view>
+    </view>
+
+    <view class="button-row actions">
+      <button class="secondary-button" bindtap="saveHistory">保存历史</button>
+      <button class="secondary-button" bindtap="favorite">收藏</button>
+      <button class="secondary-button" bindtap="regenerate">再生成一套</button>
+      <button class="secondary-button" bindtap="copyKeywords">复制关键词</button>
+    </view>
+    <button class="primary-button share-button" open-type="share">分享</button>
+  </block>
+</view>

@@ -1,0 +1,78 @@
+.outfit-card {
+  display: grid;
+  grid-template-columns: 180rpx minmax(0, 1fr);
+  gap: 20rpx;
+  overflow: hidden;
+  border: 1rpx solid #edf0f7;
+  border-radius: 22rpx;
+  background: #fff;
+  padding: 16rpx;
+  box-shadow: 0 12rpx 30rpx rgba(31, 37, 56, 0.06);
+}
+
+.cover {
+  width: 180rpx;
+  height: 230rpx;
+  border-radius: 16rpx;
+  background: #f7f8fc;
+}
+
+.body {
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.title {
+  overflow: hidden;
+  color: #151922;
+  font-size: 30rpx;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete {
+  color: #ef4444;
+  font-size: 23rpx;
+  font-weight: 800;
+}
+
+.summary {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 12rpx;
+  color: #747b8b;
+  font-size: 24rpx;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+
+.tags text {
+  border-radius: 999rpx;
+  background: #f7f8fc;
+  color: #626877;
+  font-size: 22rpx;
+  font-weight: 800;
+  padding: 7rpx 12rpx;
+}
+
+.date {
+  display: block;
+  margin-top: 14rpx;
+  color: #9aa1af;
+  font-size: 22rpx;
+}

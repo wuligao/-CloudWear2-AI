@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/generating/generating",
+    "pages/result/result",
+    "pages/history/history",
+    "pages/mine/mine"
+  ],
+  "window": {
+    "navigationBarTitleText": "AI穿搭",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7fb"
+  },
+  "tabBar": {
+    "color": "#9aa1af",
+    "selectedColor": "#7259ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "历史"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap.json"
+}

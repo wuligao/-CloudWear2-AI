@@ -1,0 +1,35 @@
+.compact {
+  min-height: 170rpx;
+}
+
+.avatar {
+  display: grid;
+  width: 104rpx;
+  height: 104rpx;
+  place-items: center;
+  border-radius: 28rpx;
+  background: #eadfff;
+  color: #7259ff;
+  font-size: 40rpx;
+  font-weight: 900;
+}
+
+.save {
+  margin-top: 30rpx;
+}
+
+.menu {
+  padding: 0 28rpx;
+}
+
+.menu-item {
+  border-bottom: 1rpx solid #edf0f7;
+  color: #343b49;
+  font-size: 28rpx;
+  font-weight: 800;
+  padding: 30rpx 0;
+}
+
+.menu-item:last-child {
+  border-bottom: 0;
+}

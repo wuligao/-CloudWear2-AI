@@ -1,0 +1,8 @@
+<view class="steps">
+  <block wx:for="{{steps}}" wx:key="name">
+    <view class="step {{index < active ? 'done' : ''}} {{index === active ? 'active' : ''}}">
+      <view class="dot">{{index + 1}}</view>
+      <text>{{item}}</text>
+    </view>
+  </block>
+</view>

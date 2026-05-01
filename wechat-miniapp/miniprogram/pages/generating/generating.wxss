@@ -1,0 +1,26 @@
+.center-card {
+  display: grid;
+  justify-items: center;
+  gap: 22rpx;
+  padding: 56rpx 28rpx;
+  text-align: center;
+}
+
+.loader {
+  width: 86rpx;
+  height: 86rpx;
+  border: 8rpx solid #eeeafd;
+  border-top-color: #7259ff;
+  border-radius: 999rpx;
+  animation: spin 0.9s linear infinite;
+}
+
+.error-card {
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

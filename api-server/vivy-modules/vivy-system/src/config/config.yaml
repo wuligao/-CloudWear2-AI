@@ -1,0 +1,54 @@
+# App 配置
+app:
+  port: 9200
+  name: vivy-system
+
+# Logger 配置
+logger:
+  appName: ${{ app.name }}
+  logPath: ${{ PWD }}/logs
+
+# Security 配置
+security:
+  jwt:
+    secret: abcdefghijklmnopqrstuvwxyz
+
+# Swagger 配置
+swagger:
+  enabled: true
+  title: vivy-nest-admin
+  description: Nest Admin / Nest Cloud
+  contact:
+    name: vivy-nest-admin
+    url: https://github.com/haiweilian/vivy-nest-admin
+    email: haiweilian@foxmail.com
+  license:
+    name: MIT
+    url: https://github.com/haiweilian/vivy-nest-admin/blob/main/LICENSE
+
+# Upload 配置
+upload:
+  path: ${{ VIVY_SYSTEM_ROOT }}/uploads
+  prefix: /uploads
+  domain: http://localhost:${{ app.port }}
+
+# Upload Oss 配置
+# https://help.aliyun.com/zh/oss/user-guide/upload-objects-to-oss/
+uploadOss:
+  region: oss-cn-beijing
+  bucket: vivy-nest-admin
+  accessKeyId: ${{ ACCESS_KEY_ID }}
+  accessKeySecret: ${{ ACCESS_KEY_SECRET }}
+  authorizationV4: true
+  domain: https://vivy-nest-admin.oss-cn-beijing.aliyuncs.com
+
+# H5 AI 生成配置
+outfitAi:
+  apiKey: ${{ OPENAI_API_KEY }}
+  baseUrl: ${{ OPENAI_BASE_URL }}
+  textApiKey: ${{ OPENAI_TEXT_API_KEY }}
+  textBaseUrl: ${{ OPENAI_TEXT_BASE_URL }}
+  textModel: ${{ OPENAI_TEXT_MODEL }}
+  imageApiKey: ${{ OPENAI_IMAGE_API_KEY }}
+  imageBaseUrl: ${{ OPENAI_IMAGE_BASE_URL }}
+  imageModel: ${{ OPENAI_IMAGE_MODEL }}

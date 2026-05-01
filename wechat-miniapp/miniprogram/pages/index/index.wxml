@@ -1,0 +1,67 @@
+<view class="page">
+  <view class="hero">
+    <view>
+      <view class="hero-title">AI穿搭</view>
+      <view class="hero-subtitle">先选真实商品，再生成搭配建议</view>
+    </view>
+    <view class="hero-mark">衣</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">穿搭条件</view>
+
+    <view class="field">
+      <text class="field-label">季节</text>
+      <view class="chip-row">
+        <text wx:for="{{seasons}}" wx:key="*this" class="chip {{form.season === item ? 'active' : ''}}" bindtap="selectOption" data-key="season" data-value="{{item}}">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">温度</text>
+      <input class="control" value="{{form.temperature}}" data-key="temperature" bindinput="onInput" placeholder="如 20-25℃" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">地点</text>
+      <input class="control" value="{{form.location}}" data-key="location" bindinput="onInput" placeholder="城市 / 商圈" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">场景</text>
+      <view class="chip-row">
+        <text wx:for="{{scenes}}" wx:key="*this" class="chip {{form.scene === item ? 'active' : ''}}" bindtap="selectOption" data-key="scene" data-value="{{item}}">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">风格</text>
+      <view class="chip-row">
+        <text wx:for="{{styles}}" wx:key="*this" class="chip {{form.style === item ? 'active' : ''}}" bindtap="selectOption" data-key="style" data-value="{{item}}">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">性别</text>
+      <view class="chip-row">
+        <text wx:for="{{genders}}" wx:key="*this" class="chip {{form.gender === item ? 'active' : ''}}" bindtap="selectOption" data-key="gender" data-value="{{item}}">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">预算</text>
+      <view class="chip-row">
+        <text wx:for="{{budgets}}" wx:key="*this" class="chip {{form.budget === item ? 'active' : ''}}" bindtap="selectOption" data-key="budget" data-value="{{item}}">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">身材标签</text>
+      <view class="chip-row">
+        <text wx:for="{{bodyTagOptions}}" wx:key="label" class="chip {{item.active ? 'active' : ''}}" bindtap="toggleBodyTag" data-value="{{item.label}}">{{item.label}}</text>
+      </view>
+    </view>
+
+    <button class="primary-button generate" bindtap="submit">立即生成</button>
+  </view>
+</view>

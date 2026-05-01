@@ -1,0 +1,538 @@
+.prompt-management-page {
+  --prompt-ink: #182033;
+  --prompt-muted: #697386;
+  --prompt-faint: #98a2b3;
+  --prompt-border: #e7ebf3;
+  --prompt-border-strong: #dde3ee;
+  --prompt-panel: #fff;
+  --prompt-primary: #6254f3;
+  --prompt-primary-soft: #f0eeff;
+
+  display: grid;
+  gap: 14px;
+  color: var(--prompt-ink);
+
+  .prompt-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+    padding: 2px 4px 8px;
+
+    h3.ant-typography {
+      margin: 0 0 6px;
+      color: var(--prompt-ink);
+      font-size: 22px;
+      font-weight: 760;
+      letter-spacing: 0;
+      line-height: 30px;
+    }
+
+    .ant-typography {
+      color: var(--prompt-muted);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .ant-btn {
+      height: 36px;
+      border-radius: 7px;
+      font-weight: 650;
+    }
+
+    .ant-btn-primary {
+      background: linear-gradient(135deg, #6d5dfc 0%, #5746e8 100%);
+      border-color: #6254f3;
+      box-shadow: 0 8px 18px rgb(98 84 243 / 20%);
+    }
+  }
+
+  .prompt-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(280px, 1.2fr) 186px 186px 186px auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    background: rgb(255 255 255 / 86%);
+    border: 1px solid var(--prompt-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgb(24 32 51 / 4%);
+  }
+
+  .prompt-search.ant-input-affix-wrapper {
+    height: 36px;
+    border-color: var(--prompt-border-strong);
+    border-radius: 7px;
+    box-shadow: none;
+
+    .ant-input {
+      font-size: 13px;
+    }
+  }
+
+  .prompt-filter-item {
+    display: flex;
+    height: 36px;
+    min-width: 0;
+    align-items: center;
+    overflow: hidden;
+    background: var(--prompt-panel);
+    border: 1px solid var(--prompt-border-strong);
+    border-radius: 7px;
+
+    > span {
+      flex: 0 0 auto;
+      padding: 0 12px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 650;
+      white-space: nowrap;
+      border-right: 1px solid #edf1f6;
+    }
+
+    .ant-select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ant-select-selector {
+      height: 34px !important;
+      padding-inline: 12px !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .ant-select-selection-item {
+      color: #29364a;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 34px !important;
+    }
+  }
+
+  .prompt-filter-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+
+    .ant-btn {
+      height: 36px;
+      border-radius: 7px;
+      font-weight: 650;
+    }
+  }
+
+  .prompt-board {
+    overflow: hidden;
+    background: var(--prompt-panel);
+    border: 1px solid var(--prompt-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgb(24 32 51 / 4%);
+  }
+
+  .prompt-summary-tabs {
+    display: flex;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 18px 20px 10px;
+    border-bottom: 1px solid #edf1f6;
+
+    button,
+    span {
+      position: relative;
+      display: inline-flex;
+      height: 38px;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 9px;
+      margin-right: 24px;
+      padding: 0 4px;
+      color: #526070;
+      font-size: 13px;
+      font-weight: 680;
+      white-space: nowrap;
+      background: transparent;
+      border: 0;
+    }
+
+    button {
+      cursor: pointer;
+      transition: color 160ms ease;
+
+      &::after {
+        position: absolute;
+        right: 0;
+        bottom: -11px;
+        left: 0;
+        height: 3px;
+        content: '';
+        background: transparent;
+        border-radius: 999px 999px 0 0;
+      }
+
+      &:hover,
+      &.active {
+        color: var(--prompt-primary);
+      }
+
+      &.active::after {
+        background: var(--prompt-primary);
+      }
+    }
+
+    strong {
+      padding: 2px 7px;
+      color: #7a8394;
+      font-size: 13px;
+      font-weight: 720;
+      background: #f4f6fb;
+      border-radius: 6px;
+    }
+
+    button.active strong {
+      color: var(--prompt-primary);
+      background: var(--prompt-primary-soft);
+    }
+  }
+
+  .prompt-table-panel {
+    overflow: hidden;
+  }
+
+  .prompt-table {
+    .ant-table {
+      color: var(--prompt-ink);
+      background: var(--prompt-panel);
+    }
+
+    .ant-table-container {
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+
+    .ant-table-thead > tr > th {
+      height: 44px;
+      padding: 11px 14px;
+      color: #5f6b7d;
+      font-size: 12px;
+      font-weight: 740;
+      letter-spacing: 0;
+      background: linear-gradient(180deg, #fafbff 0%, #f7f9fd 100%);
+      border-bottom: 1px solid var(--prompt-border);
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .ant-table-tbody > tr > td {
+      padding: 14px;
+      border-bottom: 1px solid #edf1f6;
+      cursor: pointer;
+      transition:
+        background 140ms ease,
+        box-shadow 140ms ease;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: #fbfcff;
+      box-shadow: inset 0 1px 0 transparent;
+    }
+
+    .ant-table-cell-fix-left,
+    .ant-table-cell-fix-right {
+      background: var(--prompt-panel);
+      z-index: 3;
+    }
+
+    .ant-table-cell-fix-right {
+      box-shadow: -12px 0 20px rgb(24 32 51 / 5%);
+    }
+
+    .ant-table-tbody > tr:hover > .ant-table-cell-fix-left,
+    .ant-table-tbody > tr:hover > .ant-table-cell-fix-right {
+      background: #fbfcff;
+    }
+
+    .ant-pagination {
+      margin: 16px 20px;
+    }
+  }
+
+  .prompt-title-cell {
+    display: grid;
+    width: 100%;
+    gap: 5px;
+    padding: 0;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    strong {
+      overflow: hidden;
+      color: #1d2939;
+      font-size: 13px;
+      font-weight: 740;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    span {
+      display: -webkit-box;
+      max-width: 260px;
+      overflow: hidden;
+      color: #7b8497;
+      font-size: 12px;
+      line-height: 18px;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+    }
+  }
+
+  .prompt-scene,
+  .prompt-type {
+    margin: 0;
+    border: 0;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+
+  .prompt-scene {
+    color: #5c4bd6;
+    background: #f0eeff;
+  }
+
+  .prompt-type.type-image {
+    color: #475467;
+    background: #f2f4f7;
+  }
+
+  .prompt-type.type-text {
+    color: #1570ef;
+    background: #eaf3ff;
+  }
+
+  .prompt-type.type-multimodal {
+    color: #7a4cdb;
+    background: #f2ebff;
+  }
+
+  .usage-count {
+    color: #1d2939;
+    font-weight: 720;
+  }
+
+  .prompt-time {
+    color: #667085;
+    font-size: 12px;
+  }
+
+  .prompt-row-actions {
+    .ant-btn {
+      padding-inline: 5px;
+      color: var(--prompt-primary);
+      font-weight: 650;
+    }
+
+    .anticon {
+      font-size: 13px;
+    }
+  }
+
+  .prompt-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px;
+    color: var(--prompt-muted);
+    font-size: 12px;
+
+    .ant-btn {
+      border-radius: 7px;
+      font-weight: 650;
+    }
+  }
+}
+
+.prompt-detail-panel {
+  display: grid;
+  gap: 18px;
+  color: var(--prompt-ink, #182033);
+
+  .detail-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf1f6;
+
+    h3 {
+      margin: 0 0 9px;
+      color: #182033;
+      font-size: 18px;
+      font-weight: 760;
+      line-height: 24px;
+    }
+  }
+
+  .status-enabled,
+  .status-disabled {
+    border: 0;
+    border-radius: 999px;
+    font-weight: 760;
+  }
+
+  .status-enabled {
+    color: #079455;
+    background: #eafaf3;
+  }
+
+  .status-disabled {
+    color: #667085;
+    background: #f2f4f7;
+  }
+
+  .detail-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px 18px;
+
+    div {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    span {
+      color: #7a8495;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    strong {
+      overflow: hidden;
+      color: #263248;
+      font-size: 13px;
+      font-weight: 720;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .detail-block {
+    display: grid;
+    gap: 8px;
+
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+
+      strong {
+        color: #344054;
+        font-size: 13px;
+        font-weight: 760;
+      }
+    }
+
+    .ant-typography {
+      min-height: 96px;
+      max-height: 240px;
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      color: #344054;
+      font-size: 13px;
+      line-height: 22px;
+      white-space: pre-wrap;
+      background: #fbfcff;
+      border: 1px solid #e7ebf3;
+      border-radius: 8px;
+    }
+  }
+
+  .detail-models {
+    display: grid;
+    gap: 9px;
+
+    > strong {
+      color: #344054;
+      font-size: 13px;
+      font-weight: 760;
+    }
+
+    > div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ant-tag {
+      margin: 0;
+      color: #6254f3;
+      background: #f0eeff;
+      border: 0;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+  }
+
+  .detail-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding-top: 4px;
+
+    .ant-btn {
+      height: 38px;
+      border-radius: 7px;
+      font-weight: 700;
+    }
+  }
+}
+
+.prompt-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+@media (max-width: 1320px) {
+  .prompt-management-page {
+    .prompt-filter-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .prompt-filter-actions {
+      justify-content: flex-start;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .prompt-management-page {
+    .prompt-page-header {
+      display: grid;
+
+      > .ant-space {
+        justify-content: flex-start;
+      }
+    }
+
+    .prompt-filter-bar {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .prompt-form-grid,
+  .prompt-detail-panel .detail-meta,
+  .prompt-detail-panel .detail-actions {
+    grid-template-columns: 1fr;
+  }
+}

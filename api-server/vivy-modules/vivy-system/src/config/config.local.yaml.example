@@ -1,0 +1,9 @@
+# 本地私有配置示例：复制为 config.local.yaml 后填写真实值。
+# 也可以直接通过同名环境变量注入。
+outfitAi:
+  textApiKey:
+  textBaseUrl: https://api.bltcy.ai/v1
+  textModel: gpt-5.4
+  imageApiKey:
+  imageBaseUrl: https://api.bltcy.ai/v1
+  imageModel: gpt-4o-image

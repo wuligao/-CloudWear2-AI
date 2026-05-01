@@ -1,0 +1,59 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+coverage/
+
+# Logs / runtime
+logs/
+**/logs/
+*.log
+*.pid
+backups/
+
+# Local env / secrets
+.env
+.env.*
+*.env
+!.env.example
+!.env.*.example
+!*.env.example
+deploy/.env.deploy
+api-server/vivy-modules/vivy-system/src/config/config.local.yaml
+api-server/vivy-modules/vivy-system/src/config/config.*.local.yaml
+api-server/vivy-modules/vivy-system/dist/config/config.local.yaml
+api-server/vivy-modules/vivy-system/dist/config/config.*.local.yaml
+
+# Local tool state
+.playwright-mcp/
+**/.playwright-mcp/
+.vercel/
+**/.vercel/
+.serena/
+**/.serena/
+
+# Generated / local data
+server/docker/mysql/data/
+server/docker/mysql/logs/
+server/docker/redis/data/
+api-server/docker/mysql/data/
+api-server/docker/mysql/logs/
+api-server/docker/redis/data/
+api-server/uploads/
+wechat-miniapp/project.private.config.json
+
+# Debug screenshots
+/*.png
+h5-app/.codex/*.png
+h5-app/ui/*.png

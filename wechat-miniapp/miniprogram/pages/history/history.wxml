@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="hero compact">
+    <view>
+      <view class="hero-title">历史记录</view>
+      <view class="hero-subtitle">回看生成过的穿搭和商品组合</view>
+    </view>
+  </view>
+
+  <view wx:if="{{records.length === 0}}" class="card empty">还没有生成记录</view>
+  <view class="history-list">
+    <outfit-card wx:for="{{records}}" wx:key="_id" record="{{item}}" bind:open="openRecord" bind:delete="deleteRecord" />
+  </view>
+</view>

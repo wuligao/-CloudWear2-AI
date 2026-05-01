@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="hero compact">
+    <view>
+      <view class="hero-title">我的</view>
+      <view class="hero-subtitle">偏好会用于首页默认条件</view>
+    </view>
+    <view class="avatar">我</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">偏好设置</view>
+    <view class="field">
+      <text class="field-label">默认风格</text>
+      <input class="control" value="{{profile.defaultStyle}}" data-key="defaultStyle" bindinput="onInput" placeholder="如 法式、通勤、甜酷" />
+    </view>
+    <view class="field">
+      <text class="field-label">默认预算</text>
+      <input class="control" value="{{profile.defaultBudget}}" data-key="defaultBudget" bindinput="onInput" placeholder="如 500-1000元" />
+    </view>
+    <view class="field">
+      <text class="field-label">身材标签</text>
+      <input class="control" value="{{bodyTagsText}}" bindinput="onBodyTagsInput" placeholder="用逗号分隔，如 显高,显瘦" />
+    </view>
+    <button class="primary-button save" bindtap="save">保存偏好</button>
+  </view>
+
+  <view class="card menu">
+    <view class="menu-item">收藏记录</view>
+    <view class="menu-item">意见反馈</view>
+    <view class="menu-item">关于我们</view>
+  </view>
+</view>

@@ -1,0 +1,74 @@
+import { Body, Controller, Delete, Get, Param, ParseArrayPipe, Post, Put, Query } from '@nestjs/common'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { AjaxResult } from '@vivy-common/core'
+import { Log, OperType } from '@vivy-common/logger'
+import { RequirePermissions } from '@vivy-common/security'
+import { List{{businessNamePascalCase}}Dto, Create{{businessNamePascalCase}}Dto, Update{{businessNamePascalCase}}Dto } from './dto/{{businessNameKebabCase}}.dto'
+import { {{businessNamePascalCase}}Service } from './{{businessNameKebabCase}}.service'
+
+/**
+ * {{functionName}}
+ * @author {{functionAuthor}}
+ */
+@ApiTags('{{functionName}}')
+@ApiBearerAuth()
+@Controller('{{controllerName}}')
+export class {{businessNamePascalCase}}Controller {
+  constructor(private {{businessNameCamelcase}}Service: {{businessNamePascalCase}}Service) {}
+
+  /**
+   * {{functionName}}列表
+   * @param {{businessNameCamelcase}} {{functionName}}信息
+   * @returns {{functionName}}列表
+   */
+  @Get()
+  @RequirePermissions('{{moduleName}}:{{businessNameCamelcase}}:list')
+  async list(@Query() {{businessNameCamelcase}}: List{{businessNamePascalCase}}Dto): Promise<AjaxResult> {
+    return AjaxResult.success(await this.{{businessNameCamelcase}}Service.list({{businessNameCamelcase}}))
+  }
+
+  /**
+   * 添加{{functionName}}
+   * @param {{businessNameCamelcase}} {{functionName}}信息
+   */
+  @Post()
+  @Log({ title: '{{functionName}}', operType: OperType.INSERT })
+  @RequirePermissions('{{moduleName}}:{{businessNameCamelcase}}:add')
+  async add(@Body() {{businessNameCamelcase}}: Create{{businessNamePascalCase}}Dto): Promise<AjaxResult> {
+    return AjaxResult.success(await this.{{businessNameCamelcase}}Service.add({{businessNameCamelcase}}))
+  }
+
+  /**
+   * 更新{{functionName}}
+   * @param {{pkColumn.fieldName}} {{functionName}}ID
+   * @param {{businessNameCamelcase}} {{functionName}}信息
+   */
+  @Put(':{{pkColumn.fieldName}}')
+  @Log({ title: '{{functionName}}', operType: OperType.UPDATE })
+  @RequirePermissions('{{moduleName}}:{{businessNameCamelcase}}:update')
+  async update(@Param('{{pkColumn.fieldName}}') {{pkColumn.fieldName}}: {{pkColumn.tslangType}}, @Body() {{businessNameCamelcase}}: Update{{businessNamePascalCase}}Dto): Promise<AjaxResult> {
+    return AjaxResult.success(await this.{{businessNameCamelcase}}Service.update({{pkColumn.fieldName}}, {{businessNameCamelcase}}))
+  }
+
+  /**
+   * 删除{{functionName}}
+   * @param {{pkColumn.fieldName}}s {{functionName}}ID
+   */
+  @Delete(':{{pkColumn.fieldName}}s')
+  @Log({ title: '{{functionName}}', operType: OperType.DELETE })
+  @RequirePermissions('{{moduleName}}:{{businessNameCamelcase}}:delete')
+  async delete(@Param('{{pkColumn.fieldName}}s', new ParseArrayPipe({ items: Number })) {{pkColumn.fieldName}}s: {{pkColumn.tslangType}}[]): Promise<AjaxResult> {
+    return AjaxResult.success(await this.{{businessNameCamelcase}}Service.delete({{pkColumn.fieldName}}s))
+  }
+
+  /**
+   * {{functionName}}详情
+   * @param {{pkColumn.fieldName}} {{functionName}}ID
+   * @returns {{functionName}}详情
+   */
+  @Get(':{{pkColumn.fieldName}}')
+  @RequirePermissions('{{moduleName}}:{{businessNameCamelcase}}:query')
+  async info(@Param('{{pkColumn.fieldName}}') {{pkColumn.fieldName}}: {{pkColumn.tslangType}}): Promise<AjaxResult> {
+    return AjaxResult.success(await this.{{businessNameCamelcase}}Service.info({{pkColumn.fieldName}}))
+  }
+}

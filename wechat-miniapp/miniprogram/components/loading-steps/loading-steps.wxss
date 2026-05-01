@@ -1,0 +1,49 @@
+.steps {
+  display: grid;
+  gap: 20rpx;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  color: #9aa1af;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.dot {
+  display: grid;
+  width: 48rpx;
+  height: 48rpx;
+  place-items: center;
+  border-radius: 999rpx;
+  background: #f7f8fc;
+  color: #8991a1;
+  font-size: 23rpx;
+}
+
+.step.done,
+.step.active {
+  color: #151922;
+}
+
+.step.done .dot,
+.step.active .dot {
+  background: linear-gradient(135deg, #e8ddff, #f5f0ff);
+  color: #7259ff;
+}
+
+.step.active .dot {
+  animation: pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}

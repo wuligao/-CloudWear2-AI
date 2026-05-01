@@ -1,0 +1,20 @@
+<view class="page generating-page">
+  <view class="card center-card">
+    <view class="loader"></view>
+    <view class="section-title">{{currentText}}</view>
+    <view class="muted">正在从真实/模拟商品池筛选高销量高口碑单品</view>
+  </view>
+
+  <view class="card">
+    <loading-steps steps="{{steps}}" active="{{activeStep}}" />
+  </view>
+
+  <view wx:if="{{error}}" class="card error-card">
+    <view class="section-title">生成失败</view>
+    <view class="muted">{{error}}</view>
+    <view class="button-row">
+      <button class="secondary-button" bindtap="goBackHome">返回修改</button>
+      <button class="primary-button" bindtap="start">重试</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,129 @@
+@import './styles/index.less';
+
+html,
+body,
+#root {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  text-rendering: optimizelegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --cw-primary: #4f6bff;
+  --cw-primary-strong: #3448e8;
+  --cw-accent-cyan: #23c3ff;
+  --cw-heading: #162033;
+  --cw-text: #253149;
+  --cw-muted: #667085;
+  --cw-border: #dfe7f3;
+  --cw-bg-layout: #f6f8fc;
+  --cw-bg-container: #ffffff;
+  --cw-shadow-sm: 0 8px 22px rgb(22 35 63 / 5%);
+  --cw-shadow-md: 0 18px 46px rgb(22 35 63 / 10%);
+  --cw-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body {
+  color: var(--cw-text);
+  background:
+    radial-gradient(circle at 18% -10%, rgb(35 195 255 / 12%), transparent 28%),
+    radial-gradient(circle at 86% 0%, rgb(79 107 255 / 10%), transparent 26%),
+    var(--cw-bg-layout);
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+canvas {
+  display: block;
+}
+
+.dark .ant-app {
+  color: rgb(255 255 255 / 80%);
+}
+
+.light .ant-app {
+  color: rgb(0 0 0 / 80%);
+}
+
+.ant-btn,
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-card,
+.ant-modal-content,
+.ant-drawer-content {
+  transition:
+    border-color 160ms var(--cw-ease-out),
+    box-shadow 160ms var(--cw-ease-out),
+    background 160ms var(--cw-ease-out),
+    transform 160ms var(--cw-ease-out);
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--cw-primary), #655cf6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgb(79 107 255 / 20%);
+}
+
+.ant-btn-primary:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--cw-primary-strong), #5b55f0);
+  transform: translateY(-1px);
+}
+
+.ant-card {
+  border-color: var(--cw-border);
+  box-shadow: var(--cw-shadow-sm);
+}
+
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: rgb(79 107 255 / 45%) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--cw-primary) !important;
+  box-shadow: 0 0 0 3px rgb(79 107 255 / 12%) !important;
+}
+
+@keyframes cw-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cw-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cw-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}

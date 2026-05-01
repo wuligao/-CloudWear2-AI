@@ -1,0 +1,16 @@
+<view class="outfit-card" bindtap="onOpen">
+  <image class="cover" src="{{record.cover}}" mode="aspectFill" />
+  <view class="body">
+    <view class="line">
+      <text class="title">{{record.scene || '穿搭记录'}}</text>
+      <button class="delete" catchtap="onDelete">删除</button>
+    </view>
+    <text class="summary">{{record.suggestion}}</text>
+    <view class="tags">
+      <text>{{record.season}}</text>
+      <text>{{record.temperature}}</text>
+      <text>{{record.style}}</text>
+    </view>
+    <text class="date">{{record.createdText}}</text>
+  </view>
+</view>

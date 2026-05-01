@@ -1,0 +1,18 @@
+<view class="product-card">
+  <image class="product-image" src="{{product.imageUrl}}" mode="aspectFill" />
+  <view class="product-body">
+    <view class="product-head">
+      <text class="platform">{{platformText}}</text>
+      <text class="shop">{{product.shopType}}</text>
+    </view>
+    <text class="title">{{product.title}}</text>
+    <view class="metrics">
+      <text class="price">¥{{product.price}}</text>
+      <text>销量 {{product.sales}}</text>
+      <text>评分 {{product.rating}}</text>
+      <text>店铺 {{product.shopScore}}</text>
+    </view>
+    <text class="reason">{{product.reason}}</text>
+    <button class="buy" bindtap="onBuy">购买</button>
+  </view>
+</view>
