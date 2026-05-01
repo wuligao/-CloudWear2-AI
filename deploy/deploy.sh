@@ -36,6 +36,7 @@ REDIS_PASSWORD="${REDIS_PASSWORD:-}"
 CREATE_DB="${CREATE_DB:-0}"
 IMPORT_SQL="${IMPORT_SQL:-0}"
 CONFIRM_IMPORT_SQL="${CONFIRM_IMPORT_SQL:-NO}"
+SQL_FILE="${SQL_FILE:-api-server/sql/vivy-nest-admin.sql}"
 SKIP_NGINX="${SKIP_NGINX:-0}"
 FORCE_CONFIG="${FORCE_CONFIG:-0}"
 
@@ -64,8 +65,9 @@ Usage:
 
 Important flags:
   CREATE_DB=1              Create MySQL database/user before deploy.
-  IMPORT_SQL=1             Import SQL files in deploy order.
+  IMPORT_SQL=1             Import the unified SQL file.
   CONFIRM_IMPORT_SQL=YES   Required with IMPORT_SQL=1.
+  SQL_FILE=path/to.sql      SQL file to import, defaults to api-server/sql/vivy-nest-admin.sql.
   FORCE_CONFIG=1           Rewrite existing API production config.
   SKIP_NGINX=1             Do not install/reload Nginx config.
 USAGE
@@ -257,11 +259,12 @@ write_api_config() {
 
 import_sql_if_needed() {
   if [[ "$IMPORT_SQL" != "1" ]]; then
-    log "skipping SQL import. Set IMPORT_SQL=1 CONFIRM_IMPORT_SQL=YES to import current SQL."
+    log "skipping SQL import. Set IMPORT_SQL=1 CONFIRM_IMPORT_SQL=YES to import $SQL_FILE."
     return
   fi
 
   [[ "$CONFIRM_IMPORT_SQL" == "YES" ]] || die "SQL import is destructive. Set CONFIRM_IMPORT_SQL=YES to continue."
+  [[ -f "$ROOT_DIR/$SQL_FILE" ]] || die "SQL file not found: $SQL_FILE"
 
   log "backing up current database before SQL import"
   mkdir -p "$ROOT_DIR/backups"
@@ -274,22 +277,8 @@ import_sql_if_needed() {
     --triggers \
     "$MYSQL_DATABASE" >"$ROOT_DIR/backups/${MYSQL_DATABASE}-before-$(date +%Y%m%d%H%M%S).sql"
 
-  log "importing SQL in required order"
-  local sql_files=(
-    "api-server/sql/vivy-nest-admin.sql"
-    "api-server/sql/cloudwear-ai-model.sql"
-    "api-server/sql/cloudwear-ai-prompt.sql"
-    "api-server/sql/cloudwear-h5-style-profile.sql"
-    "api-server/sql/cloudwear-outfit-record.sql"
-    "api-server/sql/cloudwear-drop-visitor-id.sql"
-    "api-server/sql/patch-menu-icons.sql"
-  )
-
-  local file
-  for file in "${sql_files[@]}"; do
-    log "importing $file"
-    mysql_app "$MYSQL_DATABASE" <"$ROOT_DIR/$file"
-  done
+  log "importing unified SQL file: $SQL_FILE"
+  mysql_app "$MYSQL_DATABASE" <"$ROOT_DIR/$SQL_FILE"
 }
 
 build_api() {

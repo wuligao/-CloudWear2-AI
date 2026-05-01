@@ -10,7 +10,7 @@
 
 - 现状是：三端都已具备本地构建脚本，后端使用 PM2 配置 `api-server/ecosystem.config.cjs`，H5 使用 `next start`，Web 管理端构建产物在 `admin-web/dist`。
 - 关键约束是：管理端生产请求前缀固定为 `/api`，并期望 Nginx 把 `/api` 去掉再转发到后端；H5 的部分后端接口真实路径本身就是 `/api/h5/*`、`/api/generate-outfit`，不能套同一个“去掉 /api”的代理规则。
-- 我之前不知道但现在知道的是：`api-server/sql` 目录挂到 MySQL 自动初始化时，文件名排序会让 `cloudwear-*` 早于 `vivy-nest-admin.sql`，不适合直接依赖自动初始化顺序。
+- 我之前不知道但现在知道的是：后端 SQL 已统一为 `api-server/sql/vivy-nest-admin.sql`，部署脚本只需要导入这一份文件。
 - 基于以上，我的判断是：当前最稳的 IP 部署方式是 API 独立暴露 `9200`，H5 对外走 `9300`，管理端对外走 `9400`，管理端自己的 `/api` 由 Nginx 单独代理并去前缀。
 
 ## 服务器基础准备
@@ -75,9 +75,10 @@ MYSQL_ADMIN_PASSWORD=<root密码>
 ```bash
 IMPORT_SQL=1
 CONFIRM_IMPORT_SQL=YES
+SQL_FILE=api-server/sql/vivy-nest-admin.sql
 ```
 
-注意：`IMPORT_SQL=1` 会先备份当前库到 `backups/`，再按顺序导入 SQL。基础脚本 `vivy-nest-admin.sql` 内含 `DROP TABLE`，所以默认不会自动导入。
+注意：`IMPORT_SQL=1` 会先备份当前库到 `backups/`，再导入统一 SQL 文件。`vivy-nest-admin.sql` 内含 `DROP TABLE`，所以默认不会自动导入。
 
 ## 数据库与 Redis
 
@@ -119,18 +120,12 @@ FLUSH PRIVILEGES;
 
 ## 导入当前 SQL
 
-如果“现在的 SQL”指仓库当前 SQL 脚本，按这个顺序手动导入，不建议依赖 Docker 自动初始化目录排序：
+当前 SQL 已统一为 `api-server/sql/vivy-nest-admin.sql`。如果手动导入，执行：
 
 ```bash
 cd /opt/cloudwear/CloudWear-AI/api-server
 
 mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/vivy-nest-admin.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/cloudwear-ai-model.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/cloudwear-ai-prompt.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/cloudwear-h5-style-profile.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/cloudwear-outfit-record.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/cloudwear-drop-visitor-id.sql
-mysql -h127.0.0.1 -P3306 -ucloudwear -p vivy-nest-admin < sql/patch-menu-icons.sql
 ```
 
 如果“现在的 SQL”指本机正在跑的真实数据，则先在本机导出当前库，再传到服务器导入：
@@ -253,7 +248,7 @@ MySQL `3306` 和 Redis `6379` 不应对公网开放；确认它们只监听内�
 - `pnpm run build` 在 `api-server` 成功
 - `npm run build` 在 `h5-app` 成功
 - `pnpm run build` 在 `admin-web` 成功
-- MySQL 已按顺序导入当前 SQL
+- MySQL 已导入当前统一 SQL
 - API `http://103.242.14.110:9200/swagger` 可访问
 - H5 `http://103.242.14.110:9300/` 可访问并能登录/生成
 - Web 管理端 `http://103.242.14.110:9400/` 可访问并能登录
