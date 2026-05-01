@@ -1,656 +1,285 @@
 /*
- Navicat Premium Data Transfer
+ Navicat Premium Dump SQL
 
  Source Server         : 127.0.0.1
  Source Server Type    : MySQL
- Source Server Version : 80027
+ Source Server Version : 80042 (8.0.42)
  Source Host           : localhost:3306
  Source Schema         : vivy-nest-admin
 
  Target Server Type    : MySQL
- Target Server Version : 80027
+ Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 08/08/2024 16:07:51
+ Date: 02/05/2026 01:00:15
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for sys_dept
+-- Table structure for cw_ai_app_model_config
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_dept`;
-CREATE TABLE `sys_dept` (
-  `dept_id` bigint NOT NULL AUTO_INCREMENT COMMENT '部门ID',
-  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父部门ID',
-  `ancestors` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '祖级列表',
-  `dept_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '部门名称',
-  `dept_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '部门状态（0正常 1停用）',
-  `create_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+DROP TABLE IF EXISTS `cw_ai_app_model_config`;
+CREATE TABLE `cw_ai_app_model_config` (
+  `config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '配置ID',
+  `app_code` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用编码',
+  `app_name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用名称',
+  `text_provider_id` bigint DEFAULT NULL COMMENT '文本服务商ID',
+  `text_model_pk` bigint DEFAULT NULL COMMENT '文本模型主键',
+  `keyword_image_provider_id` bigint DEFAULT NULL COMMENT '关键词生图服务商ID',
+  `keyword_image_model_pk` bigint DEFAULT NULL COMMENT '关键词生图模型主键',
+  `photo_image_provider_id` bigint DEFAULT NULL COMMENT '照片生图服务商ID',
+  `photo_image_model_pk` bigint DEFAULT NULL COMMENT '照片生图模型主键',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0启用 1停用）',
+  `option_config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'H5选项配置JSON',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
   `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`config_id`),
+  UNIQUE KEY `uk_cw_ai_app_model_config_app` (`app_code`),
+  KEY `idx_cw_ai_app_text_provider` (`text_provider_id`),
+  KEY `idx_cw_ai_app_text_model` (`text_model_pk`),
+  KEY `idx_cw_ai_app_keyword_provider` (`keyword_image_provider_id`),
+  KEY `idx_cw_ai_app_keyword_model` (`keyword_image_model_pk`),
+  KEY `idx_cw_ai_app_photo_provider` (`photo_image_provider_id`),
+  KEY `idx_cw_ai_app_photo_model` (`photo_image_model_pk`),
+  CONSTRAINT `fk_cw_ai_app_keyword_model` FOREIGN KEY (`keyword_image_model_pk`) REFERENCES `cw_ai_model_item` (`model_pk`) ON DELETE SET NULL,
+  CONSTRAINT `fk_cw_ai_app_keyword_provider` FOREIGN KEY (`keyword_image_provider_id`) REFERENCES `cw_ai_model_provider` (`provider_id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_cw_ai_app_photo_model` FOREIGN KEY (`photo_image_model_pk`) REFERENCES `cw_ai_model_item` (`model_pk`) ON DELETE SET NULL,
+  CONSTRAINT `fk_cw_ai_app_photo_provider` FOREIGN KEY (`photo_image_provider_id`) REFERENCES `cw_ai_model_provider` (`provider_id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_cw_ai_app_text_model` FOREIGN KEY (`text_model_pk`) REFERENCES `cw_ai_model_item` (`model_pk`) ON DELETE SET NULL,
+  CONSTRAINT `fk_cw_ai_app_text_provider` FOREIGN KEY (`text_provider_id`) REFERENCES `cw_ai_model_provider` (`provider_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='应用模型配置';
+
+-- ----------------------------
+-- Records of cw_ai_app_model_config
+-- ----------------------------
+BEGIN;
+INSERT INTO `cw_ai_app_model_config` (`config_id`, `app_code`, `app_name`, `text_provider_id`, `text_model_pk`, `keyword_image_provider_id`, `keyword_image_model_pk`, `photo_image_provider_id`, `photo_image_model_pk`, `status`, `option_config`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'h5_outfit', 'H5穿搭生成', 1, 10, 1, 9, 1, 9, '0', '{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"colors\":[{\"label\":\"粉色\",\"value\":\"#ff7eac\"},{\"label\":\"奶茶\",\"value\":\"#dfb785\"},{\"label\":\"浅蓝\",\"value\":\"#83a8ef\"},{\"label\":\"黑色\",\"value\":\"#171717\"},{\"label\":\"紫色\",\"value\":\"#875ef1\"},{\"label\":\"雾蓝\",\"value\":\"#cbd8ff\"}],\"items\":[{\"label\":\"外套\"},{\"label\":\"上衣\"},{\"label\":\"裤子\"},{\"label\":\"裙子\"},{\"label\":\"鞋子\"},{\"label\":\"包包\"}],\"imageModels\":[{\"label\":\"gpt-image-2\",\"value\":\"gpt-image-2\"}],\"generationCounts\":[{\"label\":\"1 张\",\"value\":1},{\"label\":\"2 张\",\"value\":2},{\"label\":\"3 张\",\"value\":3}]}', NULL, 'system', '2026-04-30 16:58:22.138230', 'admin', '2026-05-01 22:34:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for cw_ai_model_item
+-- ----------------------------
+DROP TABLE IF EXISTS `cw_ai_model_item`;
+CREATE TABLE `cw_ai_model_item` (
+  `model_pk` bigint NOT NULL AUTO_INCREMENT COMMENT '模型主键',
+  `provider_id` bigint NOT NULL COMMENT '服务商ID',
+  `model_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模型名称',
+  `model_id` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模型ID',
+  `model_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模型类型',
+  `context_length` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '上下文长度',
+  `is_default` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否默认（0否 1是）',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0启用 1停用）',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`model_pk`),
+  UNIQUE KEY `uk_cw_ai_model_provider_model` (`provider_id`,`model_id`),
+  KEY `idx_cw_ai_model_provider` (`provider_id`),
+  CONSTRAINT `fk_cw_ai_model_provider` FOREIGN KEY (`provider_id`) REFERENCES `cw_ai_model_provider` (`provider_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='第三方AI模型';
+
+-- ----------------------------
+-- Records of cw_ai_model_item
+-- ----------------------------
+BEGIN;
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 1, 'gpt-4o-image', 'gpt-4o-image', 'image', '128K', '0', '0', NULL, 'system', '2026-04-30 16:15:03.471679', 'admin', '2026-04-30 16:27:35.000000');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, 2, 'Claude 3.5 Sonnet', 'claude-3-5-sonnet', 'text', '200K', '1', '0', NULL, 'system', '2026-04-30 16:15:03.477805', NULL, '2026-04-30 16:15:03.477805');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (6, 3, 'DeepSeek Chat', 'deepseek-chat', 'text', '64K', '1', '0', NULL, 'system', '2026-04-30 16:15:03.478456', NULL, '2026-04-30 16:15:03.478456');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (7, 4, 'Qwen Plus', 'qwen-plus', 'text', '128K', '1', '0', NULL, 'system', '2026-04-30 16:15:03.478810', NULL, '2026-04-30 16:15:03.478810');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (9, 1, 'gpt-image-2', 'gpt-image-2', 'image', '128K', '0', '0', NULL, 'admin', '2026-04-30 16:25:20.713853', 'admin', '2026-04-30 16:27:35.000000');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (10, 1, 'gpt-5.4', 'gpt-5.4', 'text', '128K', '1', '0', NULL, 'admin', '2026-04-30 16:27:11.488760', 'admin', '2026-04-30 16:39:41.000000');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (11, 1, 'gpt-5.5', 'gpt-5.5', 'text', '128k', '0', '0', NULL, 'admin', '2026-04-30 16:27:34.329457', NULL, '2026-04-30 16:27:35.000000');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (12, 1, 'GPT-4o', 'gpt-4o', 'multimodal', '128K', '1', '0', NULL, 'system', '2026-04-30 16:58:22.134588', NULL, '2026-04-30 16:58:22.134588');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (13, 1, 'GPT-4 Turbo', 'gpt-4-turbo', 'text', '128K', '0', '0', NULL, 'system', '2026-04-30 16:58:22.135742', NULL, '2026-04-30 16:58:22.135742');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (14, 1, 'DALL-E 3', 'dall-e-3', 'image', '-', '0', '0', NULL, 'system', '2026-04-30 16:58:22.136613', NULL, '2026-04-30 16:58:22.136613');
+INSERT INTO `cw_ai_model_item` (`model_pk`, `provider_id`, `model_name`, `model_id`, `model_type`, `context_length`, `is_default`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (15, 1, 'text-embedding-3-large', 'text-embedding-3-large', 'embedding', '8K', '0', '0', NULL, 'system', '2026-04-30 16:58:22.136780', NULL, '2026-04-30 16:58:22.136780');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for cw_ai_model_provider
+-- ----------------------------
+DROP TABLE IF EXISTS `cw_ai_model_provider`;
+CREATE TABLE `cw_ai_model_provider` (
+  `provider_id` bigint NOT NULL AUTO_INCREMENT COMMENT '服务商ID',
+  `provider_name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '服务商名称',
+  `provider_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '服务商编码',
+  `base_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'OpenAI-compatible Base URL',
+  `api_key` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'API Key',
+  `default_model_id` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '默认模型ID',
+  `icon_text` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '图标文字',
+  `color` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'slate' COMMENT '服务商颜色',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0启用 1停用）',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`provider_id`),
+  UNIQUE KEY `uk_cw_ai_model_provider_code` (`provider_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='第三方AI模型服务商';
+
+-- ----------------------------
+-- Records of cw_ai_model_provider
+-- ----------------------------
+BEGIN;
+INSERT INTO `cw_ai_model_provider` (`provider_id`, `provider_name`, `provider_code`, `base_url`, `api_key`, `default_model_id`, `icon_text`, `color`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'ddcat.pro', 'openai', 'https://ddcat.pro/v1', 'sk-J2iy0SEcWKM8WGfpV04oIgx8sKY7A3srsvu6c7Vu4yjDH9Ml', 'gpt-5.4', '◎', 'emerald', '0', 'OpenAI-compatible 官方接口', 'system', '2026-04-30 16:15:03.468789', 'admin', '2026-04-30 17:00:08.000000');
+INSERT INTO `cw_ai_model_provider` (`provider_id`, `provider_name`, `provider_code`, `base_url`, `api_key`, `default_model_id`, `icon_text`, `color`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, 'Claude', 'claude', 'https://api.anthropic.com/v1', NULL, 'claude-3-5-sonnet', 'AI', 'copper', '0', 'Claude 兼容服务商配置', 'system', '2026-04-30 16:15:03.468789', NULL, '2026-04-30 16:15:03.468789');
+INSERT INTO `cw_ai_model_provider` (`provider_id`, `provider_name`, `provider_code`, `base_url`, `api_key`, `default_model_id`, `icon_text`, `color`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, 'DeepSeek', 'deepseek', 'https://api.deepseek.com/v1', NULL, 'deepseek-chat', 'DS', 'ocean', '0', 'DeepSeek OpenAI-compatible 接口', 'system', '2026-04-30 16:15:03.468789', NULL, '2026-04-30 16:15:03.468789');
+INSERT INTO `cw_ai_model_provider` (`provider_id`, `provider_name`, `provider_code`, `base_url`, `api_key`, `default_model_id`, `icon_text`, `color`, `status`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, '通义千问', 'qwen', 'https://dashscope.aliyuncs.com/compatible-mode/v1', NULL, 'qwen-plus', '千', 'violet', '0', '阿里云百炼兼容模式', 'system', '2026-04-30 16:15:03.468789', NULL, '2026-04-30 16:15:03.468789');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for cw_ai_prompt_template
+-- ----------------------------
+DROP TABLE IF EXISTS `cw_ai_prompt_template`;
+CREATE TABLE `cw_ai_prompt_template` (
+  `prompt_id` bigint NOT NULL AUTO_INCREMENT COMMENT '提示词ID',
+  `prompt_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '提示词名称',
+  `scene` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '适用场景',
+  `prompt_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'image' COMMENT '提示词类型 image/text/multimodal',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0启用 1停用）',
+  `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '提示词摘要',
+  `prompt_content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '提示词内容',
+  `usage_guide` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '使用说明',
+  `applicable_models` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '适用模型JSON',
+  `usage_count` int NOT NULL DEFAULT '0' COMMENT '使用次数',
+  `last_used_time` datetime DEFAULT NULL COMMENT '最后使用时间',
+  `sort_order` int NOT NULL DEFAULT '0' COMMENT '排序',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`prompt_id`),
+  UNIQUE KEY `uk_cw_ai_prompt_name` (`prompt_name`),
+  KEY `idx_cw_ai_prompt_scene` (`scene`),
+  KEY `idx_cw_ai_prompt_type` (`prompt_type`),
+  KEY `idx_cw_ai_prompt_status` (`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI提示词模板';
+
+-- ----------------------------
+-- Records of cw_ai_prompt_template
+-- ----------------------------
+BEGIN;
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, '高质量图像生成通用提示词', '图像生成', 'image', '0', '生成高质量、清晰、细节丰富的图像，适用于多种通用图像生成场景。', '请生成一张高质量、清晰、细节丰富的图像，光线自然、色彩和谐，构图合理，主体突出，背景简洁，整体效果专业美观，符合用户需求。', '适用于大多数图像生成场景，可根据具体需求调整关键词和细节描述。', '[\"Stable Diffusion\", \"Midjourney\", \"DALL-E\", \"通义万相\"]', 12532, NULL, 10, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '商品图生成提示词', '商品图', 'image', '0', '用于电商商品图生成，突出商品主体、背景简洁清晰。', '生成一张专业电商商品图，商品主体清晰完整，材质细节真实，背景干净高级，光影自然，适合商品详情页和营销展示。', '可补充商品品类、材质、品牌调性、背景色和营销平台要求。', '[\"Stable Diffusion\", \"Midjourney\", \"DALL-E\"]', 8766, '2026-05-01 18:18:02', 20, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 18:18:02');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, '人像写真风格提示词', '人像写真', 'image', '0', '生成自然真实的人像写真，强调光影、情绪和服装表现。', '生成自然真实的人像写真，人物五官清晰，皮肤质感自然，服装层次明确，光影柔和，构图有杂志感，整体高级且不过度修饰。', '适合头像、写真、穿搭展示类场景，注意补充年龄、风格和环境。', '[\"Midjourney\", \"DALL-E\", \"通义万相\"]', 15248, NULL, 30, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, '服装试穿生成提示词', '虚拟试穿', 'image', '0', '用于虚拟试穿场景，保持人物姿态和服装细节真实自然。', '基于用户照片生成虚拟试穿效果，保持人物身份、姿态和身形比例自然，服装贴合身体结构，材质纹理真实，光照与原图一致。', '适合上传真人照片后的服装替换、穿搭预览和搭配试穿。', '[\"GPT Image\", \"DALL-E\", \"通义万相\"]', 21423, NULL, 40, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, '场景图生成提示词', '场景图', 'image', '1', '生成真实自然的场景图，包含环境、光线、氛围与空间层次。', '生成真实自然的场景图片，空间层次清晰，光线符合场景时间，氛围统一，主体与背景关系合理，避免过度装饰和杂乱元素。', '适合海报背景、产品场景图、生活方式场景图。', '[\"Stable Diffusion\", \"Midjourney\"]', 6321, NULL, 50, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (6, '文案润色提示词', '文案生成', 'text', '0', '优化文案表达，使其更流畅、专业、有吸引力。', '请将以下内容润色为更自然、有吸引力且专业的文案，保留核心信息，避免夸张和空泛表达，输出适合直接使用的版本。', '适合标题、简介、商品卖点、社媒文案的二次润色。', '[\"GPT\", \"Claude\", \"DeepSeek\"]', 28143, NULL, 60, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+INSERT INTO `cw_ai_prompt_template` (`prompt_id`, `prompt_name`, `scene`, `prompt_type`, `status`, `description`, `prompt_content`, `usage_guide`, `applicable_models`, `usage_count`, `last_used_time`, `sort_order`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (7, '穿搭推荐提示词', '穿搭推荐', 'text', '0', '根据用户信息推荐合适穿搭方案，风格多样且可落地。', '请根据用户的季节、天气、地点、场景、风格和单品偏好，推荐完整穿搭方案。输出包含标题、总结、单品清单、温度建议和场景理由。', '适合 CloudWear H5 穿搭方案生成，也可作为文本规划模板。', '[\"GPT\", \"Claude\", \"DeepSeek\"]', 9876, NULL, 70, 'system', '2026-05-01 17:29:13', NULL, '2026-05-01 17:29:13');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for cw_h5_style_profile
+-- ----------------------------
+DROP TABLE IF EXISTS `cw_h5_style_profile`;
+CREATE TABLE `cw_h5_style_profile` (
+  `profile_id` bigint NOT NULL AUTO_INCREMENT COMMENT '风格档案ID',
+  `visitor_id` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'H5匿名访客ID',
+  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+  `height` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身高',
+  `weight` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '体重',
+  `clothing_size` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '服装尺码',
+  `shoe_size` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '鞋码',
+  `favorite_styles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '偏好风格JSON',
+  `favorite_colors` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '偏好颜色JSON',
+  `avoid_colors` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '避开颜色JSON',
+  `common_occasions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '常用场景JSON',
+  `element_preferences` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '元素偏好JSON',
+  `fit_preferences` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '版型偏好JSON',
+  `body_metrics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '身体围度JSON',
+  `notes` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`profile_id`),
+  KEY `idx_cw_h5_style_profile_visitor` (`visitor_id`),
+  KEY `idx_cw_h5_style_profile_user` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='H5风格档案';
+
+-- ----------------------------
+-- Records of cw_h5_style_profile
+-- ----------------------------
+BEGIN;
+INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'v-test1234', 4, '168cm', '52kg', 'M', '38', '[\"法式通勤\",\"松弛休闲\"]', '[\"黑色\",\"燕麦色\"]', '[]', '[]', '[\"针织\",\"高腰线\"]', '[\"直筒\",\"微宽松\"]', '{\"shoulder\":\"38cm\",\"waist\":\"66cm\"}', '偏低调通勤，周末可以更轻松', NULL, '2026-05-01 16:52:52', NULL, '2026-05-01 16:52:52');
+INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '535cffec-2547-4473-bb9a-34965e07763c', 3, '170', '80', '2XL', '41', '[]', '[]', '[]', '[]', '[]', '[]', '{\"shoulder\":\"42\"}', NULL, NULL, '2026-05-01 17:59:24', NULL, '2026-05-01 17:59:24');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for cw_outfit_record
+-- ----------------------------
+DROP TABLE IF EXISTS `cw_outfit_record`;
+CREATE TABLE `cw_outfit_record` (
+  `record_id` bigint NOT NULL AUTO_INCREMENT COMMENT '穿搭记录ID',
+  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+  `generation_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '生成任务ID',
+  `task_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '生成任务ID',
+  `source` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'keyword' COMMENT '生成来源 keyword/photo',
+  `record_status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'succeeded' COMMENT '记录状态 running/succeeded/failed',
+  `outfit_title` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '穿搭标题',
+  `summary` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '穿搭总结',
+  `image_url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成图片地址',
+  `total_count` int NOT NULL DEFAULT '1' COMMENT '生成总数',
+  `success_count` int NOT NULL DEFAULT '1' COMMENT '成功数量',
+  `failed_count` int NOT NULL DEFAULT '0' COMMENT '失败数量',
+  `season` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '季节',
+  `temperature` int NOT NULL COMMENT '温度',
+  `weather` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '天气',
+  `location` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '地点',
+  `occasion` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '场景',
+  `style` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '风格',
+  `color_preference` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '颜色偏好',
+  `gender_preference` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '性别偏好',
+  `image_model` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '生图模型',
+  `style_tags` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '风格标签JSON',
+  `items` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '单品拆解JSON',
+  `input_snapshot` longtext COLLATE utf8mb4_unicode_ci COMMENT '生成输入快照JSON',
+  `temperature_advice` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '温度建议',
+  `occasion_reason` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '场景理由',
+  `image_prompt` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片提示词',
+  `user_photo_used` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否使用用户照片',
+  `user_photo_url` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户上传原图地址',
+  `generated_at` datetime NOT NULL COMMENT '生成时间',
+  `create_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`dept_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='部门表';
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`record_id`),
+  UNIQUE KEY `uk_cw_outfit_record_visitor_generation` (`generation_id`),
+  KEY `idx_cw_outfit_record_visitor_time` (`create_time`),
+  KEY `idx_cw_outfit_record_user_time` (`user_id`,`create_time`),
+  KEY `idx_cw_outfit_record_task` (`task_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='H5穿搭记录';
 
 -- ----------------------------
--- Records of sys_dept
+-- Records of cw_outfit_record
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_dept` VALUES (100, 0,   '0',         '总公司',  1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (101, 100, '0,100',     '深圳公司', 1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (102, 100, '0,100',     '长沙公司', 2, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (103, 101, '0,100,101', '研发部门', 1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (104, 101, '0,100,101', '市场部门', 2, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (105, 101, '0,100,101', '测试部门', 3, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (106, 101, '0,100,101', '财务部门', 4, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (107, 101, '0,100,101', '运维部门', 5, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (108, 102, '0,100,102', '市场部门', 1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dept` VALUES (109, 102, '0,100,102', '财务部门', 2, '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_menu
--- ----------------------------
-DROP TABLE IF EXISTS `sys_menu`;
-CREATE TABLE `sys_menu` (
-  `menu_id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
-  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父菜单ID',
-  `menu_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单名称',
-  `menu_type` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单类型（M目录 C菜单 F按钮）',
-  `menu_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '菜单状态（0正常 1停用）',
-  `path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '路由地址',
-  `component` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '组件路径',
-  `query` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '路由参数',
-  `permission` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '权限标识',
-  `icon` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '菜单图标',
-  `is_visible` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '是否显示（0否 1是）',
-  `is_link` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否为外链（0否 1是）',
-  `is_frame` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否为内嵌（0否 1是）',
-  `is_cache` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否缓存（0否 1是）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单权限表';
-
--- ----------------------------
--- Records of sys_menu
--- ----------------------------
-BEGIN;
--- 一级菜单
-INSERT INTO `sys_menu` VALUES (1, 0, '系统管理', 'M', 1, '0', 'system',                                        NULL, NULL, NULL, 'ant-design:setting-outlined', '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (2, 0, '系统监控', 'M', 2, '0', 'monitor',                                       NULL, NULL, NULL, 'ant-design:fund-outlined',    '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (3, 0, '系统工具', 'M', 3, '0', 'tool',                                          NULL, NULL, NULL, 'ant-design:tool-outlined',    '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (4, 0, '项目源码', 'M', 4, '0', 'https://github.com/haiweilian/vivy-nest-admin', NULL, NULL, NULL, 'ant-design:link-outlined',    '1', '1', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 二级菜单
-INSERT INTO `sys_menu` VALUES (100, 1, '用户管理', 'C', 1, '0', 'user',        'system/user/index',         NULL, 'system:user:list',      'ant-design:user-outlined',         '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (101, 1, '角色管理', 'C', 2, '0', 'role',        'system/role/index',         NULL, 'system:role:list',      'ant-design:team-outlined',         '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (102, 1, '菜单管理', 'C', 3, '0', 'menu',        'system/menu/index',         NULL, 'system:menu:list',      'ant-design:menu-outlined',         '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (103, 1, '部门管理', 'C', 4, '0', 'dept',        'system/dept/index',         NULL, 'system:dept:list',      'ant-design:apartment-outlined',    '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (104, 1, '岗位管理', 'C', 5, '0', 'post',        'system/post/index',         NULL, 'system:post:list',      'ant-design:idcard-outlined',       '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (105, 1, '字典管理', 'C', 6, '0', 'dict',        'system/dict/index',         NULL, 'system:dict:list',      'ant-design:book-outlined',         '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (106, 1, '字典数据', 'C', 7, '0', 'dict/:type',  'system/dict/$type/index',   NULL, 'system:dict:list',      'ant-design:profile-outlined',      '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (107, 1, '参数配置', 'C', 8, '0', 'config',      'system/config/index',       NULL, 'system:config:list',    'ant-design:control-outlined',      '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (108, 1, '通知公告', 'C', 9, '0', 'notice',      'system/notice/index',       NULL, 'system:notice:list',    'ant-design:notification-outlined', '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (109, 2, '操作日志', 'C', 1, '0', 'oper-log',    'monitor/oper-log/index',    NULL, 'monitor:operlog:list',  'ant-design:file-search-outlined',  '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (110, 2, '登录日志', 'C', 2, '0', 'login-log',   'monitor/login-log/index',   NULL, 'monitor:loginlog:list', 'ant-design:login-outlined',        '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (111, 2, '在线用户', 'C', 3, '0', 'online-user', 'monitor/online-user/index', NULL, 'monitor:online:list',   'ant-design:desktop-outlined',      '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (112, 2, '定时任务', 'C', 4, '0', 'job',         'monitor/job/index',         NULL, 'monitor:job:list',      'ant-design:schedule-outlined',     '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (113, 2, '任务日志', 'C', 5, '0', 'job/log',     'monitor/job/log/index',     NULL, 'monitor:job:list',      'ant-design:history-outlined',      '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (114, 2, '缓存列表', 'C', 6, '0', 'cache',       'monitor/cache/index',       NULL, 'monitor:cache:list',    'ant-design:database-outlined',     '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (115, 3, '代码生成', 'C', 1, '0', 'gen',         'tool/gen/index',            NULL, 'tool:gen:list',         'ant-design:code-outlined',         '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (116, 3, '文件上传', 'C', 2, '0', 'file',        'tool/file/index',           NULL, 'tool:file:list',        'ant-design:upload-outlined',       '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (117, 3, '系统接口', 'C', 3, '0', 'swagger',     'tool/swagger/index',        NULL, 'tool:swagger:list',     'ant-design:api-outlined',          '1', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 用户管理按钮
-INSERT INTO `sys_menu` VALUES (1000, 100, '用户查询', 'F', 1, '0', NULL, NULL, NULL, 'system:user:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1001, 100, '用户新增', 'F', 2, '0', NULL, NULL, NULL, 'system:user:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1002, 100, '用户修改', 'F', 3, '0', NULL, NULL, NULL, 'system:user:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1003, 100, '用户删除', 'F', 4, '0', NULL, NULL, NULL, 'system:user:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1004, 100, '用户导出', 'F', 5, '0', NULL, NULL, NULL, 'system:user:export', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1005, 100, '用户导入', 'F', 6, '0', NULL, NULL, NULL, 'system:user:import', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 角色管理按钮
-INSERT INTO `sys_menu` VALUES (1006, 101, '角色查询', 'F', 1, '0', NULL, NULL, NULL, 'system:role:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1007, 101, '角色新增', 'F', 2, '0', NULL, NULL, NULL, 'system:role:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1008, 101, '角色修改', 'F', 3, '0', NULL, NULL, NULL, 'system:role:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1009, 101, '角色删除', 'F', 4, '0', NULL, NULL, NULL, 'system:role:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 菜单管理按钮
-INSERT INTO `sys_menu` VALUES (1010, 102, '菜单查询', 'F', 1, '0', NULL, NULL, NULL, 'system:menu:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1011, 102, '菜单新增', 'F', 2, '0', NULL, NULL, NULL, 'system:menu:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1012, 102, '菜单修改', 'F', 3, '0', NULL, NULL, NULL, 'system:menu:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1013, 102, '菜单删除', 'F', 4, '0', NULL, NULL, NULL, 'system:menu:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 部门管理按钮
-INSERT INTO `sys_menu` VALUES (1014, 103, '部门查询', 'F', 1, '0', NULL, NULL, NULL, 'system:dept:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1015, 103, '部门新增', 'F', 2, '0', NULL, NULL, NULL, 'system:dept:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1016, 103, '部门修改', 'F', 3, '0', NULL, NULL, NULL, 'system:dept:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1017, 103, '部门删除', 'F', 4, '0', NULL, NULL, NULL, 'system:dept:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 岗位管理按钮
-INSERT INTO `sys_menu` VALUES (1018, 104, '岗位查询', 'F', 1, '0', NULL, NULL, NULL, 'system:post:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1019, 104, '岗位新增', 'F', 2, '0', NULL, NULL, NULL, 'system:post:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1020, 104, '岗位修改', 'F', 3, '0', NULL, NULL, NULL, 'system:post:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1021, 104, '岗位删除', 'F', 4, '0', NULL, NULL, NULL, 'system:post:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 字典管理按钮
-INSERT INTO `sys_menu` VALUES (1022, 105, '字典查询', 'F', 1, '0', NULL, NULL, NULL, 'system:dict:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1023, 105, '字典新增', 'F', 2, '0', NULL, NULL, NULL, 'system:dict:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1024, 105, '字典修改', 'F', 3, '0', NULL, NULL, NULL, 'system:dict:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1025, 105, '字典删除', 'F', 4, '0', NULL, NULL, NULL, 'system:dict:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 参数配置按钮
-INSERT INTO `sys_menu` VALUES (1026, 107, '参数查询', 'F', 1, '0', NULL, NULL, NULL, 'system:config:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1027, 107, '参数新增', 'F', 2, '0', NULL, NULL, NULL, 'system:config:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1028, 107, '参数修改', 'F', 3, '0', NULL, NULL, NULL, 'system:config:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1029, 107, '参数删除', 'F', 4, '0', NULL, NULL, NULL, 'system:config:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 通知公告按钮
-INSERT INTO `sys_menu` VALUES (1030, 108, '公告查询', 'F', 1, '0', NULL, NULL, NULL, 'system:notice:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1031, 108, '公告新增', 'F', 2, '0', NULL, NULL, NULL, 'system:notice:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1032, 108, '公告修改', 'F', 3, '0', NULL, NULL, NULL, 'system:notice:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1033, 108, '公告删除', 'F', 4, '0', NULL, NULL, NULL, 'system:notice:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 操作日志按钮
-INSERT INTO `sys_menu` VALUES (1034, 109, '操作日志查询', 'F', 1, '0', NULL, NULL, NULL, 'system:operLog:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1035, 109, '操作日志删除', 'F', 2, '0', NULL, NULL, NULL, 'system:operLog:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 登录日志按钮
-INSERT INTO `sys_menu` VALUES (1036, 110, '登录日志查询', 'F', 1, '0', NULL, NULL, NULL, 'system:loginLog:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1037, 110, '登录日志删除', 'F', 2, '0', NULL, NULL, NULL, 'system:loginLog:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 在线用户按钮
-INSERT INTO `sys_menu` VALUES (1038, 111, '在线查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:onlineUser:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1039, 111, '在线强退', 'F', 2, '0', NULL, NULL, NULL, 'monitor:onlineUser:logout', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 定时任务按钮
-INSERT INTO `sys_menu` VALUES (1040, 112, '任务查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:job:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1041, 112, '任务新增', 'F', 2, '0', NULL, NULL, NULL, 'monitor:job:add',    NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1042, 112, '任务修改', 'F', 3, '0', NULL, NULL, NULL, 'monitor:job:update', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1043, 112, '任务删除', 'F', 4, '0', NULL, NULL, NULL, 'monitor:job:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-
--- 缓存列表按钮
-INSERT INTO `sys_menu` VALUES (1044, 114, '缓存查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:cache:query',  NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_menu` VALUES (1045, 114, '缓存删除', 'F', 2, '0', NULL, NULL, NULL, 'monitor:cache:delete', NULL, '0', '0', '0', '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_post
--- ----------------------------
-DROP TABLE IF EXISTS `sys_post`;
-CREATE TABLE `sys_post` (
-  `post_id` bigint NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
-  `post_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位名称',
-  `post_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位编码',
-  `post_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '岗位状态（0正常 1停用）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='岗位信息表';
-
--- ----------------------------
--- Records of sys_post
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_post` VALUES (1, '董事长', 'CEO', 1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_post` VALUES (2, '项目经理', 'SE', 2, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_post` VALUES (3, '人力资源', 'HR', 3, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_post` VALUES (4, '普通员工', 'USER', 4, '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_role
--- ----------------------------
-DROP TABLE IF EXISTS `sys_role`;
-CREATE TABLE `sys_role` (
-  `role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '角色ID',
-  `role_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色名称',
-  `role_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色编码',
-  `role_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `data_scope` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '数据范围（1全部数据权限 2自定数据权限 3本部门数据权限 4本部门及以下数据权限 5仅本人数据权限）',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '角色状态（0正常 1停用）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色信息表';
-
--- ----------------------------
--- Records of sys_role
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_role` VALUES (1, '超级管理员', 'admin', 1, '1', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_role` VALUES (2, '普通角色', 'common', 2, '2', '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_role_dept
--- ----------------------------
-DROP TABLE IF EXISTS `sys_role_dept`;
-CREATE TABLE `sys_role_dept` (
-  `role_id` bigint NOT NULL COMMENT '用户ID',
-  `dept_id` bigint NOT NULL COMMENT '部门ID',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`role_id`,`dept_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色和部门关联表 角色1-N部门';
-
--- ----------------------------
--- Records of sys_role_dept
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_role_dept` VALUES (2, 105, sysdate(), sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_role_menu
--- ----------------------------
-DROP TABLE IF EXISTS `sys_role_menu`;
-CREATE TABLE `sys_role_menu` (
-  `role_id` bigint NOT NULL COMMENT '角色ID',
-  `menu_id` bigint NOT NULL COMMENT '菜单ID',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`role_id`,`menu_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色和菜单关联表 角色1-N菜单';
-
--- ----------------------------
--- Records of sys_role_menu
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_role_menu` VALUES (2, 1, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 4, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 100, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 101, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 102, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 103, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 104, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 105, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 106, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 107, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 108, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1000, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1001, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1002, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1003, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1004, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1005, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1006, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1007, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1008, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1009, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1010, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1011, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1012, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1013, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1014, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1015, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1016, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1017, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1018, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1019, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1020, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1021, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1022, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1023, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1024, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1025, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1026, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1027, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1028, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1029, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1030, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1031, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1032, sysdate(), sysdate());
-INSERT INTO `sys_role_menu` VALUES (2, 1033, sysdate(), sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_user
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user`;
-CREATE TABLE `sys_user` (
-  `user_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `dept_id` bigint DEFAULT NULL COMMENT '部门ID',
-  `user_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
-  `nick_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户昵称',
-  `user_type` char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '00' COMMENT '用户类型（00系统用户）',
-  `email` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户邮箱',
-  `phonenumber` varchar(11) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机号码',
-  `sex` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '3' COMMENT '用户性别（1男 2女 3保密）',
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '头像地址',
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '用户状态（0正常 1停用 2删除）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `IDX_9d0ba62d30b6362c5651c6c261` (`user_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户信息表';
-
--- ----------------------------
--- Records of sys_user
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_user` VALUES (1, 100, 'admin', '管理员', '00', 'admin@vivy.com', '18688888888', '1', '/static/avatar/admin.png', '$2b$10$r1Eul7Lc388k9rphYYt9uO0k1LWw.3ArgbX0VrhjjG1h4lDjBq9tq', '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_user` VALUES (2, 105, 'test', '测试员', '00', 'test@vivy.com', '18666666666', '1', '/static/avatar/test.png', '$2b$10$r1Eul7Lc388k9rphYYt9uO0k1LWw.3ArgbX0VrhjjG1h4lDjBq9tq', '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_user_post
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_post`;
-CREATE TABLE `sys_user_post` (
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `post_id` bigint NOT NULL COMMENT '岗位ID',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`user_id`,`post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户与岗位关联表 用户1-N岗位';
-
--- ----------------------------
--- Records of sys_user_post
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_user_post` VALUES (1, 1, sysdate(), sysdate());
-INSERT INTO `sys_user_post` VALUES (2, 2, sysdate(), sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_user_role
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_role`;
-CREATE TABLE `sys_user_role` (
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `role_id` bigint NOT NULL COMMENT '角色ID',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`user_id`,`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户和角色关联表 用户1-N角色';
-
--- ----------------------------
--- Records of sys_user_role
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_user_role` VALUES (1, 1, sysdate(), sysdate());
-INSERT INTO `sys_user_role` VALUES (2, 2, sysdate(), sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_dict_type
--- ----------------------------
-DROP TABLE IF EXISTS `sys_dict_type`;
-CREATE TABLE `sys_dict_type` (
-  `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典ID',
-  `dict_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典名称',
-  `dict_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典类型',
-  `dict_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '字典状态（0正常 1停用）',
-  `create_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`dict_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典类型表';
-
--- ----------------------------
--- Records of sys_dict_type
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_dict_type` VALUES (1, '用户性别', 'sys_user_sex', 1, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (2, '系统是否', 'sys_yes_no', 2, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (3, '系统开关', 'sys_normal_disable', 3, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (4, '系统成败', 'sys_success_failure', 4, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (5, '操作类型', 'sys_oper_type', 5, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (6, '任务分组', 'sys_job_group', 6, '0', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_type` VALUES (7, '公告类型', 'sys_notice_type', 7, '0', 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_dict_data
--- ----------------------------
-DROP TABLE IF EXISTS `sys_dict_data`;
-CREATE TABLE `sys_dict_data` (
-  `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典ID',
-  `dict_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典类型',
-  `dict_label` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典标签',
-  `dict_value` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典键值',
-  `dict_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
-  `status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '字典状态（0正常 1停用）',
-  `css_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '样式属性（其他样式扩展）',
-  `list_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表格回显样式',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`dict_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据表';
-
--- ----------------------------
--- Records of sys_dict_data
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_dict_data` VALUES (1, 'sys_user_sex', '男', '1', 1, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (2, 'sys_user_sex', '女', '2', 2, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (3, 'sys_user_sex', '保密', '3', 3, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (4, 'sys_yes_no', '是', '1', 1, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (5, 'sys_yes_no', '否', '0', 2, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (6, 'sys_normal_disable', '正常', '0', 1, '0', NULL, 'success', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (7, 'sys_normal_disable', '停用', '1', 2, '0', NULL, 'danger', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (8, 'sys_success_failure', '成功', '0', 1, '0', NULL, 'success', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (9, 'sys_success_failure', '失败', '1', 2, '0', NULL, 'danger', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (10, 'sys_oper_type', '其它', '0', 99, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (11, 'sys_oper_type', '查询', '1', 1, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (12, 'sys_oper_type', '新增', '2', 2, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (13, 'sys_oper_type', '修改', '3', 3, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (14, 'sys_oper_type', '删除', '4', 4, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (15, 'sys_oper_type', '授权', '5', 5, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (16, 'sys_oper_type', '导出', '6', 6, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (17, 'sys_oper_type', '导入', '7', 7, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (18, 'sys_oper_type', '强退', '8', 8, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (19, 'sys_oper_type', '生成代码', '9', 9, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (20, 'sys_oper_type', '清空数据', '10', 10, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (21, 'sys_job_group', '默认', '0', 1, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (22, 'sys_job_group', '系统', '1', 2, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (23, 'sys_notice_type', '通知', '1', 1, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_dict_data` VALUES (24, 'sys_notice_type', '公告', '2', 2, '0', NULL, NULL, 'admin', sysdate(), 'admin', sysdate());
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_config
--- ----------------------------
-DROP TABLE IF EXISTS `sys_config`;
-CREATE TABLE `sys_config` (
-  `config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '参数ID',
-  `config_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数名称',
-  `config_key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数键名',
-  `config_value` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数键值',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='参数配置表';
-
--- ----------------------------
--- Records of sys_config
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_config` VALUES (1, '用户管理-账号初始密码', 'sys.user.initPassword', 'Aa@123456', '0', 'admin', sysdate(), 'admin', sysdate(), '初始化密码（Aa@123456）');
-INSERT INTO `sys_config` VALUES (2, '账号管理-验证码开关', 'sys.account.enableCaptcha', 'true', '0', 'admin', sysdate(), 'admin', sysdate(), '是否开启验证码功能（true开启，false关闭）');
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_notice
--- ----------------------------
-DROP TABLE IF EXISTS `sys_notice`;
-CREATE TABLE `sys_notice` (
-  `notice_id` bigint NOT NULL AUTO_INCREMENT COMMENT '公告ID',
-  `notice_title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告标题',
-  `notice_type` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告类型（1通知 2公告）',
-  `notice_content` longblob NOT NULL COMMENT '公告内容',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告状态（0正常 1关闭）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`notice_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知公告表';
-
--- ----------------------------
--- Records of sys_notice
--- ----------------------------
-BEGIN;
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_login_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_login_log`;
-CREATE TABLE `sys_login_log` (
-  `login_id` bigint NOT NULL AUTO_INCREMENT COMMENT '登录ID',
-  `login_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
-  `login_type` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录类型',
-  `login_status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录状态',
-  `login_ip` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '主机地址',
-  `login_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录地点',
-  `login_message` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录信息',
-  `user_agent` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户代理',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`login_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录日志表';
-
--- ----------------------------
--- Records of sys_login_log
--- ----------------------------
-BEGIN;
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_oper_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_oper_log`;
-CREATE TABLE `sys_oper_log` (
-  `oper_id` bigint NOT NULL AUTO_INCREMENT COMMENT '操作ID',
-  `title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模块标题',
-  `oper_type` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作类型',
-  `oper_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作人员',
-  `oper_method` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '方法名称',
-  `oper_ip` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '主机地址',
-  `oper_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作地点',
-  `oper_status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作状态',
-  `request_url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求URL',
-  `request_method` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求方式',
-  `request_param` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求参数',
-  `request_result` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求返回结果',
-  `request_errmsg` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求错误消息',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`oper_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作日志表';
-
--- ----------------------------
--- Records of sys_oper_log
--- ----------------------------
-BEGIN;
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_job
--- ----------------------------
-DROP TABLE IF EXISTS `sys_job`;
-CREATE TABLE `sys_job` (
-  `job_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
-  `job_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
-  `job_group` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调用目标',
-  `invoke_params` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用参数',
-  `cron_expression` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cron表达式',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`job_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='定时任务表';
-
--- ----------------------------
--- Records of sys_job
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_job` VALUES (1, '无参数', '0', 'CallTask.noParams', NULL, '0 0 * * * *', '0', 'admin', sysdate(), 'admin', sysdate(), NULL);
-INSERT INTO `sys_job` VALUES (2, '数字参数', '0', 'CallTask.numberParams', '1', '0 0 * * * *', '1', 'admin', sysdate(), 'admin', sysdate(), NULL);
-INSERT INTO `sys_job` VALUES (3, '字符串参数', '0', 'CallTask.stringParams', '\'1\'', '0 0 * * * *', '1', 'admin', sysdate(), 'admin', sysdate(), NULL);
-INSERT INTO `sys_job` VALUES (4, '布尔参数', '0', 'CallTask.booleanParams', 'true', '0 0 * * * *', '1', 'admin', sysdate(), 'admin', sysdate(), NULL);
-INSERT INTO `sys_job` VALUES (5, '对象参数', '0', 'CallTask.objectParams', '{\"a\":1,\"b\":2}', '0 0 * * * *', '1', 'admin', sysdate(), 'admin', sysdate(), NULL);
-INSERT INTO `sys_job` VALUES (6, '测试错误', '0', 'CallTask.errorParams', NULL, '0 0 * * * *', '1', 'admin', sysdate(), 'admin', sysdate(), NULL);
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_job_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_job_log`;
-CREATE TABLE `sys_job_log` (
-  `job_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
-  `job_id` bigint NOT NULL COMMENT '任务ID',
-  `job_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
-  `job_group` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调用目标',
-  `invoke_params` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用参数',
-  `invoke_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用信息',
-  `exception_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '异常信息',
-  `status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0成功 1失败）',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`job_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='定时任务日志表';
-
--- ----------------------------
--- Records of job_log
--- ----------------------------
-BEGIN;
-COMMIT;
-
--- ----------------------------
--- Table structure for sys_file
--- ----------------------------
-DROP TABLE IF EXISTS `sys_file`;
-CREATE TABLE `sys_file` (
-  `file_id` bigint NOT NULL AUTO_INCREMENT COMMENT '文件ID',
-  `file_use` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件用途',
-  `file_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件路径',
-  `file_name` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件名称',
-  `file_size` bigint NOT NULL COMMENT '文件大小',
-  `file_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件类型',
-  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
-  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
-  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
-  PRIMARY KEY (`file_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件表';
-
--- ----------------------------
--- Records of sys_file
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_file` VALUES (1, '系统', '/uploads/avatar/admin.png', 'admin.png', 30379, 'image/png', 'admin', sysdate(), 'admin', sysdate());
-INSERT INTO `sys_file` VALUES (2, '系统', '/uploads/avatar/test.png',  'admin.png', 30379, 'image/png', 'admin', sysdate(), 'admin', sysdate());
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (8, 3, '6b6c3f47-9155-487e-9b27-525a2f08e08c-3', '6b6c3f47-9155-487e-9b27-525a2f08e08c-3', 'photo', 'succeeded', '约会精致风方案', '以雾蓝为主调，结合米白与浅灰做出柔和层次，用轻薄防泼水外套搭配简约T恤和A字半裙，整体清爽、耐看、适合夏季小雨天逛街与咖啡店拍照。 这套偏向约会风，适合在逛街中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777605210496c808fec1e506457c802c01ed2dfabfa5.png', 4, 4, 0, '夏', 22, '小雨', '上传照片，咖啡店', '逛街', '日系', '雾蓝', '不限', 'gpt-image-2', '[\"约会风\",\"日系\",\"轻雨通勤感\",\"雾蓝配色\",\"清爽简约\",\"咖啡店氛围\"]', '[{\"category\":\"外套\",\"name\":\"连帽短款防泼水外套\",\"color\":\"雾蓝\",\"material\":\"轻薄防泼水尼龙\",\"reason\":\"小雨天气适合加入轻薄防泼水层，短款版型利落不压身，雾蓝色也很贴合日系清爽感。\"},{\"category\":\"上衣\",\"name\":\"简约圆领短袖T恤\",\"color\":\"米白\",\"material\":\"柔软棉质针织\",\"reason\":\"作为内搭透气舒适，米白能平衡整体冷调配色，让雾蓝更显温柔自然。\"},{\"category\":\"下装\",\"name\":\"高腰A字中长半裙\",\"color\":\"雾蓝灰\",\"material\":\"棉混纺\",\"reason\":\"逛街时活动方便，中长长度兼顾得体与轻盈，A字轮廓很符合日系日常感，也能和短外套形成清晰比例。\"},{\"category\":\"鞋子\",\"name\":\"低跟乐福鞋\",\"color\":\"灰蓝\",\"material\":\"防水皮面\",\"reason\":\"适合咖啡店与街逛场景，鞋型简洁有质感，防水皮面比普通帆布鞋更适合小雨天气。\"},{\"category\":\"包袋\",\"name\":\"小号斜挎包\",\"color\":\"浅灰\",\"material\":\"尼龙\",\"reason\":\"解放双手更适合逛街，尼龙材质轻便且不怕小雨，颜色也能与整体雾感配色自然衔接。\"},{\"category\":\"配饰\",\"name\":\"极简细框耳饰\",\"color\":\"银色\",\"material\":\"金属\",\"reason\":\"用低存在感的小配饰增加精致度，不会破坏日系简洁、克制的整体氛围。\"}]', '{\"season\":\"夏\",\"temperature\":22,\"weather\":\"小雨\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"逛街\",\"style\":\"日系\",\"colorPreference\":\"雾蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22℃体感较舒适，但小雨会让体感略偏凉，建议保持轻薄外套不离身；若停留室内较久，可将外套披着或收纳，避免闷热。', '这套搭配适合“上传照片、咖啡店、逛街”的场景：整体干净上镜，在室内咖啡店有轻松文艺感，外出步行时也具备一定防雨与舒适性，符合日系日常穿搭的自然松弛气质。', 'Full-body editorial fashion image of one adult model in a cozy cafe-and-street shopping setting, light summer rain, mild 22C temperature feeling, Japanese style outfit in misty blue tones with soft neutrals, practical layered rainy-day look for strolling and coffee shop visits. The model wears a lightweight water-resistant hooded jacket, breathable cotton top, airy midi skirt, and comfortable waterproof loafers, with a compact crossbody bag and subtle umbrella-ready styling. Realistic fabric texture, including matte nylon, soft cotton jersey, crisp cotton blend, and smooth leather. Natural overcast lighting, relaxed urban mood, refined everyday styling, no text, no logo, no watermark. Variant 3: polished date outfit, elegant silhouette, romantic but wearable details, warm editorial lighting. Make this image clearly different from other variants while staying faithful to: 日系, 逛街.', 1, NULL, '2026-05-01 11:00:42', NULL, '2026-05-01 11:13:30', NULL, '2026-05-01 14:59:04');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (9, 3, '6b6c3f47-9155-487e-9b27-525a2f08e08c-4', '6b6c3f47-9155-487e-9b27-525a2f08e08c-4', 'photo', 'succeeded', '轻潮街拍风方案', '以雾蓝为主调，结合米白与浅灰做出柔和层次，用轻薄防泼水外套搭配简约T恤和A字半裙，整体清爽、耐看、适合夏季小雨天逛街与咖啡店拍照。 这套偏向街拍风，适合在逛街中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/17776052120796d2bca8ef2e846f08f3ae320940503f9.png', 4, 4, 0, '夏', 22, '小雨', '上传照片，咖啡店', '逛街', '日系', '雾蓝', '不限', 'gpt-image-2', '[\"街拍风\",\"日系\",\"轻雨通勤感\",\"雾蓝配色\",\"清爽简约\",\"咖啡店氛围\"]', '[{\"category\":\"外套\",\"name\":\"连帽短款防泼水外套\",\"color\":\"雾蓝\",\"material\":\"轻薄防泼水尼龙\",\"reason\":\"小雨天气适合加入轻薄防泼水层，短款版型利落不压身，雾蓝色也很贴合日系清爽感。\"},{\"category\":\"上衣\",\"name\":\"简约圆领短袖T恤\",\"color\":\"米白\",\"material\":\"柔软棉质针织\",\"reason\":\"作为内搭透气舒适，米白能平衡整体冷调配色，让雾蓝更显温柔自然。\"},{\"category\":\"下装\",\"name\":\"高腰A字中长半裙\",\"color\":\"雾蓝灰\",\"material\":\"棉混纺\",\"reason\":\"逛街时活动方便，中长长度兼顾得体与轻盈，A字轮廓很符合日系日常感，也能和短外套形成清晰比例。\"},{\"category\":\"鞋子\",\"name\":\"低跟乐福鞋\",\"color\":\"灰蓝\",\"material\":\"防水皮面\",\"reason\":\"适合咖啡店与街逛场景，鞋型简洁有质感，防水皮面比普通帆布鞋更适合小雨天气。\"},{\"category\":\"包袋\",\"name\":\"小号斜挎包\",\"color\":\"浅灰\",\"material\":\"尼龙\",\"reason\":\"解放双手更适合逛街，尼龙材质轻便且不怕小雨，颜色也能与整体雾感配色自然衔接。\"},{\"category\":\"配饰\",\"name\":\"极简细框耳饰\",\"color\":\"银色\",\"material\":\"金属\",\"reason\":\"用低存在感的小配饰增加精致度，不会破坏日系简洁、克制的整体氛围。\"}]', '{\"season\":\"夏\",\"temperature\":22,\"weather\":\"小雨\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"逛街\",\"style\":\"日系\",\"colorPreference\":\"雾蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22℃体感较舒适，但小雨会让体感略偏凉，建议保持轻薄外套不离身；若停留室内较久，可将外套披着或收纳，避免闷热。', '这套搭配适合“上传照片、咖啡店、逛街”的场景：整体干净上镜，在室内咖啡店有轻松文艺感，外出步行时也具备一定防雨与舒适性，符合日系日常穿搭的自然松弛气质。', 'Full-body editorial fashion image of one adult model in a cozy cafe-and-street shopping setting, light summer rain, mild 22C temperature feeling, Japanese style outfit in misty blue tones with soft neutrals, practical layered rainy-day look for strolling and coffee shop visits. The model wears a lightweight water-resistant hooded jacket, breathable cotton top, airy midi skirt, and comfortable waterproof loafers, with a compact crossbody bag and subtle umbrella-ready styling. Realistic fabric texture, including matte nylon, soft cotton jersey, crisp cotton blend, and smooth leather. Natural overcast lighting, relaxed urban mood, refined everyday styling, no text, no logo, no watermark. Variant 4: modern street style, sharper accessories, confident full-body fashion editorial composition. Make this image clearly different from other variants while staying faithful to: 日系, 逛街.', 1, NULL, '2026-05-01 11:00:42', NULL, '2026-05-01 11:13:32', NULL, '2026-05-01 14:59:04');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (10, NULL, '35a1112b-6f7c-4666-a295-d18f4db1485d-1', '35a1112b-6f7c-4666-a295-d18f4db1485d', 'photo', 'succeeded', '约会穿搭方案', '用浅蓝衬衫搭配白色内搭和轻薄直筒裤，营造干净温柔的日系约会感，清爽耐看又适合34度晴天。 这套偏向约会，适合在约会中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777613064964bec2c180a2984b30b3b745f6428240e9.png', 4, 4, 0, '夏', 34, '晴天', '上传照片，商场', '约会', '日系', '浅蓝', '不限', 'gpt-image-2', '[\"约会\",\"通勤风\",\"日系\",\"清爽\",\"夏日\",\"商场\"]', '[{\"category\":\"上装\",\"name\":\"浅蓝色短袖衬衫\",\"color\":\"浅蓝\",\"material\":\"亚麻混纺\",\"reason\":\"浅蓝色契合你的颜色偏好，也很有日系清爽感。亚麻混纺透气不闷，适合34度晴天，版型略宽松更自然随性，约会场景看起来干净温柔。\"},{\"category\":\"内搭\",\"name\":\"白色无袖背心\",\"color\":\"白色\",\"material\":\"纯棉针织\",\"reason\":\"作为衬衫内搭可以增加层次，同时保持清爽轻便。白色能提亮整体，让浅蓝更柔和，适合商场内外温差环境。\"},{\"category\":\"下装\",\"name\":\"浅蓝灰宽松直筒长裤\",\"color\":\"浅蓝灰\",\"material\":\"轻薄梭织面料\",\"reason\":\"轻薄面料有垂感又不贴身，适合炎热天气。直筒宽松版型符合日系穿搭气质，也让整体更放松耐看，适合逛商场和约会。\"},{\"category\":\"鞋履\",\"name\":\"白色简约凉鞋\",\"color\":\"白色\",\"material\":\"柔软皮质\",\"reason\":\"凉鞋在高温晴天更舒适透气，白色与整体浅色调统一，视觉上轻盈干净，适合商场约会的轻松氛围。\"},{\"category\":\"配饰\",\"name\":\"米白色小号斜挎包\",\"color\":\"米白色\",\"material\":\"皮质\",\"reason\":\"小巧斜挎包实用且不累赘，米白色与浅蓝组合温柔协调，能够提升约会造型的精致感。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，商场\",\"occasion\":\"约会\",\"style\":\"日系\",\"colorPreference\":\"浅蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度晴天建议优先选择透气、轻薄、不贴身的面料。进入商场若冷气较足，可将短袖衬衫作为灵活外层穿脱；同时注意防晒和补水。', '这套搭配兼顾了夏日高温、商场环境和约会氛围。整体以浅蓝和白色为主，清爽温柔，很符合日系风格；单品轻薄透气，既适合室外晴天炎热，也适合商场内长时间活动。', 'Full-body editorial fashion image of one adult model in a bright sunny shopping mall setting, feeling hot summer weather around 34C, styled for a date. Japanese-inspired minimal soft look in light blue and white, airy and polished. The outfit includes a light blue short-sleeve linen-blend shirt, a white sleeveless inner top, soft light blue wide-leg lightweight trousers, clean white leather sandals, and a small cream crossbody bag. Realistic fabric texture with breathable linen, smooth cotton jersey, fluid lightweight woven fabric, and soft matte leather. Natural relaxed pose, modern mall atmosphere, fresh romantic mood, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 日系, 约会.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777612712746e71b4abe0422438f8da4490674d402e4.jpg', '2026-05-01 13:06:28', NULL, '2026-05-01 13:24:24', NULL, '2026-05-01 13:24:24');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (11, NULL, '35a1112b-6f7c-4666-a295-d18f4db1485d-2', '35a1112b-6f7c-4666-a295-d18f4db1485d', 'photo', 'succeeded', '日系穿搭方案', '用浅蓝衬衫搭配白色内搭和轻薄直筒裤，营造干净温柔的日系约会感，清爽耐看又适合34度晴天。 这套偏向日系，适合在约会中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777613069439ca28ecfdd084434dba00a94b6be8ea02.png', 4, 4, 0, '夏', 34, '晴天', '上传照片，商场', '约会', '日系', '浅蓝', '不限', 'gpt-image-2', '[\"日系\",\"休闲风\",\"清爽\",\"夏日\",\"约会\",\"商场\"]', '[{\"category\":\"上装\",\"name\":\"浅蓝色短袖衬衫\",\"color\":\"浅蓝\",\"material\":\"亚麻混纺\",\"reason\":\"浅蓝色契合你的颜色偏好，也很有日系清爽感。亚麻混纺透气不闷，适合34度晴天，版型略宽松更自然随性，约会场景看起来干净温柔。\"},{\"category\":\"内搭\",\"name\":\"白色无袖背心\",\"color\":\"白色\",\"material\":\"纯棉针织\",\"reason\":\"作为衬衫内搭可以增加层次，同时保持清爽轻便。白色能提亮整体，让浅蓝更柔和，适合商场内外温差环境。\"},{\"category\":\"下装\",\"name\":\"浅蓝灰宽松直筒长裤\",\"color\":\"浅蓝灰\",\"material\":\"轻薄梭织面料\",\"reason\":\"轻薄面料有垂感又不贴身，适合炎热天气。直筒宽松版型符合日系穿搭气质，也让整体更放松耐看，适合逛商场和约会。\"},{\"category\":\"鞋履\",\"name\":\"白色简约凉鞋\",\"color\":\"白色\",\"material\":\"柔软皮质\",\"reason\":\"凉鞋在高温晴天更舒适透气，白色与整体浅色调统一，视觉上轻盈干净，适合商场约会的轻松氛围。\"},{\"category\":\"配饰\",\"name\":\"米白色小号斜挎包\",\"color\":\"米白色\",\"material\":\"皮质\",\"reason\":\"小巧斜挎包实用且不累赘，米白色与浅蓝组合温柔协调，能够提升约会造型的精致感。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，商场\",\"occasion\":\"约会\",\"style\":\"日系\",\"colorPreference\":\"浅蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度晴天建议优先选择透气、轻薄、不贴身的面料。进入商场若冷气较足，可将短袖衬衫作为灵活外层穿脱；同时注意防晒和补水。', '这套搭配兼顾了夏日高温、商场环境和约会氛围。整体以浅蓝和白色为主，清爽温柔，很符合日系风格；单品轻薄透气，既适合室外晴天炎热，也适合商场内长时间活动。', 'Full-body editorial fashion image of one adult model in a bright sunny shopping mall setting, feeling hot summer weather around 34C, styled for a date. Japanese-inspired minimal soft look in light blue and white, airy and polished. The outfit includes a light blue short-sleeve linen-blend shirt, a white sleeveless inner top, soft light blue wide-leg lightweight trousers, clean white leather sandals, and a small cream crossbody bag. Realistic fabric texture with breathable linen, smooth cotton jersey, fluid lightweight woven fabric, and soft matte leather. Natural relaxed pose, modern mall atmosphere, fresh romantic mood, no text, no logo, no watermark. Variant 2: relaxed weekend styling, soft casual pieces, comfortable shoes, natural daylight lifestyle mood. Make this image clearly different from other variants while staying faithful to: 日系, 约会.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777612712746e71b4abe0422438f8da4490674d402e4.jpg', '2026-05-01 13:06:28', NULL, '2026-05-01 13:24:29', NULL, '2026-05-01 13:24:29');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (12, NULL, '35a1112b-6f7c-4666-a295-d18f4db1485d-3', '35a1112b-6f7c-4666-a295-d18f4db1485d', 'photo', 'succeeded', '约会精致风方案', '用浅蓝衬衫搭配白色内搭和轻薄直筒裤，营造干净温柔的日系约会感，清爽耐看又适合34度晴天。 这套偏向约会风，适合在约会中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/17776130708325bbde398da0446b084f60c9f87f639b3.png', 4, 4, 0, '夏', 34, '晴天', '上传照片，商场', '约会', '日系', '浅蓝', '不限', 'gpt-image-2', '[\"约会风\",\"日系\",\"清爽\",\"夏日\",\"约会\",\"商场\"]', '[{\"category\":\"上装\",\"name\":\"浅蓝色短袖衬衫\",\"color\":\"浅蓝\",\"material\":\"亚麻混纺\",\"reason\":\"浅蓝色契合你的颜色偏好，也很有日系清爽感。亚麻混纺透气不闷，适合34度晴天，版型略宽松更自然随性，约会场景看起来干净温柔。\"},{\"category\":\"内搭\",\"name\":\"白色无袖背心\",\"color\":\"白色\",\"material\":\"纯棉针织\",\"reason\":\"作为衬衫内搭可以增加层次，同时保持清爽轻便。白色能提亮整体，让浅蓝更柔和，适合商场内外温差环境。\"},{\"category\":\"下装\",\"name\":\"浅蓝灰宽松直筒长裤\",\"color\":\"浅蓝灰\",\"material\":\"轻薄梭织面料\",\"reason\":\"轻薄面料有垂感又不贴身，适合炎热天气。直筒宽松版型符合日系穿搭气质，也让整体更放松耐看，适合逛商场和约会。\"},{\"category\":\"鞋履\",\"name\":\"白色简约凉鞋\",\"color\":\"白色\",\"material\":\"柔软皮质\",\"reason\":\"凉鞋在高温晴天更舒适透气，白色与整体浅色调统一，视觉上轻盈干净，适合商场约会的轻松氛围。\"},{\"category\":\"配饰\",\"name\":\"米白色小号斜挎包\",\"color\":\"米白色\",\"material\":\"皮质\",\"reason\":\"小巧斜挎包实用且不累赘，米白色与浅蓝组合温柔协调，能够提升约会造型的精致感。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，商场\",\"occasion\":\"约会\",\"style\":\"日系\",\"colorPreference\":\"浅蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度晴天建议优先选择透气、轻薄、不贴身的面料。进入商场若冷气较足，可将短袖衬衫作为灵活外层穿脱；同时注意防晒和补水。', '这套搭配兼顾了夏日高温、商场环境和约会氛围。整体以浅蓝和白色为主，清爽温柔，很符合日系风格；单品轻薄透气，既适合室外晴天炎热，也适合商场内长时间活动。', 'Full-body editorial fashion image of one adult model in a bright sunny shopping mall setting, feeling hot summer weather around 34C, styled for a date. Japanese-inspired minimal soft look in light blue and white, airy and polished. The outfit includes a light blue short-sleeve linen-blend shirt, a white sleeveless inner top, soft light blue wide-leg lightweight trousers, clean white leather sandals, and a small cream crossbody bag. Realistic fabric texture with breathable linen, smooth cotton jersey, fluid lightweight woven fabric, and soft matte leather. Natural relaxed pose, modern mall atmosphere, fresh romantic mood, no text, no logo, no watermark. Variant 3: polished date outfit, elegant silhouette, romantic but wearable details, warm editorial lighting. Make this image clearly different from other variants while staying faithful to: 日系, 约会.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777612712746e71b4abe0422438f8da4490674d402e4.jpg', '2026-05-01 13:06:28', NULL, '2026-05-01 13:24:30', NULL, '2026-05-01 13:24:30');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (13, NULL, '35a1112b-6f7c-4666-a295-d18f4db1485d-4', '35a1112b-6f7c-4666-a295-d18f4db1485d', 'photo', 'succeeded', '轻潮街拍风方案', '用浅蓝衬衫搭配白色内搭和轻薄直筒裤，营造干净温柔的日系约会感，清爽耐看又适合34度晴天。 这套偏向街拍风，适合在约会中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777613072300dde158d4385d43d5a12595001ae03d1f.png', 4, 4, 0, '夏', 34, '晴天', '上传照片，商场', '约会', '日系', '浅蓝', '不限', 'gpt-image-2', '[\"街拍风\",\"日系\",\"清爽\",\"夏日\",\"约会\",\"商场\"]', '[{\"category\":\"上装\",\"name\":\"浅蓝色短袖衬衫\",\"color\":\"浅蓝\",\"material\":\"亚麻混纺\",\"reason\":\"浅蓝色契合你的颜色偏好，也很有日系清爽感。亚麻混纺透气不闷，适合34度晴天，版型略宽松更自然随性，约会场景看起来干净温柔。\"},{\"category\":\"内搭\",\"name\":\"白色无袖背心\",\"color\":\"白色\",\"material\":\"纯棉针织\",\"reason\":\"作为衬衫内搭可以增加层次，同时保持清爽轻便。白色能提亮整体，让浅蓝更柔和，适合商场内外温差环境。\"},{\"category\":\"下装\",\"name\":\"浅蓝灰宽松直筒长裤\",\"color\":\"浅蓝灰\",\"material\":\"轻薄梭织面料\",\"reason\":\"轻薄面料有垂感又不贴身，适合炎热天气。直筒宽松版型符合日系穿搭气质，也让整体更放松耐看，适合逛商场和约会。\"},{\"category\":\"鞋履\",\"name\":\"白色简约凉鞋\",\"color\":\"白色\",\"material\":\"柔软皮质\",\"reason\":\"凉鞋在高温晴天更舒适透气，白色与整体浅色调统一，视觉上轻盈干净，适合商场约会的轻松氛围。\"},{\"category\":\"配饰\",\"name\":\"米白色小号斜挎包\",\"color\":\"米白色\",\"material\":\"皮质\",\"reason\":\"小巧斜挎包实用且不累赘，米白色与浅蓝组合温柔协调，能够提升约会造型的精致感。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，商场\",\"occasion\":\"约会\",\"style\":\"日系\",\"colorPreference\":\"浅蓝\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度晴天建议优先选择透气、轻薄、不贴身的面料。进入商场若冷气较足，可将短袖衬衫作为灵活外层穿脱；同时注意防晒和补水。', '这套搭配兼顾了夏日高温、商场环境和约会氛围。整体以浅蓝和白色为主，清爽温柔，很符合日系风格；单品轻薄透气，既适合室外晴天炎热，也适合商场内长时间活动。', 'Full-body editorial fashion image of one adult model in a bright sunny shopping mall setting, feeling hot summer weather around 34C, styled for a date. Japanese-inspired minimal soft look in light blue and white, airy and polished. The outfit includes a light blue short-sleeve linen-blend shirt, a white sleeveless inner top, soft light blue wide-leg lightweight trousers, clean white leather sandals, and a small cream crossbody bag. Realistic fabric texture with breathable linen, smooth cotton jersey, fluid lightweight woven fabric, and soft matte leather. Natural relaxed pose, modern mall atmosphere, fresh romantic mood, no text, no logo, no watermark. Variant 4: modern street style, sharper accessories, confident full-body fashion editorial composition. Make this image clearly different from other variants while staying faithful to: 日系, 约会.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777612712746e71b4abe0422438f8da4490674d402e4.jpg', '2026-05-01 13:06:28', NULL, '2026-05-01 13:24:32', NULL, '2026-05-01 13:24:32');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (14, 3, 'f334aeed-ee26-447a-b5d1-c3284af925a1-1', 'f334aeed-ee26-447a-b5d1-c3284af925a1', 'photo', 'succeeded', '日常通勤穿搭方案', '以炭灰大衣和燕麦针织为核心的韩系通勤造型，配色低调耐看，保暖实穿，适合冬季降温时的城市日常出行。 这套偏向日常通勤，适合在日常通勤中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777624151262a3960cf5c089494493bc9ebbdba939d8.png', 2, 2, 0, '冬', 8, '降温', '上传照片，城市街拍', '日常通勤', '韩系', NULL, '不限', 'gpt-image-2', '[\"日常通勤\",\"通勤风\",\"韩系\",\"通勤\",\"冬季\",\"城市街拍\"]', '[{\"category\":\"外套\",\"name\":\"中长款直筒呢大衣\",\"color\":\"炭灰色\",\"material\":\"羊毛混纺\",\"reason\":\"适合8℃降温天气，保暖性和通勤感兼顾，版型利落，符合韩系日常街拍氛围。\"},{\"category\":\"上装\",\"name\":\"基础款衬衫\",\"color\":\"奶油白\",\"material\":\"棉质\",\"reason\":\"作为内搭增加层次感，领口露出能让整体更清爽精致，也方便与针织叠穿。\"},{\"category\":\"针织\",\"name\":\"圆领毛衣\",\"color\":\"燕麦色\",\"material\":\"羊毛针织\",\"reason\":\"提供核心保暖，燕麦色柔和耐看，与灰色外套搭配有典型韩系简洁感。\"},{\"category\":\"下装\",\"name\":\"直筒西装长裤\",\"color\":\"深灰色\",\"material\":\"羊毛混纺\",\"reason\":\"适合通勤场景，线条干净修饰腿型，和大衣形成完整的城市感造型。\"},{\"category\":\"鞋履\",\"name\":\"短筒踝靴\",\"color\":\"黑色\",\"material\":\"皮革\",\"reason\":\"应对降温更稳妥，保暖且利落，能提升整体成熟简约的街拍质感。\"},{\"category\":\"配饰\",\"name\":\"围巾\",\"color\":\"灰蓝色\",\"material\":\"羊绒混纺\",\"reason\":\"降温时非常实用，增加颈部保暖，同时用低饱和色点亮中性色穿搭。\"},{\"category\":\"包袋\",\"name\":\"通勤托特包\",\"color\":\"黑色\",\"material\":\"哑光皮质\",\"reason\":\"满足日常通勤收纳需求，风格简洁，与整体韩系都市感保持统一。\"}]', '{\"season\":\"冬\",\"temperature\":8,\"weather\":\"降温\",\"location\":\"上传照片，城市街拍\",\"occasion\":\"日常通勤\",\"style\":\"韩系\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '8℃且有降温体感，建议采用衬衫+毛衣+呢大衣的三层穿法，并搭配围巾；如果早晚风大，可再加一件轻薄保暖内层。', '这套搭配适合冬季日常通勤与城市街拍场景：大衣加针织的组合足够应对8℃降温，西装裤与踝靴保证利落得体，整体简洁、干净、有层次，很符合韩系通勤穿搭方向。', 'A full-body editorial fashion image of one adult model on a city street, winter cooling weather, chilly 8°C feeling, dressed for a daily commuting occasion in a Korean-inspired style. The outfit uses a soft neutral palette with charcoal, oatmeal, cream, and muted blue accents. Include realistic fabric textures such as wool coat, ribbed knit sweater, crisp cotton shirt, tailored wool-blend trousers, and smooth leather ankle boots, with practical layering for cold weather and a polished urban street style mood. Natural pose, clean background, realistic lighting, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 韩系, 日常通勤.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/177762413324212d850aa46014b808c971158f83ca543.jpg', '2026-05-01 16:26:02', NULL, '2026-05-01 16:29:11', NULL, '2026-05-01 16:29:11');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (15, 3, 'f334aeed-ee26-447a-b5d1-c3284af925a1-2', 'f334aeed-ee26-447a-b5d1-c3284af925a1', 'photo', 'succeeded', '韩系穿搭方案', '以炭灰大衣和燕麦针织为核心的韩系通勤造型，配色低调耐看，保暖实穿，适合冬季降温时的城市日常出行。 这套偏向韩系，适合在日常通勤中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/17776241526899ef56d83b5f1418c80975fcfd01b3433.png', 2, 2, 0, '冬', 8, '降温', '上传照片，城市街拍', '日常通勤', '韩系', NULL, '不限', 'gpt-image-2', '[\"韩系\",\"休闲风\",\"通勤\",\"冬季\",\"城市街拍\",\"简约\"]', '[{\"category\":\"外套\",\"name\":\"中长款直筒呢大衣\",\"color\":\"炭灰色\",\"material\":\"羊毛混纺\",\"reason\":\"适合8℃降温天气，保暖性和通勤感兼顾，版型利落，符合韩系日常街拍氛围。\"},{\"category\":\"上装\",\"name\":\"基础款衬衫\",\"color\":\"奶油白\",\"material\":\"棉质\",\"reason\":\"作为内搭增加层次感，领口露出能让整体更清爽精致，也方便与针织叠穿。\"},{\"category\":\"针织\",\"name\":\"圆领毛衣\",\"color\":\"燕麦色\",\"material\":\"羊毛针织\",\"reason\":\"提供核心保暖，燕麦色柔和耐看，与灰色外套搭配有典型韩系简洁感。\"},{\"category\":\"下装\",\"name\":\"直筒西装长裤\",\"color\":\"深灰色\",\"material\":\"羊毛混纺\",\"reason\":\"适合通勤场景，线条干净修饰腿型，和大衣形成完整的城市感造型。\"},{\"category\":\"鞋履\",\"name\":\"短筒踝靴\",\"color\":\"黑色\",\"material\":\"皮革\",\"reason\":\"应对降温更稳妥，保暖且利落，能提升整体成熟简约的街拍质感。\"},{\"category\":\"配饰\",\"name\":\"围巾\",\"color\":\"灰蓝色\",\"material\":\"羊绒混纺\",\"reason\":\"降温时非常实用，增加颈部保暖，同时用低饱和色点亮中性色穿搭。\"},{\"category\":\"包袋\",\"name\":\"通勤托特包\",\"color\":\"黑色\",\"material\":\"哑光皮质\",\"reason\":\"满足日常通勤收纳需求，风格简洁，与整体韩系都市感保持统一。\"}]', '{\"season\":\"冬\",\"temperature\":8,\"weather\":\"降温\",\"location\":\"上传照片，城市街拍\",\"occasion\":\"日常通勤\",\"style\":\"韩系\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '8℃且有降温体感，建议采用衬衫+毛衣+呢大衣的三层穿法，并搭配围巾；如果早晚风大，可再加一件轻薄保暖内层。', '这套搭配适合冬季日常通勤与城市街拍场景：大衣加针织的组合足够应对8℃降温，西装裤与踝靴保证利落得体，整体简洁、干净、有层次，很符合韩系通勤穿搭方向。', 'A full-body editorial fashion image of one adult model on a city street, winter cooling weather, chilly 8°C feeling, dressed for a daily commuting occasion in a Korean-inspired style. The outfit uses a soft neutral palette with charcoal, oatmeal, cream, and muted blue accents. Include realistic fabric textures such as wool coat, ribbed knit sweater, crisp cotton shirt, tailored wool-blend trousers, and smooth leather ankle boots, with practical layering for cold weather and a polished urban street style mood. Natural pose, clean background, realistic lighting, no text, no logo, no watermark. Variant 2: relaxed weekend styling, soft casual pieces, comfortable shoes, natural daylight lifestyle mood. Make this image clearly different from other variants while staying faithful to: 韩系, 日常通勤.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/177762413324212d850aa46014b808c971158f83ca543.jpg', '2026-05-01 16:26:02', NULL, '2026-05-01 16:29:12', NULL, '2026-05-01 16:29:12');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (18, 3, 'b9f7b979-137d-458f-b75e-ab91e2e9f996-1', 'b9f7b979-137d-458f-b75e-ab91e2e9f996', 'photo', 'succeeded', '不限场景穿搭方案', '以轻薄风衣为主角，搭配针织上衣、直筒牛仔裤和踝靴，整体实穿、清爽又有秋天气质，适合22度小雨天气下的轻松出行与拍照。 这套偏向不限场景，适合在不限场景中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/17776382180356678c1763c2e46daa8fb1d86c74a6443.png', 1, 1, 0, '秋', 22, '小雨', '上传照片，咖啡店', '不限场景', '外套', NULL, '不限', 'gpt-image-2', '[\"不限场景\",\"通勤风\",\"秋季\",\"小雨\",\"外套重点\",\"简约\"]', '[{\"category\":\"外套\",\"name\":\"中长款轻薄风衣外套\",\"color\":\"米 beige\",\"material\":\"防泼水棉混纺\",\"reason\":\"符合你偏好外套的穿搭方向，秋季小雨天气实用，22度穿着不会太闷，还能提升整体层次感。\"},{\"category\":\"上装\",\"name\":\"基础款圆领针织上衣\",\"color\":\"浅灰\",\"material\":\"细针织\",\"reason\":\"作为内搭柔和耐看，和风衣搭配简洁协调，适合咖啡店场景与日常多种场合。\"},{\"category\":\"下装\",\"name\":\"直筒牛仔裤\",\"color\":\"深蓝\",\"material\":\"牛仔布\",\"reason\":\"直筒版型日常好穿，能平衡风衣的线条感，也适合微凉且有雨的秋天。\"},{\"category\":\"鞋子\",\"name\":\"短筒踝靴\",\"color\":\"棕色\",\"material\":\"皮革\",\"reason\":\"比运动鞋更适合小雨天气，搭配外套更完整，兼顾利落感与实穿性。\"},{\"category\":\"包袋\",\"name\":\"小号斜挎包\",\"color\":\"深棕\",\"material\":\"防泼水帆布拼皮\",\"reason\":\"方便在咖啡店和通勤场景使用，体量轻巧，不会破坏整体外套造型重点。\"},{\"category\":\"配饰\",\"name\":\"简约雨伞\",\"color\":\"透明伞面配深色伞柄\",\"material\":\"PVC与金属\",\"reason\":\"小雨天气的实用配件，既能应对天气，也能让整体画面更完整。\"}]', '{\"season\":\"秋\",\"temperature\":22,\"weather\":\"小雨\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"不限场景\",\"style\":\"外套\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22度体感偏舒适，但遇到小雨和久坐时会稍凉，建议保持风衣敞开或半系带穿着；如果怕冷，可把内搭换成稍厚一点的针织衫。', '这套搭配适合上传照片、咖啡店以及不限场景的日常活动。整体以外套为核心，既有秋季氛围，也兼顾小雨天气的实际需求，视觉上自然、干净、容易出片。', 'Full-body editorial fashion image of one adult model standing outside a cozy cafe on a light rainy autumn day, feeling mild and slightly cool around 22C, wearing a stylish outerwear-focused casual outfit suitable for a flexible everyday occasion. The look features a soft beige water-resistant trench-style jacket layered over a light knit top, straight dark blue jeans, and brown leather ankle boots, with a compact umbrella and subtle crossbody bag. Colors are neutral and earthy with deep blue contrast. Realistic fabric texture: matte water-resistant cotton blend, fine-gauge knit, sturdy denim, smooth leather. Natural wet pavement reflections, relaxed urban cafe mood, practical and polished styling, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 外套, 不限场景.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777638218021ae58958bfaa144c7a4dd4efb5faddd0e.jpg', '2026-05-01 20:18:53', NULL, '2026-05-01 20:23:38', NULL, '2026-05-01 20:23:38');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (19, 3, '3b741ead-4e81-4f8f-9539-64f4d6925ac8-1', '3b741ead-4e81-4f8f-9539-64f4d6925ac8', 'photo', 'succeeded', '不限场景穿搭方案', '选择米白亚麻短袖衬衫搭配鼠尾草绿棉麻宽腿九分裤，再配棕色简约凉鞋，形成适合34度海边晴天的轻盈日系造型。整体配色自然柔和，面料透气，兼顾舒适、防晒与出片感。 这套偏向不限场景，适合在不限场景中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/17776395229617aafad1b9281414fb956f4cbb4afed3b.png', 1, 1, 0, '夏', 34, '晴天', '上传照片，海边', '不限场景', '日系，上衣，裤子，鞋子', NULL, '不限', 'gpt-image-2', '[\"不限场景\",\"通勤风\",\"日系\",\"海边\",\"夏季\",\"清爽透气\"]', '[{\"category\":\"上衣\",\"name\":\"宽松短袖亚麻衬衫\",\"color\":\"米白色\",\"material\":\"亚麻\",\"reason\":\"亚麻透气吸汗，适合34度晴天海边环境；宽松短袖版型有明显日系轻松感，也方便防晒与散热。\"},{\"category\":\"裤子\",\"name\":\"宽腿九分棉麻长裤\",\"color\":\"鼠尾草绿\",\"material\":\"棉麻\",\"reason\":\"比短裤更利于轻度防晒与防海风摩擦，九分长度清爽不拖沓；宽腿线条符合日系随性感，海边穿着也自然协调。\"},{\"category\":\"鞋子\",\"name\":\"简约平底凉鞋\",\"color\":\"棕色\",\"material\":\"皮革\",\"reason\":\"适合晴天海边步行，通风凉爽、穿脱方便；简洁设计与整体日系自然风格统一。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，海边\",\"occasion\":\"不限场景\",\"style\":\"日系，上衣，裤子，鞋子\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度高温晴天建议优先选择亚麻、棉麻等透气面料，版型以宽松为主。可加上草编帽或轻薄防晒外搭，并注意补水、防晒和减少长时间暴晒。', '这套适合海边晴天的轻松出行，也不限制具体场景。整体以清爽、透气、易活动为主，同时保留干净克制的日系氛围，拍照和日常穿都自然耐看。', 'A full-body editorial fashion image of one adult model standing by the seaside on a bright sunny summer day, feeling very hot around 34C, dressed for a casual beachside occasion in a clean Japanese-inspired style. The outfit features a lightweight off-white short-sleeve linen shirt with soft natural wrinkles, relaxed sage green wide-leg cropped pants in breathable cotton-linen fabric, and simple brown leather sandals. Colors are airy and natural, with subtle sunlit tones that suit the ocean backdrop. Realistic fabric texture, breathable materials, practical warm-weather styling, relaxed yet polished silhouette, full body, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 日系，上衣，裤子，鞋子, 不限场景.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/17776395229496d37cb1f92c848dda1f7be8f58fe2ecf.jpg', '2026-05-01 20:42:32', NULL, '2026-05-01 20:45:22', NULL, '2026-05-01 20:45:22');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (20, 3, 'aa346f4a-a970-4486-9e0d-f9e886a4a031-1', 'aa346f4a-a970-4486-9e0d-f9e886a4a031', 'photo', 'succeeded', '约会穿搭方案', '以浅粉色短袖衬衫为核心，搭配米白直筒九分裤和白色低帮帆布鞋，整体清爽透气、温柔自然，适合34度晴天的城市约会场景。 这套偏向约会，适合在约会中展示更明确的风格辨识度。', 'http://localhost:9200/uploads/outfit-records/2026/05/1777641081072e9bc3c6b8f8f4ba1a947e900d02a6d98.png', 1, 1, 0, '夏', 34, '晴天', '上传照片，城市街拍', '约会', '日系，上衣，裤子，鞋子', '粉色', '不限', 'gpt-image-2', '[\"约会\",\"通勤风\",\"日系\",\"夏日\",\"城市街拍\",\"清爽\"]', '[{\"category\":\"上衣\",\"name\":\"浅粉色宽松短袖衬衫\",\"color\":\"浅粉色\",\"material\":\"棉麻混纺\",\"reason\":\"浅粉色契合你的色彩偏好，也很适合约会氛围；棉麻面料在34度晴天更透气，宽松版型带有日系随性感。\"},{\"category\":\"裤子\",\"name\":\"米白色直筒九分裤\",\"color\":\"米白色\",\"material\":\"轻薄棉质\",\"reason\":\"米白色能平衡粉色上衣，让整体更清爽干净；九分直筒裤适合夏季城市街拍，活动方便且视觉轻盈。\"},{\"category\":\"鞋子\",\"name\":\"白色低帮帆布鞋\",\"color\":\"白色\",\"material\":\"帆布\",\"reason\":\"白色帆布鞋与日系风格非常协调，适合晴天步行约会；低帮设计轻便透气，也能让整体看起来更年轻自然。\"}]', '{\"season\":\"夏\",\"temperature\":34,\"weather\":\"晴天\",\"location\":\"上传照片，城市街拍\",\"occasion\":\"约会\",\"style\":\"日系，上衣，裤子，鞋子\",\"colorPreference\":\"粉色\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '34度晴天体感偏热，建议选择轻薄透气面料并保持宽松剪裁；可将衬衫下摆自然放出提升散热感，出门可搭配防晒措施并尽量避免厚重层叠。', '这套搭配兼顾约会氛围与城市街拍感，粉色上衣营造温柔亲近的印象，整体简洁自然，拍照上镜且不显用力过猛，很适合夏日晴天外出约会。', 'Full-body editorial fashion image of one adult model in a sunny urban street setting, summer date outfit for hot 34C weather, light and breathable Japanese-inspired casual style in soft pink tones, wearing a pale pink short-sleeve cotton-linen shirt, airy straight-leg lightweight trousers, and clean minimal sneakers, realistic fabric texture with visible cotton weave and soft drape, heat-friendly styling, relaxed romantic city street mood, natural daylight, no text, no logo, no watermark Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 日系，上衣，裤子，鞋子, 约会.', 1, 'http://localhost:9200/uploads/outfit-records/2026/05/1777641081065e8cdb86996d748c3823247b09a1434f4.jpg', '2026-05-01 21:08:26', NULL, '2026-05-01 21:11:21', NULL, '2026-05-01 21:11:21');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (21, 3, 'c516bcd6-8fe8-4f3f-abee-3073a430d7b1-1', 'c516bcd6-8fe8-4f3f-abee-3073a430d7b1', 'photo', 'succeeded', '不限场景穿搭方案', '以米色风衣和条纹针织为核心，搭配深蓝直筒牛仔裤与棕色踝靴，整体清爽、耐看，适合晴朗但偏冷的海边环境。 这套偏向不限场景，适合在不限场景中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776475298277e71d859cba64afeb48ff4f961d9c46e.png', 1, 1, 0, '夏', 8, '晴天', '上传照片，海边', '不限场景', '法式', NULL, '不限', 'gpt-image-2', '[\"不限场景\",\"通勤风\",\"法式\",\"海边\",\"晴天\",\"轻保暖\"]', '[{\"category\":\"外套\",\"name\":\"中长款风衣\",\"color\":\"米色\",\"material\":\"棉质斜纹混纺\",\"reason\":\"海边晴天但体感偏冷，8℃有明显风感，风衣能挡风且很符合经典法式气质。\"},{\"category\":\"上衣\",\"name\":\"细条纹针织上衣\",\"color\":\"白色配海军蓝条纹\",\"material\":\"羊毛混纺针织\",\"reason\":\"条纹元素是法式风格的代表，针织材质在低温环境下比普通T恤更实穿保暖。\"},{\"category\":\"下装\",\"name\":\"直筒牛仔裤\",\"color\":\"深蓝色\",\"material\":\"牛仔布\",\"reason\":\"直筒版型利落耐看，适合海边随性场景，也能平衡风衣与针织的法式休闲感。\"},{\"category\":\"配饰\",\"name\":\"轻薄丝巾\",\"color\":\"浅米色\",\"material\":\"真丝\",\"reason\":\"可围在颈部增加保暖度，也能提升法式精致感，在海风环境中很实用。\"},{\"category\":\"鞋履\",\"name\":\"低跟踝靴\",\"color\":\"棕色\",\"material\":\"哑光皮革\",\"reason\":\"比单鞋更适合8℃气温，皮革材质可应对海边风感，整体也更成熟协调。\"}]', '{\"season\":\"夏\",\"temperature\":8,\"weather\":\"晴天\",\"location\":\"上传照片，海边\",\"occasion\":\"不限场景\",\"style\":\"法式\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '虽然季节标注为夏，但8℃实际偏冷，尤其海边风大。建议以内搭针织+风衣为基础，若停留时间较长，可额外加一件薄保暖内层。', '该搭配对场景限制较少，适合海边散步、拍照、轻度出行等日常活动。法式风格通过条纹、风衣和丝巾自然呈现，既有氛围感也足够实穿。', 'Full-body editorial fashion image of one adult model standing by the seaside on a sunny day, cool 8°C temperature feeling, casual any-occasion French style outfit, soft neutral colors with navy accents, wearing a wool blend striped knit top under a beige trench coat, dark straight-leg jeans, a lightweight silk scarf, and brown leather ankle boots; realistic fabric textures including crisp cotton twill, soft wool knit, sturdy denim, smooth silk, and matte leather, natural daylight, refined and wearable styling, no text, no logo, no watermark Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 法式, 不限场景.', 1, '/uploads/outfit-records/2026/05/17776475298215d78cc7b71554fbe86f5dd1f5c6d003e.jpg', '2026-05-01 22:54:35', NULL, '2026-05-01 22:58:49', NULL, '2026-05-01 22:58:49');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (22, 3, 'e5cafd1f-d5fb-4228-b3a5-219baf053106-1', 'e5cafd1f-d5fb-4228-b3a5-219baf053106', 'photo', 'succeeded', '不限场景穿搭方案', '以柔和猫咪元素为灵感，选择透气舒适的棉质与薄针织单品，打造适合22℃晴天的轻松可爱造型，俏皮但不过分幼态，适合日常与咖啡店场景。 这套偏向不限场景，适合在不限场景中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776483397079c22fcea64f542cba708403c769c98e7.png', 1, 1, 0, '夏', 22, '晴天', '上传照片，咖啡店', '不限场景', '给我的猫咪换个好看的衣服', NULL, '不限', 'gpt-image-2', '[\"不限场景\",\"通勤风\",\"猫系\",\"清新\",\"轻甜\",\"日常\"]', '[{\"category\":\"上装\",\"name\":\"猫咪图案短袖针织T恤\",\"color\":\"奶油白\",\"material\":\"纯棉针织\",\"reason\":\"用简洁可爱的猫咪元素呼应“给猫咪换个好看的衣服”的主题，同时纯棉针织在22℃晴天穿着舒适、透气。\"},{\"category\":\"下装\",\"name\":\"高腰A字短裙\",\"color\":\"浅卡其\",\"material\":\"棉质斜纹布\",\"reason\":\"A字版型轻松活泼，和咖啡店环境很搭，也能让整体更像温柔俏皮的“猫系”风格。\"},{\"category\":\"外搭\",\"name\":\"轻薄开衫\",\"color\":\"浅灰\",\"material\":\"薄款针织\",\"reason\":\"22℃虽偏温和，但室内空调环境可能略凉，薄开衫方便穿脱，增加层次感又不显厚重。\"},{\"category\":\"鞋履\",\"name\":\"低帮帆布鞋\",\"color\":\"米白\",\"material\":\"帆布\",\"reason\":\"适合日常与咖啡店场景，舒适好走，和俏皮主题统一，整体更轻松自然。\"},{\"category\":\"配饰\",\"name\":\"猫耳细节小挎包\",\"color\":\"银灰\",\"material\":\"金属+仿皮\",\"reason\":\"用低调的猫耳轮廓强化主题感，不会过于夸张，适合作为整套造型的趣味亮点。\"}]', '{\"season\":\"夏\",\"temperature\":22,\"weather\":\"晴天\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"不限场景\",\"style\":\"给我的猫咪换个好看的衣服\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22℃晴天体感舒适，短袖搭配薄开衫最实用；室外可单穿，进入空调较强的室内时加上开衫会更自在。', '这套搭配适合晴天去咖啡店或日常随意出门，风格轻松可爱，用猫咪元素做点缀，既贴合主题，又保持成人穿着的自然与实用。', 'Full-body editorial fashion image of one adult model in a sunny cafe setting, mild warm 22C weather feeling, playful pet-inspired casual style suitable for a relaxed everyday occasion, wearing a coordinated outfit inspired by a cute cat aesthetic with soft neutral and pastel colors, realistic cotton, linen, knit, and denim textures, clean layered styling, natural daylight, polished but wearable, no text, no logo, no watermark Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 给我的猫咪换个好看的衣服, 不限场景.', 1, '/uploads/outfit-records/2026/05/1777648339700e7f9c1967c2e4370a7e7fb9f643a1adc.jpg', '2026-05-01 23:10:37', NULL, '2026-05-01 23:12:19', NULL, '2026-05-01 23:12:19');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (23, 3, 'cdda5b4a-5864-49ac-8922-f6cdfd165cd5-1', 'cdda5b4a-5864-49ac-8922-f6cdfd165cd5', 'photo', 'succeeded', '不限场景穿搭方案', '以奶油白、浅蓝和米色为主，打造一套带猫咪灵感但不过分卡通的夏日轻松穿搭：针织短袖配高腰直筒牛仔裤，外搭轻薄衬衫，既适合22℃晴天，也兼顾咖啡店室内外温差。 这套偏向不限场景，适合在不限场景中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776486745997fcc71f1643e4c7ab26cff95bfec6734.png', 1, 1, 0, '夏', 22, '晴天', '上传照片，咖啡店', '不限场景', '给我的猫咪换个好看的衣服', NULL, '不限', 'gpt-image-2', '[\"不限场景\",\"通勤风\",\"猫系灵感\",\"清新日常\",\"咖啡店穿搭\",\"轻松可爱\"]', '[{\"category\":\"上衣\",\"name\":\"猫咪感短袖针织上衣\",\"color\":\"奶油白\",\"material\":\"纯棉针织\",\"reason\":\"用柔软透气的针织短袖呼应“给猫咪换个好看的衣服”的可爱主题，可选择带圆润线条或低调猫咪感轮廓的设计，日常又不夸张，适合咖啡店环境。\"},{\"category\":\"下装\",\"name\":\"高腰直筒九分牛仔裤\",\"color\":\"浅蓝\",\"material\":\"轻薄牛仔\",\"reason\":\"22℃晴天穿着舒适，轻薄牛仔有挺括感，能平衡上衣的可爱气质，让整体更像人穿搭而不是造型服，适合不限场景的实穿需求。\"},{\"category\":\"外搭\",\"name\":\"轻薄衬衫外套\",\"color\":\"浅米色\",\"material\":\"棉麻混纺\",\"reason\":\"作为可穿可脱的层次单品，适合室外晴天和咖啡店内空调环境，棉麻材质自然松弛，也让整体更有照片感。\"},{\"category\":\"鞋子\",\"name\":\"低帮帆布鞋\",\"color\":\"米白\",\"material\":\"帆布\",\"reason\":\"轻松、干净、好活动，和猫咪主题的俏皮氛围一致，同时保持整体不过度装饰，适合日常出门与拍照。\"},{\"category\":\"配饰\",\"name\":\"简约猫耳轮廓发箍或小巧耳饰\",\"color\":\"浅银色\",\"material\":\"金属\",\"reason\":\"通过很克制的小配饰点出猫咪灵感，比大面积卡通元素更耐看，也更适合成人穿搭。\"},{\"category\":\"包袋\",\"name\":\"软质托特包\",\"color\":\"燕麦色\",\"material\":\"帆布\",\"reason\":\"咖啡店场景非常合适，实用又自然，能延续轻松、温柔、可爱的整体风格。\"}]', '{\"season\":\"夏\",\"temperature\":22,\"weather\":\"晴天\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"不限场景\",\"style\":\"给我的猫咪换个好看的衣服\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22℃的晴天体感温和，短袖加轻薄外搭最实用；白天室外可单穿，进入空调较足的咖啡店时披上衬衫外套会更舒适。', '这套搭配把“猫咪好看衣服”的灵感转化成适合成人的可爱日常风，用低调的猫系细节、柔和配色和舒适面料来表达主题；放在咖啡店、日常出门或随手拍照都自然不突兀。', 'Full-body editorial fashion image of one adult model in a sunny cafe setting, warm mild 22C weather feeling, playful pet-inspired casual style for a relaxed everyday occasion, soft pastel colors with cream, light blue, and warm beige, realistic cotton, knit, and lightweight denim textures, clean layered outfit with subtle cat-inspired details, natural daylight, wearable modern styling, no text, no logo, no watermark Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 给我的猫咪换个好看的衣服, 不限场景.', 1, '/uploads/outfit-records/2026/05/17776486745913a65e85dd65e4e5ca3fbd328aa8e2a36.jpg', '2026-05-01 23:10:52', NULL, '2026-05-01 23:17:54', NULL, '2026-05-01 23:17:54');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (24, 3, '75c6c349-9d16-4159-a4d3-733914b094c8-1', '75c6c349-9d16-4159-a4d3-733914b094c8', 'photo', 'succeeded', '约会穿搭方案', '以自定义灰色为核心的韩系冬日约会穿搭：羊毛大衣搭配高领针织、直筒长裤与简约皮鞋，整体干净高级，保暖又适合咖啡店氛围。 这套偏向约会，适合在约会中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776496748143c4b6ed2017e4241a6120b03b525c721.png', 1, 1, 0, '冬', 8, '降温', '上传照片，咖啡店', '约会', '给我的猫生成穿搭，韩系，外套，上衣，裤子，鞋子', '自定义色 #7F7F7F', '不限', 'gpt-image-2', '[\"约会\",\"通勤风\",\"韩系\",\"冬季约会\",\"咖啡店\",\"极简灰调\"]', '[{\"category\":\"外套\",\"name\":\"韩系中长款羊毛大衣\",\"color\":\"灰色（接近 #7F7F7F）\",\"material\":\"羊毛混纺\",\"reason\":\"中长款版型利落显气质，韩系约会感强；羊毛混纺在8℃降温天气里保暖实用，灰色也和整体配色统一。\"},{\"category\":\"上衣\",\"name\":\"高领细针织内搭\",\"color\":\"浅灰色\",\"material\":\"针织\",\"reason\":\"高领设计能护颈保暖，适合冬季咖啡店约会；细针织贴身不臃肿，放在大衣里层次干净高级。\"},{\"category\":\"裤子\",\"name\":\"直筒西装长裤\",\"color\":\"炭灰色\",\"material\":\"呢料/加厚西装面料\",\"reason\":\"直筒裤型符合韩系简洁轮廓，显得腿型利落；加厚面料更适合降温天气，也能和大衣形成统一的冬日质感。\"},{\"category\":\"鞋子\",\"name\":\"简约系带皮鞋\",\"color\":\"深灰黑色\",\"material\":\"哑光皮革\",\"reason\":\"皮鞋让约会场景更精致，和咖啡店氛围匹配；深色鞋面耐看稳重，也能压住一身灰调不显单薄。\"}]', '{\"season\":\"冬\",\"temperature\":8,\"weather\":\"降温\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"约会\",\"style\":\"给我的猫生成穿搭，韩系，外套，上衣，裤子，鞋子\",\"colorPreference\":\"自定义色 #7F7F7F\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '当前8℃且在降温，建议正常穿着这套并在室外全程穿好大衣；如果停留室外时间较长，可再加一条轻薄围巾以增强保暖。', '这套更偏韩系简洁约会风，适合在咖啡店环境中呈现温柔、干净又有细节的感觉。灰色系围绕自定义色展开，视觉统一且高级；外套、针织、长裤和皮鞋的组合在冬季8℃降温时也足够实穿。', 'Full-body editorial fashion image of one adult model in a cozy cafe setting, winter cooling weather, feels like 8C, date occasion, Korean-inspired minimalist style in custom gray #7F7F7F tones with layered outerwear, realistic wool coat, soft knit top, tailored trousers, and leather shoes, subtle warm indoor atmosphere contrasted with chilly outdoors, refined and wearable silhouette, realistic fabric texture, no text, no logo, no watermark Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 给我的猫生成穿搭，韩系，外套，上衣，裤子，鞋子, 约会.', 1, '/uploads/outfit-records/2026/05/17776496748099e0e1eaf5cf04ab68254e4385250ff82.jpg', '2026-05-01 23:31:49', NULL, '2026-05-01 23:34:34', NULL, '2026-05-01 23:34:34');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (25, 3, '8c2ccca3-a4b1-47e6-bd34-e86c3984e2f9-1', '8c2ccca3-a4b1-47e6-bd34-e86c3984e2f9', 'photo', 'succeeded', '派对穿搭方案', '以短款羊毛混纺飞行员夹克搭配灰色卫衣和深色直筒牛仔裤，结合黑色切尔西短靴，呈现出适合8℃多云天气的美式派对造型。整体实穿、上镜、层次清晰。 这套偏向派对，适合在派对中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776497506905e52ffed433e4df59edd29fdc440b2be.png', 1, 1, 0, '秋', 8, '多云', '上传照片，咖啡店', '派对', '美式', NULL, '不限', 'gpt-image-2', '[\"派对\",\"通勤风\",\"美式\",\"秋季\",\"咖啡店\",\"轻保暖\"]', '[{\"category\":\"外套\",\"name\":\"短款飞行员夹克\",\"color\":\"深灰或炭灰\",\"material\":\"羊毛混纺\",\"reason\":\"8℃多云天气需要一定保暖度，短款飞行员夹克很符合美式风格，利落又有派对感，进咖啡店后也不会显得过于厚重。\"},{\"category\":\"上装\",\"name\":\"圆领卫衣\",\"color\":\"麻灰\",\"material\":\"磨毛棉\",\"reason\":\"作为内搭舒适实穿，带来美式休闲氛围；磨毛面料在秋季更柔软保暖，也能中和派对穿搭的距离感。\"},{\"category\":\"下装\",\"name\":\"直筒牛仔裤\",\"color\":\"深靛蓝\",\"material\":\"硬挺牛仔布\",\"reason\":\"美式风格的核心单品，直筒版型对多数身形友好，和短夹克搭配比例自然，适合咖啡店到派对的场景切换。\"},{\"category\":\"鞋子\",\"name\":\"切尔西短靴\",\"color\":\"黑色\",\"material\":\"皮革\",\"reason\":\"比运动鞋更有派对气质，同时依然实穿；皮革材质在多云微凉天气下更稳重，也能提升整体完成度。\"},{\"category\":\"配饰\",\"name\":\"罗纹针织冷帽\",\"color\":\"黑色\",\"material\":\"针织\",\"reason\":\"增加秋季层次和保暖性，强化美式街头感；如果进入室内觉得热，也可以随时取下。\"},{\"category\":\"配饰\",\"name\":\"小号斜挎包\",\"color\":\"暖棕色\",\"material\":\"皮革\",\"reason\":\"方便在咖啡店和派对场景中携带随身物品，暖棕色能为整体冷色系造型增加一点温度与视觉重点。\"}]', '{\"season\":\"秋\",\"temperature\":8,\"weather\":\"多云\",\"location\":\"上传照片，咖啡店\",\"occasion\":\"派对\",\"style\":\"美式\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '8℃体感偏凉，建议采用“外套+卫衣”叠穿；如果晚间停留室外时间较长，可额外加一条薄围巾或把卫衣升级为更厚磅款。', '这套搭配兼顾咖啡店环境与派对场合：外层夹克和短靴保证出门时的保暖与利落感，卫衣和牛仔裤则让整体不过分正式，符合美式风格的自然松弛。整体既适合拍照，也适合长时间活动，场景适配度高。', 'Full-body editorial fashion image of one adult model standing outside a cozy cafe on a cloudy autumn day, feeling cool at 8°C, dressed for a party in an American-inspired style. The outfit uses a rich, versatile color palette of dark indigo, heather gray, black, off-white, and warm brown accents. Realistic fabric textures are clearly visible: structured wool-blend bomber jacket, soft brushed cotton sweatshirt, rigid dark denim, smooth leather boots, and a rib-knit beanie. Stylish yet wearable layering, relaxed confident pose, urban cafe atmosphere, natural overcast lighting, high realism, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 美式, 派对.', 1, '/uploads/outfit-records/2026/05/1777649750683897ced8a1db3453db773e8f65bd073cc.jpg', '2026-05-01 23:32:46', NULL, '2026-05-01 23:35:50', NULL, '2026-05-01 23:35:50');
+INSERT INTO `cw_outfit_record` (`record_id`, `user_id`, `generation_id`, `task_id`, `source`, `record_status`, `outfit_title`, `summary`, `image_url`, `total_count`, `success_count`, `failed_count`, `season`, `temperature`, `weather`, `location`, `occasion`, `style`, `color_preference`, `gender_preference`, `image_model`, `style_tags`, `items`, `input_snapshot`, `temperature_advice`, `occasion_reason`, `image_prompt`, `user_photo_used`, `user_photo_url`, `generated_at`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (26, 3, 'c2e8c538-9a05-473c-a5f0-e208d19c2452-1', 'c2e8c538-9a05-473c-a5f0-e208d19c2452', 'photo', 'succeeded', '约会穿搭方案', '以白色T恤搭配鼠尾草绿运动短裙裤，配轻薄外套和白色运动鞋，整体清新有活力，适合22度晴天的公园约会。 这套偏向约会，适合在约会中展示更明确的风格辨识度。', '/uploads/outfit-records/2026/05/17776513032836f0986e95eda4b648fe9eddc2c610cc5.png', 1, 1, 0, '夏', 22, '晴天', '上传照片，公园', '约会', '运动', NULL, '不限', 'gpt-image-2', '[\"约会\",\"通勤风\",\"运动\",\"清爽\",\"公园\",\"夏日\"]', '[{\"category\":\"上装\",\"name\":\"白色合身短袖T恤\",\"color\":\"白色\",\"material\":\"纯棉针织\",\"reason\":\"白色清爽耐看，适合晴天公园场景；合身但不过紧的版型利落自然，符合运动风约会的轻松感。\"},{\"category\":\"下装\",\"name\":\"鼠尾草绿运动短裙裤\",\"color\":\"鼠尾草绿\",\"material\":\"轻薄尼龙混纺\",\"reason\":\"兼顾运动感与约会氛围，裙裤结构活动方便，在公园走动或拍照都更自在；颜色柔和，和白色上装搭配很显干净。\"},{\"category\":\"外搭\",\"name\":\"浅灰轻薄拉链运动外套\",\"color\":\"浅灰色\",\"material\":\"轻量防风尼龙\",\"reason\":\"22度晴天可作为备用层，早晚或树荫下能适度防风；不穿时也可随手拿着，增强整体层次。\"},{\"category\":\"鞋履\",\"name\":\"白色轻便运动鞋\",\"color\":\"白色\",\"material\":\"网布拼接橡胶\",\"reason\":\"适合公园地面与长时间步行，网布材质透气，视觉上也让整体更清爽利落。\"},{\"category\":\"配饰\",\"name\":\"中筒运动袜\",\"color\":\"白色\",\"material\":\"棉质\",\"reason\":\"与运动鞋衔接自然，提升完整度，也能增加舒适度与吸汗性。\"},{\"category\":\"配饰\",\"name\":\"小型斜挎运动包\",\"color\":\"浅灰色\",\"material\":\"尼龙\",\"reason\":\"方便携带随身物品，机能感强但不过度，适合约会时保持轻便。\"}]', '{\"season\":\"夏\",\"temperature\":22,\"weather\":\"晴天\",\"location\":\"上传照片，公园\",\"occasion\":\"约会\",\"style\":\"运动\",\"genderPreference\":\"不限\",\"imageModel\":\"gpt-image-2\"}', '22度体感舒适，单穿短袖和轻薄下装基本合适；建议带上一件薄外套，应对树荫、微风或傍晚降温。', '这套搭配把运动风的舒适、轻便和约会需要的清爽好感结合在一起，适合晴天公园散步、拍照和轻活动，既自然亲切又不会显得太随意。', 'Full-body editorial fashion image of one adult model in a sunny park on a mild summer day, feeling comfortably warm at 22C, dressed for a date in a sporty style. The outfit uses fresh white, soft gray, and sage green tones, with realistic fabric textures including breathable cotton, lightweight nylon, soft jersey, and cushioned mesh sneakers. Natural relaxed pose, clean outdoor light, modern practical styling, visually coherent sporty date look, no text, no logo, no watermark. Variant 1: clean office-ready styling, refined minimal layers, practical tote bag, calm confident posture. Make this image clearly different from other variants while staying faithful to: 运动, 约会.', 1, '/uploads/outfit-records/2026/05/17776513032772e28738eeb95468582676d3d29ea8fb6.jpg', '2026-05-01 23:53:23', NULL, '2026-05-02 00:01:43', NULL, '2026-05-02 00:01:43');
 COMMIT;
 
 -- ----------------------------
@@ -659,15 +288,15 @@ COMMIT;
 DROP TABLE IF EXISTS `gen_table`;
 CREATE TABLE `gen_table` (
   `table_id` int NOT NULL AUTO_INCREMENT COMMENT '编号',
-  `table_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '表名称',
-  `table_comment` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '表描述',
-  `sub_table_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '关联子表的表名',
-  `sub_table_fk_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '子表关联的外键名',
-  `class_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '实体类名称',
-  `template_category` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '生成模板分类',
-  `module_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成模块名',
-  `business_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成业务名',
-  `function_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成功能名',
+  `table_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '表名称',
+  `table_comment` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '表描述',
+  `sub_table_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '关联子表的表名',
+  `sub_table_fk_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '子表关联的外键名',
+  `class_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '实体类名称',
+  `template_category` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '生成模板分类',
+  `module_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成模块名',
+  `business_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成业务名',
+  `function_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成功能名',
   `function_author` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '生成功能作者',
   `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
   `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
@@ -689,23 +318,23 @@ DROP TABLE IF EXISTS `gen_table_column`;
 CREATE TABLE `gen_table_column` (
   `column_id` int NOT NULL AUTO_INCREMENT COMMENT '编号',
   `table_id` int NOT NULL COMMENT '归属表编号',
-  `column_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列名称',
-  `column_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列类型',
+  `column_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列名称',
+  `column_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列类型',
   `column_sort` int NOT NULL DEFAULT '0' COMMENT '列顺序',
-  `column_comment` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列描述',
-  `is_pk` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否主键（0否 1是）',
-  `is_increment` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否自增（0否 1是）',
-  `is_required` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否必填（0否 1是）',
-  `is_insert` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否为插入字段（0否 1是）',
-  `is_edit` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否编辑字段（0否 1是）',
-  `is_list` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否列表字段（0否 1是）',
-  `is_query` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否查询字段（0否 1是）',
-  `field_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '属性名称',
-  `tslang_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'TS类型',
-  `javalang_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JAVA类型',
-  `query_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '查询方式',
-  `html_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '显示类型',
-  `dict_type` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典类型',
+  `column_comment` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '列描述',
+  `is_pk` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否主键（0否 1是）',
+  `is_increment` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否自增（0否 1是）',
+  `is_required` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否必填（0否 1是）',
+  `is_insert` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否为插入字段（0否 1是）',
+  `is_edit` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否编辑字段（0否 1是）',
+  `is_list` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否列表字段（0否 1是）',
+  `is_query` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '是否查询字段（0否 1是）',
+  `field_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '属性名称',
+  `tslang_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'TS类型',
+  `javalang_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JAVA类型',
+  `query_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '查询方式',
+  `html_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '显示类型',
+  `dict_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典类型',
   `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
   `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
   `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
@@ -716,9 +345,826 @@ CREATE TABLE `gen_table_column` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='代码生成业务表字段';
 
 -- ----------------------------
--- Records of gen_table
+-- Records of gen_table_column
 -- ----------------------------
 BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_config
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_config`;
+CREATE TABLE `sys_config` (
+  `config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '参数ID',
+  `config_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数名称',
+  `config_key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数键名',
+  `config_value` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '参数键值',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='参数配置表';
+
+-- ----------------------------
+-- Records of sys_config
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, '用户管理-账号初始密码', 'sys.user.initPassword', 'Aa@123456', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', '初始化密码（Aa@123456）');
+INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (2, '账号管理-验证码开关', 'sys.account.enableCaptcha', 'true', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', '是否开启验证码功能（true开启，false关闭）');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_dept
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_dept`;
+CREATE TABLE `sys_dept` (
+  `dept_id` bigint NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父部门ID',
+  `ancestors` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '祖级列表',
+  `dept_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '部门名称',
+  `dept_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '部门状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`dept_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='部门表';
+
+-- ----------------------------
+-- Records of sys_dept
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (100, 0, '0', '总公司', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (101, 100, '0,100', '深圳公司', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (102, 100, '0,100', '长沙公司', 2, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (103, 101, '0,100,101', '研发部门', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (104, 101, '0,100,101', '市场部门', 2, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (105, 101, '0,100,101', '测试部门', 3, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (106, 101, '0,100,101', '财务部门', 4, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (107, 101, '0,100,101', '运维部门', 5, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (108, 102, '0,100,102', '市场部门', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dept` (`dept_id`, `parent_id`, `ancestors`, `dept_name`, `dept_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (109, 102, '0,100,102', '财务部门', 2, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_dict_data
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_dict_data`;
+CREATE TABLE `sys_dict_data` (
+  `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典ID',
+  `dict_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典类型',
+  `dict_label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典标签',
+  `dict_value` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典键值',
+  `dict_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '字典状态（0正常 1停用）',
+  `css_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '样式属性（其他样式扩展）',
+  `list_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表格回显样式',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`dict_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据表';
+
+-- ----------------------------
+-- Records of sys_dict_data
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'sys_user_sex', '男', '1', 1, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, 'sys_user_sex', '女', '2', 2, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, 'sys_user_sex', '保密', '3', 3, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, 'sys_yes_no', '是', '1', 1, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, 'sys_yes_no', '否', '0', 2, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (6, 'sys_normal_disable', '正常', '0', 1, '0', NULL, 'success', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (7, 'sys_normal_disable', '停用', '1', 2, '0', NULL, 'danger', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (8, 'sys_success_failure', '成功', '0', 1, '0', NULL, 'success', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (9, 'sys_success_failure', '失败', '1', 2, '0', NULL, 'danger', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (10, 'sys_oper_type', '其它', '0', 99, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (11, 'sys_oper_type', '查询', '1', 1, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (12, 'sys_oper_type', '新增', '2', 2, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (13, 'sys_oper_type', '修改', '3', 3, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (14, 'sys_oper_type', '删除', '4', 4, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (15, 'sys_oper_type', '授权', '5', 5, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (16, 'sys_oper_type', '导出', '6', 6, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (17, 'sys_oper_type', '导入', '7', 7, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (18, 'sys_oper_type', '强退', '8', 8, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (19, 'sys_oper_type', '生成代码', '9', 9, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (20, 'sys_oper_type', '清空数据', '10', 10, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (21, 'sys_job_group', '默认', '0', 1, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (22, 'sys_job_group', '系统', '1', 2, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (23, 'sys_notice_type', '通知', '1', 1, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_data` (`dict_id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `status`, `css_class`, `list_class`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (24, 'sys_notice_type', '公告', '2', 2, '0', NULL, NULL, 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_dict_type
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_dict_type`;
+CREATE TABLE `sys_dict_type` (
+  `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典ID',
+  `dict_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典名称',
+  `dict_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典类型',
+  `dict_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '字典状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`dict_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典类型表';
+
+-- ----------------------------
+-- Records of sys_dict_type
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, '用户性别', 'sys_user_sex', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '系统是否', 'sys_yes_no', 2, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, '系统开关', 'sys_normal_disable', 3, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, '系统成败', 'sys_success_failure', 4, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, '操作类型', 'sys_oper_type', 5, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (6, '任务分组', 'sys_job_group', 6, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `dict_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (7, '公告类型', 'sys_notice_type', 7, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_file
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_file`;
+CREATE TABLE `sys_file` (
+  `file_id` bigint NOT NULL AUTO_INCREMENT COMMENT '文件ID',
+  `file_use` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件用途',
+  `file_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件路径',
+  `file_name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件名称',
+  `file_size` bigint NOT NULL COMMENT '文件大小',
+  `file_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件类型',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`file_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件表';
+
+-- ----------------------------
+-- Records of sys_file
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_file` (`file_id`, `file_use`, `file_url`, `file_name`, `file_size`, `file_type`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, '系统', '/uploads/avatar/admin.png', 'admin.png', 30379, 'image/png', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_file` (`file_id`, `file_use`, `file_url`, `file_name`, `file_size`, `file_type`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '系统', '/uploads/avatar/test.png', 'admin.png', 30379, 'image/png', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_job
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_job`;
+CREATE TABLE `sys_job` (
+  `job_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
+  `job_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
+  `job_group` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
+  `invoke_target` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调用目标',
+  `invoke_params` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用参数',
+  `cron_expression` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cron表达式',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`job_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='定时任务表';
+
+-- ----------------------------
+-- Records of sys_job
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, '无参数', '0', 'CallTask.noParams', NULL, '0 0 * * * *', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (2, '数字参数', '0', 'CallTask.numberParams', '1', '0 0 * * * *', '1', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (3, '字符串参数', '0', 'CallTask.stringParams', '\'1\'', '0 0 * * * *', '1', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (4, '布尔参数', '0', 'CallTask.booleanParams', 'true', '0 0 * * * *', '1', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (5, '对象参数', '0', 'CallTask.objectParams', '{\"a\":1,\"b\":2}', '0 0 * * * *', '1', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `cron_expression`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (6, '测试错误', '0', 'CallTask.errorParams', NULL, '0 0 * * * *', '1', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000', NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_job_log
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_job_log`;
+CREATE TABLE `sys_job_log` (
+  `job_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
+  `job_id` bigint NOT NULL COMMENT '任务ID',
+  `job_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
+  `job_group` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
+  `invoke_target` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调用目标',
+  `invoke_params` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用参数',
+  `invoke_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用信息',
+  `exception_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '异常信息',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '状态（0成功 1失败）',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`job_log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='定时任务日志表';
+
+-- ----------------------------
+-- Records of sys_job_log
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (1, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 16:00:00.046260', '2026-04-30 16:00:00.046260');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (2, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 17:00:00.060581', '2026-04-30 17:00:00.060581');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (3, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 18:00:00.095247', '2026-04-30 18:00:00.095247');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (4, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 19:16:42.093643', '2026-04-30 19:16:42.093643');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (5, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 20:02:34.406546', '2026-04-30 20:02:34.406546');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (6, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 21:11:20.540780', '2026-04-30 21:11:20.540780');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (7, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 22:00:00.045280', '2026-04-30 22:00:00.045280');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (8, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-04-30 23:00:00.031848', '2026-04-30 23:00:00.031848');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (9, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 00:14:02.791291', '2026-05-01 00:14:02.791291');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (10, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 01:15:28.168251', '2026-05-01 01:15:28.168251');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (11, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 02:00:28.228473', '2026-05-01 02:00:28.228473');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (12, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 03:02:07.639267', '2026-05-01 03:02:07.639267');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (13, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 04:01:41.761094', '2026-05-01 04:01:41.761094');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (14, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 05:01:02.986111', '2026-05-01 05:01:02.986111');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (15, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 06:03:59.753621', '2026-05-01 06:03:59.753621');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (16, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 07:05:29.624158', '2026-05-01 07:05:29.624158');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (17, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 08:11:30.029360', '2026-05-01 08:11:30.029360');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (18, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 09:00:00.021963', '2026-05-01 09:00:00.021963');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (19, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 11:00:00.029467', '2026-05-01 11:00:00.029467');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (20, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 12:00:00.021575', '2026-05-01 12:00:00.021575');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (21, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 13:00:00.176129', '2026-05-01 13:00:00.176129');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (22, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 14:00:00.058501', '2026-05-01 14:00:00.058501');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (23, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 15:00:00.031924', '2026-05-01 15:00:00.031924');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (24, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 16:00:00.020025', '2026-05-01 16:00:00.020025');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (25, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 17:00:00.015356', '2026-05-01 17:00:00.015356');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (26, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 18:00:00.027824', '2026-05-01 18:00:00.027824');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (27, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 19:00:00.011820', '2026-05-01 19:00:00.011820');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (28, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 20:00:00.021516', '2026-05-01 20:00:00.021516');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (29, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 21:00:00.023920', '2026-05-01 21:00:00.023920');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (30, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 22:00:00.017857', '2026-05-01 22:00:00.017857');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (31, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-01 23:00:00.122157', '2026-05-01 23:00:00.122157');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (32, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-02 00:00:00.014474', '2026-05-02 00:00:00.014474');
+INSERT INTO `sys_job_log` (`job_log_id`, `job_id`, `job_name`, `job_group`, `invoke_target`, `invoke_params`, `invoke_message`, `exception_message`, `status`, `create_time`, `update_time`) VALUES (33, 1, '无参数', '0', 'CallTask.noParams', NULL, '执行成功', NULL, '0', '2026-05-02 01:00:00.026798', '2026-05-02 01:00:00.026798');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_login_log
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_login_log`;
+CREATE TABLE `sys_login_log` (
+  `login_id` bigint NOT NULL AUTO_INCREMENT COMMENT '登录ID',
+  `login_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
+  `login_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录类型',
+  `login_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录状态',
+  `login_ip` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '主机地址',
+  `login_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录地点',
+  `login_message` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录信息',
+  `user_agent` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户代理',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`login_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录日志表';
+
+-- ----------------------------
+-- Records of sys_login_log
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (1, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Codex/26.422.71525 Chrome/146.0.7680.179 Electron/41.2.0 Safari/537.36', '2026-04-30 15:48:16.377312', '2026-04-30 15:48:16.377312');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (2, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'curl/8.7.1', '2026-04-30 15:48:20.247067', '2026-04-30 15:48:20.247067');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (3, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 15:49:12.760204', '2026-04-30 15:49:12.760204');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (4, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'curl/8.7.1', '2026-04-30 16:03:25.459380', '2026-04-30 16:03:25.459380');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (5, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 16:04:25.221808', '2026-04-30 16:04:25.221808');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (6, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:19:49.186620', '2026-04-30 16:19:49.186620');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (7, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:20:18.237248', '2026-04-30 16:20:18.237248');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (8, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:21:19.095591', '2026-04-30 16:21:19.095591');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (9, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 16:22:54.537767', '2026-04-30 16:22:54.537767');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (10, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:37:49.065933', '2026-04-30 16:37:49.065933');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (11, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:38:06.320519', '2026-04-30 16:38:06.320519');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (12, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 16:40:45.608694', '2026-04-30 16:40:45.608694');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (13, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:45:46.939573', '2026-04-30 16:45:46.939573');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (14, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:48:34.718502', '2026-04-30 16:48:34.718502');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (15, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:50:53.893241', '2026-04-30 16:50:53.893241');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (16, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 16:54:20.414083', '2026-04-30 16:54:20.414083');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (17, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:03:17.952212', '2026-04-30 17:03:17.952212');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (18, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:03:29.698591', '2026-04-30 17:03:29.698591');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (19, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:03:39.488122', '2026-04-30 17:03:39.488122');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (20, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:03:47.363232', '2026-04-30 17:03:47.363232');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (21, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:03:57.993655', '2026-04-30 17:03:57.993655');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (22, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:07:52.197534', '2026-04-30 17:07:52.197534');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (23, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-04-30 17:19:05.443291', '2026-04-30 17:19:05.443291');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (24, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 17:22:39.276007', '2026-04-30 17:22:39.276007');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (25, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 17:22:43.660007', '2026-04-30 17:22:43.660007');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (26, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 21:19:22.825939', '2026-04-30 21:19:22.825939');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (27, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 21:36:46.766473', '2026-04-30 21:36:46.766473');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (28, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 22:11:51.877912', '2026-04-30 22:11:51.877912');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (29, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 22:19:26.951772', '2026-04-30 22:19:26.951772');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (30, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 22:37:06.269820', '2026-04-30 22:37:06.269820');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (31, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 22:41:11.960931', '2026-04-30 22:41:11.960931');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (32, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'curl/8.7.1', '2026-04-30 22:41:59.605614', '2026-04-30 22:41:59.605614');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (33, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'curl/8.7.1', '2026-04-30 22:41:59.634484', '2026-04-30 22:41:59.634484');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (34, 'admin', '0', '1', '::1', '  ', '验证码输入错误', 'node', '2026-04-30 22:42:40.343081', '2026-04-30 22:42:40.343081');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (35, 'admin', '0', '1', '::1', '  ', '密码输入错误', 'node', '2026-04-30 22:42:58.802504', '2026-04-30 22:42:58.802504');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (36, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:42:58.939650', '2026-04-30 22:42:58.939650');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (37, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:52:02.095697', '2026-04-30 22:52:02.095697');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (38, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:52:38.632067', '2026-04-30 22:52:38.632067');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (39, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:53:12.134288', '2026-04-30 22:53:12.134288');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (40, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:54:25.928886', '2026-04-30 22:54:25.928886');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (41, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-30 22:55:27.014912', '2026-04-30 22:55:27.014912');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (42, 'admin', '0', '0', '::1', '  ', '登录成功', 'node', '2026-04-30 22:56:22.051815', '2026-04-30 22:56:22.051815');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (43, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Codex/26.422.71525 Chrome/146.0.7680.179 Electron/41.2.0 Safari/537.36', '2026-05-01 08:48:15.530055', '2026-05-01 08:48:15.530055');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (44, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 08:57:19.769270', '2026-05-01 08:57:19.769270');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (45, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 09:20:57.089425', '2026-05-01 09:20:57.089425');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (46, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 09:25:03.339017', '2026-05-01 09:25:03.339017');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (47, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'curl/8.7.1', '2026-05-01 09:31:13.849075', '2026-05-01 09:31:13.849075');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (48, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 09:38:29.868808', '2026-05-01 09:38:29.868808');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (49, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 09:39:01.698023', '2026-05-01 09:39:01.698023');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (50, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 09:40:43.474677', '2026-05-01 09:40:43.474677');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (51, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 09:42:53.330767', '2026-05-01 09:42:53.330767');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (52, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 09:46:11.820432', '2026-05-01 09:46:11.820432');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (53, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 11:12:03.797608', '2026-05-01 11:12:03.797608');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (54, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 11:12:49.050270', '2026-05-01 11:12:49.050270');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (55, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 11:16:51.798657', '2026-05-01 11:16:51.798657');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (56, 'admin', '0', '1', '::1', '  ', '验证码输入错误', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 11:23:11.205949', '2026-05-01 11:23:11.205949');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (57, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 11:23:14.680079', '2026-05-01 11:23:14.680079');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (58, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Codex/26.422.71525 Chrome/146.0.7680.179 Electron/41.2.0 Safari/537.36', '2026-05-01 13:01:10.226200', '2026-05-01 13:01:10.226200');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (59, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 13:46:58.258357', '2026-05-01 13:46:58.258357');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (60, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 14:28:07.783633', '2026-05-01 14:28:07.783633');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (61, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 16:23:25.656343', '2026-05-01 16:23:25.656343');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (62, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 16:58:36.333578', '2026-05-01 16:58:36.333578');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (63, 'admin', '0', '1', '::1', '  ', '验证码已过期', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 17:44:25.240817', '2026-05-01 17:44:25.240817');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (64, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 17:48:59.895258', '2026-05-01 17:48:59.895258');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (65, 'admin', '0', '1', '::1', '  ', '密码输入错误', 'curl/8.7.1', '2026-05-01 18:13:38.523726', '2026-05-01 18:13:38.523726');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (66, 'admin', '0', '1', '::1', '  ', '密码输入错误', 'curl/8.7.1', '2026-05-01 18:14:07.724000', '2026-05-01 18:14:07.724000');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (67, 'admin', '0', '1', '::1', '  ', '密码输入错误', 'curl/8.7.1', '2026-05-01 18:14:07.855166', '2026-05-01 18:14:07.855166');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (68, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 18:14:07.979183', '2026-05-01 18:14:07.979183');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (69, 'admin', '0', '1', '::1', '  ', '密码输入错误', 'curl/8.7.1', '2026-05-01 18:14:08.096970', '2026-05-01 18:14:08.096970');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (70, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 18:14:38.319684', '2026-05-01 18:14:38.319684');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (71, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 18:18:09.220415', '2026-05-01 18:18:09.220415');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (72, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 18:52:32.424091', '2026-05-01 18:52:32.424091');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (73, 'admin', '0', '0', '::1', '  ', '登录成功', 'curl/8.7.1', '2026-05-01 18:59:30.773410', '2026-05-01 18:59:30.773410');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (74, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 19:33:17.777199', '2026-05-01 19:33:17.777199');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (75, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 19:33:43.279175', '2026-05-01 19:33:43.279175');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (76, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 19:41:07.842870', '2026-05-01 19:41:07.842870');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (77, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 19:44:47.530436', '2026-05-01 19:44:47.530436');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (78, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 19:59:06.893410', '2026-05-01 19:59:06.893410');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (79, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 20:28:21.031648', '2026-05-01 20:28:21.031648');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (80, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 21:51:22.255437', '2026-05-01 21:51:22.255437');
+INSERT INTO `sys_login_log` (`login_id`, `login_name`, `login_type`, `login_status`, `login_ip`, `login_location`, `login_message`, `user_agent`, `create_time`, `update_time`) VALUES (81, 'admin', '0', '0', '::1', '  ', '登录成功', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-05-01 22:33:36.501059', '2026-05-01 22:33:36.501059');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_menu`;
+CREATE TABLE `sys_menu` (
+  `menu_id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
+  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父菜单ID',
+  `menu_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单名称',
+  `menu_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单类型（M目录 C菜单 F按钮）',
+  `menu_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '菜单状态（0正常 1停用）',
+  `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '路由地址',
+  `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '组件路径',
+  `query` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '路由参数',
+  `permission` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '权限标识',
+  `icon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '菜单图标',
+  `is_visible` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '是否显示（0否 1是）',
+  `is_link` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否为外链（0否 1是）',
+  `is_frame` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否为内嵌（0否 1是）',
+  `is_cache` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '是否缓存（0否 1是）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`menu_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1063 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单权限表';
+
+-- ----------------------------
+-- Records of sys_menu
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 0, '系统管理', 'M', 100, '0', 'system', NULL, NULL, NULL, 'ant-design:setting-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-05-01 11:12:44.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, 0, '系统监控', 'M', 4, '0', 'monitor', NULL, NULL, NULL, 'ant-design:fund-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-05-01 11:12:34.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, 0, '系统工具', 'M', 3, '0', 'tool', NULL, NULL, NULL, 'ant-design:tool-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, 3, '项目源码', 'M', 5, '0', 'https://github.com/haiweilian/vivy-nest-admin', NULL, NULL, NULL, 'ant-design:link-outlined', '1', '1', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-05-01 19:33:38.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, 0, 'AI模型管理', 'M', 1, '0', 'ai', NULL, NULL, NULL, 'ant-design:deployment-unit-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 16:03:05.000000', 'admin', '2026-04-30 16:40:36.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (100, 1, '用户管理', 'C', 1, '0', 'user', 'system/user/index', NULL, 'system:user:list', 'ant-design:user-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.006475');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (101, 1, '角色管理', 'C', 2, '0', 'role', 'system/role/index', NULL, 'system:role:list', 'ant-design:team-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.010806');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (102, 1, '菜单管理', 'C', 3, '0', 'menu', 'system/menu/index', NULL, 'system:menu:list', 'ant-design:menu-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.012209');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (103, 1, '部门管理', 'C', 4, '0', 'dept', 'system/dept/index', NULL, 'system:dept:list', 'ant-design:apartment-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.013334');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (104, 1, '岗位管理', 'C', 5, '0', 'post', 'system/post/index', NULL, 'system:post:list', 'ant-design:idcard-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.014428');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (105, 1, '字典管理', 'C', 6, '0', 'dict', 'system/dict/index', NULL, 'system:dict:list', 'ant-design:book-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.015037');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (106, 1, '字典数据', 'C', 7, '0', 'dict/:type', 'system/dict/$type/index', NULL, 'system:dict:list', 'ant-design:profile-outlined', '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.015299');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (107, 1, '参数配置', 'C', 8, '0', 'config', 'system/config/index', NULL, 'system:config:list', 'ant-design:control-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.015958');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (108, 1, '通知公告', 'C', 9, '0', 'notice', 'system/notice/index', NULL, 'system:notice:list', 'ant-design:notification-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.016905');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (109, 2, '操作日志', 'C', 1, '0', 'oper-log', 'monitor/oper-log/index', NULL, 'monitor:operlog:list', 'ant-design:file-search-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.017682');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (110, 2, '登录日志', 'C', 2, '0', 'login-log', 'monitor/login-log/index', NULL, 'monitor:loginlog:list', 'ant-design:login-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.018372');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (111, 2, '在线用户', 'C', 3, '0', 'online-user', 'monitor/online-user/index', NULL, 'monitor:online:list', 'ant-design:desktop-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.018638');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (112, 2, '定时任务', 'C', 4, '0', 'job', 'monitor/job/index', NULL, 'monitor:job:list', 'ant-design:schedule-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.018994');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (113, 2, '任务日志', 'C', 5, '0', 'job/log', 'monitor/job/log/index', NULL, 'monitor:job:list', 'ant-design:history-outlined', '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.019584');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (114, 2, '缓存列表', 'C', 6, '0', 'cache', 'monitor/cache/index', NULL, 'monitor:cache:list', 'ant-design:database-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.020214');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (115, 3, '代码生成', 'C', 1, '0', 'gen', 'tool/gen/index', NULL, 'tool:gen:list', 'ant-design:code-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.020984');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (116, 3, '文件上传', 'C', 2, '0', 'file', 'tool/file/index', NULL, 'tool:file:list', 'ant-design:upload-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.022841');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (117, 3, '系统接口', 'C', 3, '0', 'swagger', 'tool/swagger/index', NULL, 'tool:swagger:list', 'ant-design:api-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 22:40:00.023668');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (118, 5, '第三方模型', 'C', 1, '0', 'model', 'ai/model/index', NULL, 'ai:model:list', 'ant-design:api-outlined', '1', '0', '0', '0', 'admin', '2026-04-30 16:03:05.000000', 'admin', '2026-04-30 16:03:05.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1000, 100, '用户查询', 'F', 1, '0', NULL, NULL, NULL, 'system:user:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1001, 100, '用户新增', 'F', 2, '0', NULL, NULL, NULL, 'system:user:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1002, 100, '用户修改', 'F', 3, '0', NULL, NULL, NULL, 'system:user:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1003, 100, '用户删除', 'F', 4, '0', NULL, NULL, NULL, 'system:user:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1004, 100, '用户导出', 'F', 5, '0', NULL, NULL, NULL, 'system:user:export', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1005, 100, '用户导入', 'F', 6, '0', NULL, NULL, NULL, 'system:user:import', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1006, 101, '角色查询', 'F', 1, '0', NULL, NULL, NULL, 'system:role:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1007, 101, '角色新增', 'F', 2, '0', NULL, NULL, NULL, 'system:role:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1008, 101, '角色修改', 'F', 3, '0', NULL, NULL, NULL, 'system:role:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1009, 101, '角色删除', 'F', 4, '0', NULL, NULL, NULL, 'system:role:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1010, 102, '菜单查询', 'F', 1, '0', NULL, NULL, NULL, 'system:menu:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1011, 102, '菜单新增', 'F', 2, '0', NULL, NULL, NULL, 'system:menu:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1012, 102, '菜单修改', 'F', 3, '0', NULL, NULL, NULL, 'system:menu:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1013, 102, '菜单删除', 'F', 4, '0', NULL, NULL, NULL, 'system:menu:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1014, 103, '部门查询', 'F', 1, '0', NULL, NULL, NULL, 'system:dept:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1015, 103, '部门新增', 'F', 2, '0', NULL, NULL, NULL, 'system:dept:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1016, 103, '部门修改', 'F', 3, '0', NULL, NULL, NULL, 'system:dept:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1017, 103, '部门删除', 'F', 4, '0', NULL, NULL, NULL, 'system:dept:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1018, 104, '岗位查询', 'F', 1, '0', NULL, NULL, NULL, 'system:post:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1019, 104, '岗位新增', 'F', 2, '0', NULL, NULL, NULL, 'system:post:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1020, 104, '岗位修改', 'F', 3, '0', NULL, NULL, NULL, 'system:post:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1021, 104, '岗位删除', 'F', 4, '0', NULL, NULL, NULL, 'system:post:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1022, 105, '字典查询', 'F', 1, '0', NULL, NULL, NULL, 'system:dict:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1023, 105, '字典新增', 'F', 2, '0', NULL, NULL, NULL, 'system:dict:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1024, 105, '字典修改', 'F', 3, '0', NULL, NULL, NULL, 'system:dict:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1025, 105, '字典删除', 'F', 4, '0', NULL, NULL, NULL, 'system:dict:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1026, 107, '参数查询', 'F', 1, '0', NULL, NULL, NULL, 'system:config:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1027, 107, '参数新增', 'F', 2, '0', NULL, NULL, NULL, 'system:config:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1028, 107, '参数修改', 'F', 3, '0', NULL, NULL, NULL, 'system:config:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1029, 107, '参数删除', 'F', 4, '0', NULL, NULL, NULL, 'system:config:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1030, 108, '公告查询', 'F', 1, '0', NULL, NULL, NULL, 'system:notice:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1031, 108, '公告新增', 'F', 2, '0', NULL, NULL, NULL, 'system:notice:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1032, 108, '公告修改', 'F', 3, '0', NULL, NULL, NULL, 'system:notice:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1033, 108, '公告删除', 'F', 4, '0', NULL, NULL, NULL, 'system:notice:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1034, 109, '操作日志查询', 'F', 1, '0', NULL, NULL, NULL, 'system:operLog:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1035, 109, '操作日志删除', 'F', 2, '0', NULL, NULL, NULL, 'system:operLog:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1036, 110, '登录日志查询', 'F', 1, '0', NULL, NULL, NULL, 'system:loginLog:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1037, 110, '登录日志删除', 'F', 2, '0', NULL, NULL, NULL, 'system:loginLog:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1038, 111, '在线查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:onlineUser:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1039, 111, '在线强退', 'F', 2, '0', NULL, NULL, NULL, 'monitor:onlineUser:logout', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1040, 112, '任务查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:job:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1041, 112, '任务新增', 'F', 2, '0', NULL, NULL, NULL, 'monitor:job:add', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1042, 112, '任务修改', 'F', 3, '0', NULL, NULL, NULL, 'monitor:job:update', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1043, 112, '任务删除', 'F', 4, '0', NULL, NULL, NULL, 'monitor:job:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1044, 114, '缓存查询', 'F', 1, '0', NULL, NULL, NULL, 'monitor:cache:query', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1045, 114, '缓存删除', 'F', 2, '0', NULL, NULL, NULL, 'monitor:cache:delete', NULL, '0', '0', '0', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1046, 118, '第三方模型查询', 'F', 1, '0', NULL, NULL, NULL, 'ai:model:query', NULL, '0', '0', '0', '0', 'system', '2026-04-30 16:15:03.479108', NULL, '2026-04-30 16:15:03.479108');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1047, 118, '第三方模型新增', 'F', 2, '0', NULL, NULL, NULL, 'ai:model:add', NULL, '0', '0', '0', '0', 'system', '2026-04-30 16:15:03.479785', NULL, '2026-04-30 16:15:03.479785');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1048, 118, '第三方模型修改', 'F', 3, '0', NULL, NULL, NULL, 'ai:model:update', NULL, '0', '0', '0', '0', 'system', '2026-04-30 16:15:03.480396', NULL, '2026-04-30 16:15:03.480396');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1049, 118, '第三方模型删除', 'F', 4, '0', NULL, NULL, NULL, 'ai:model:delete', NULL, '0', '0', '0', '0', 'system', '2026-04-30 16:15:03.480739', NULL, '2026-04-30 16:15:03.480739');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1050, 118, '第三方模型测试', 'F', 5, '0', NULL, NULL, NULL, 'ai:model:test', NULL, '0', '0', '0', '0', 'system', '2026-04-30 16:15:03.481344', NULL, '2026-04-30 16:15:03.481344');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1051, 1052, '云裳 AI 配置', 'C', 1, '0', 'h5-config', 'ai/h5-config/index', NULL, 'ai:model:list', 'ant-design:mobile-outlined', '1', '0', '0', '0', 'system', '2026-04-30 17:15:53.754031', 'admin', '2026-05-01 16:58:27.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1052, 0, '移动端管理', 'M', 2, '0', NULL, NULL, NULL, NULL, 'ant-design:apple-outlined', '1', '0', '0', '0', 'admin', '2026-05-01 11:11:43.723976', 'admin', '2026-05-01 19:58:59.000000');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1053, 5, '生成记录', 'C', 3, '0', 'outfit-record', 'ai/outfit-record/index', NULL, 'outfit:record:list', 'ant-design:history-outlined', '1', '0', '0', '0', 'system', '2026-05-01 11:19:45.155007', NULL, '2026-05-01 11:19:45.155007');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1054, 1053, '生成记录查询', 'F', 1, '0', NULL, NULL, NULL, 'outfit:record:list', NULL, '0', '0', '0', '0', 'system', '2026-05-01 11:19:45.156349', NULL, '2026-05-01 11:19:45.156349');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1055, 1053, '生成记录删除', 'F', 2, '0', NULL, NULL, NULL, 'outfit:record:delete', NULL, '0', '0', '0', '0', 'system', '2026-05-01 12:02:30.674282', NULL, '2026-05-01 12:02:30.674282');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1056, 5, '提示词管理', 'C', 4, '0', 'prompt', 'ai/prompt/index', NULL, 'ai:prompt:list', 'ant-design:form-outlined', '1', '0', '0', '0', 'system', '2026-05-01 17:29:13.351015', NULL, '2026-05-01 17:29:13.351015');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1057, 1056, '提示词查询', 'F', 1, '0', NULL, NULL, NULL, 'ai:prompt:query', NULL, '0', '0', '0', '0', 'system', '2026-05-01 17:29:13.352011', NULL, '2026-05-01 17:29:13.352011');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1058, 1056, '提示词新增', 'F', 2, '0', NULL, NULL, NULL, 'ai:prompt:add', NULL, '0', '0', '0', '0', 'system', '2026-05-01 17:29:13.353202', NULL, '2026-05-01 17:29:13.353202');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1059, 1056, '提示词修改', 'F', 3, '0', NULL, NULL, NULL, 'ai:prompt:update', NULL, '0', '0', '0', '0', 'system', '2026-05-01 17:29:13.354255', NULL, '2026-05-01 17:29:13.354255');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1060, 1056, '提示词删除', 'F', 4, '0', NULL, NULL, NULL, 'ai:prompt:delete', NULL, '0', '0', '0', '0', 'system', '2026-05-01 17:29:13.355264', NULL, '2026-05-01 17:29:13.355264');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1061, 1056, '提示词列表', 'F', 5, '0', NULL, NULL, NULL, 'ai:prompt:list', NULL, '0', '0', '0', '0', 'system', '2026-05-01 17:29:13.356211', NULL, '2026-05-01 17:29:13.356211');
+INSERT INTO `sys_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_type`, `menu_sort`, `status`, `path`, `component`, `query`, `permission`, `icon`, `is_visible`, `is_link`, `is_frame`, `is_cache`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1062, 5, '风格档案查询', 'C', 2, '0', 'style-profile', 'ai/style-profile/index', NULL, 'outfit:record:list', 'ant-design:idcard-outlined', '1', '0', '0', '0', 'system', '2026-05-01 19:43:37.484301', 'admin', '2026-05-01 20:05:40.941356');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_notice
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_notice`;
+CREATE TABLE `sys_notice` (
+  `notice_id` bigint NOT NULL AUTO_INCREMENT COMMENT '公告ID',
+  `notice_title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告标题',
+  `notice_type` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告类型（1通知 2公告）',
+  `notice_content` longblob NOT NULL COMMENT '公告内容',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '公告状态（0正常 1关闭）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`notice_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知公告表';
+
+-- ----------------------------
+-- Records of sys_notice
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_oper_log
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_oper_log`;
+CREATE TABLE `sys_oper_log` (
+  `oper_id` bigint NOT NULL AUTO_INCREMENT COMMENT '操作ID',
+  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模块标题',
+  `oper_type` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作类型',
+  `oper_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作人员',
+  `oper_method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '方法名称',
+  `oper_ip` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '主机地址',
+  `oper_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作地点',
+  `oper_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作状态',
+  `request_url` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求URL',
+  `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求方式',
+  `request_param` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求参数',
+  `request_result` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求返回结果',
+  `request_errmsg` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求错误消息',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`oper_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作日志表';
+
+-- ----------------------------
+-- Records of sys_oper_log
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (1, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/5', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"AI模型管理\",\"menuSort\":5,\"status\":\"0\",\"icon\":\"ant-design:deployment-unit-outlined\",\"path\":\"ai\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:04:52.153697', '2026-04-30 16:04:52.153697');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (2, 'AI模型服务商', '2', 'admin', 'AiModelController.addProvider()', '::1', '  ', '0', '/ai-model/providers', 'POST', '{\"providerName\":\"Smoke Provider\",\"providerCode\":\"smoke-1777537189\",\"baseUrl\":\"http://localhost/v1\",\"status\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:19:49.264500', '2026-04-30 16:19:49.264500');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (3, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/6', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:19:49.316116', '2026-04-30 16:19:49.316116');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (4, 'AI模型服务商', '2', 'admin', 'AiModelController.addProvider()', '::1', '  ', '0', '/ai-model/providers', 'POST', '{\"providerName\":\"Smoke Model Provider\",\"providerCode\":\"smoke-model-1777537279\",\"baseUrl\":\"http://localhost/v1\",\"status\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:21:19.136422', '2026-04-30 16:21:19.136422');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (5, 'AI模型', '2', 'admin', 'AiModelController.addModel()', '::1', '  ', '0', '/ai-model/providers/7/models', 'POST', '{\"modelName\":\"Smoke Chat\",\"modelId\":\"smoke-chat\",\"modelType\":\"text\",\"contextLength\":\"1K\",\"isDefault\":\"1\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:21:19.189852', '2026-04-30 16:21:19.189852');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (6, 'AI模型', '3', 'admin', 'AiModelController.updateModel()', '::1', '  ', '0', '/ai-model/providers/7/models/8', 'PUT', '{\"modelName\":\"Smoke Chat Updated\",\"modelId\":\"smoke-chat\",\"modelType\":\"text\",\"contextLength\":\"2K\",\"isDefault\":\"1\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:21:19.236071', '2026-04-30 16:21:19.236071');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (7, '默认AI模型', '3', 'admin', 'AiModelController.setDefaultModel()', '::1', '  ', '0', '/ai-model/providers/7/models/8/default', 'PUT', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:21:19.271157', '2026-04-30 16:21:19.271157');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (8, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/7', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:21:19.303899', '2026-04-30 16:21:19.303899');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (9, 'AI模型服务商', '3', 'admin', 'AiModelController.updateProvider()', '::1', '  ', '0', '/ai-model/providers/1', 'PUT', '{\"providerName\":\"ddcat.pro\",\"baseUrl\":\"https://ddcat.pro/v1\",\"apiKey\":\"sk-J2iy0SEcWKM8WGfpV04oIgx8sKY7A3srsvu6c7Vu4yjDH9Ml\",\"defaultModelId\":\"gpt-4o\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:00.724642', '2026-04-30 16:24:00.724642');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (10, 'AI模型服务商', '3', 'admin', 'AiModelController.updateProvider()', '::1', '  ', '0', '/ai-model/providers/1', 'PUT', '{\"providerName\":\"ddcat.pro\",\"baseUrl\":\"https://ddcat.pro/v1\",\"apiKey\":\"sk-••••••••••••H9Ml\",\"defaultModelId\":\"gpt-4o\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:05.753067', '2026-04-30 16:24:05.753067');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (11, 'AI模型', '4', 'admin', 'AiModelController.deleteModel()', '::1', '  ', '0', '/ai-model/providers/1/models/3', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:14.685169', '2026-04-30 16:24:14.685169');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (12, 'AI模型', '4', 'admin', 'AiModelController.deleteModel()', '::1', '  ', '0', '/ai-model/providers/1/models/4', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:17.627836', '2026-04-30 16:24:17.627836');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (13, 'AI模型', '4', 'admin', 'AiModelController.deleteModel()', '::1', '  ', '0', '/ai-model/providers/1/models/2', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:19.545436', '2026-04-30 16:24:19.545436');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (14, 'AI模型', '3', 'admin', 'AiModelController.updateModel()', '::1', '  ', '0', '/ai-model/providers/1/models/1', 'PUT', '{\"modelName\":\"gpt-4o-image\",\"modelId\":\"gpt-4o-image\",\"modelType\":\"image\",\"contextLength\":\"128K\",\"isDefault\":\"1\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:24:29.947670', '2026-04-30 16:24:29.947670');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (15, 'AI模型', '2', 'admin', 'AiModelController.addModel()', '::1', '  ', '0', '/ai-model/providers/1/models', 'POST', '{\"modelName\":\"gpt-image-2\",\"modelId\":\"gpt-image-2\",\"modelType\":\"image\",\"contextLength\":\"128\",\"isDefault\":\"0\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:25:20.720222', '2026-04-30 16:25:20.720222');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (16, 'AI模型服务商', '3', 'admin', 'AiModelController.updateProvider()', '::1', '  ', '0', '/ai-model/providers/1', 'PUT', '{\"providerName\":\"ddcat.pro\",\"baseUrl\":\"https://ddcat.pro/v1\",\"apiKey\":\"sk-••••••••••••H9Ml\",\"defaultModelId\":\"gpt-image-2\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:26:42.032764', '2026-04-30 16:26:42.032764');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (17, 'AI模型', '2', 'admin', 'AiModelController.addModel()', '::1', '  ', '0', '/ai-model/providers/1/models', 'POST', '{\"modelName\":\"gpt-5.4\",\"modelId\":\"gpt-5.4\",\"modelType\":\"text\",\"contextLength\":\"128K\",\"isDefault\":\"0\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:27:11.493435', '2026-04-30 16:27:11.493435');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (18, 'AI模型', '3', 'admin', 'AiModelController.updateModel()', '::1', '  ', '0', '/ai-model/providers/1/models/9', 'PUT', '{\"modelName\":\"gpt-image-2\",\"modelId\":\"gpt-image-2\",\"modelType\":\"image\",\"contextLength\":\"128K\",\"isDefault\":\"0\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:27:16.788360', '2026-04-30 16:27:16.788360');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (19, '默认AI模型', '3', 'admin', 'AiModelController.setDefaultModel()', '::1', '  ', '0', '/ai-model/providers/1/models/10/default', 'PUT', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:27:22.886938', '2026-04-30 16:27:22.886938');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (20, 'AI模型', '2', 'admin', 'AiModelController.addModel()', '::1', '  ', '0', '/ai-model/providers/1/models', 'POST', '{\"modelName\":\"gpt-5.5\",\"modelId\":\"gpt-5.5\",\"modelType\":\"text\",\"contextLength\":\"128k\",\"isDefault\":\"1\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:27:34.332211', '2026-04-30 16:27:34.332211');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (21, '默认AI模型', '3', 'admin', 'AiModelController.setDefaultModel()', '::1', '  ', '0', '/ai-model/providers/1/models/10/default', 'PUT', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:27:35.795470', '2026-04-30 16:27:35.795470');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (22, 'AI模型服务商', '2', 'admin', 'AiModelController.addProvider()', '::1', '  ', '0', '/ai-model/providers', 'POST', '{\"providerName\":\"UI删除测试\",\"providerCode\":\"ui-delete-smoke-1777538349361\",\"baseUrl\":\"http://localhost/v1\",\"status\":\"1\",\"iconText\":\"删\",\"color\":\"slate\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:39:09.398341', '2026-04-30 16:39:09.398341');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (23, 'AI模型', '3', 'admin', 'AiModelController.updateModel()', '::1', '  ', '0', '/ai-model/providers/1/models/10', 'PUT', '{\"status\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:39:39.935528', '2026-04-30 16:39:39.935528');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (24, 'AI模型', '3', 'admin', 'AiModelController.updateModel()', '::1', '  ', '0', '/ai-model/providers/1/models/10', 'PUT', '{\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:39:41.629482', '2026-04-30 16:39:41.629482');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (25, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/8', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:40:04.154068', '2026-04-30 16:40:04.154068');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (26, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/5', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"AI模型管理\",\"menuSort\":1,\"status\":\"0\",\"icon\":\"ant-design:deployment-unit-outlined\",\"path\":\"ai\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:40:36.331122', '2026-04-30 16:40:36.331122');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (27, 'AI模型服务商', '2', 'admin', 'AiModelController.addProvider()', '::1', '  ', '0', '/ai-model/providers', 'POST', '{\"providerName\":\"UI删除测试\",\"providerCode\":\"ui-delete-smoke-1777538444936\",\"baseUrl\":\"http://localhost/v1\",\"status\":\"1\",\"iconText\":\"删\",\"color\":\"slate\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:40:44.986351', '2026-04-30 16:40:44.986351');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (28, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/9', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:40:55.129104', '2026-04-30 16:40:55.129104');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (29, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/5', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:42:57.011889', '2026-04-30 16:42:57.011889');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (30, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/10', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:59:06.254637', '2026-04-30 16:59:06.254637');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (31, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/10', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 16:59:12.086780', '2026-04-30 16:59:12.086780');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (32, 'AI模型服务商', '3', 'admin', 'AiModelController.updateProvider()', '::1', '  ', '0', '/ai-model/providers/1', 'PUT', '{\"providerName\":\"ddcat.pro\",\"baseUrl\":\"https://ddcat.pro/v1\",\"apiKey\":\"sk-••••••••••••H9Ml\",\"defaultModelId\":\"gpt-5.4\",\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:00:08.209719', '2026-04-30 17:00:08.209719');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (33, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":5,\"keywordImageModelPk\":12,\"photoImageModelPk\":12,\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:03:58.067779', '2026-04-30 17:03:58.067779');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (34, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":5,\"keywordImageModelPk\":12,\"photoImageModelPk\":12,\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:06:11.566775', '2026-04-30 17:06:11.566775');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (35, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":5,\"keywordImageModelPk\":12,\"photoImageModelPk\":12,\"status\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:07:52.262555', '2026-04-30 17:07:52.262555');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (36, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":5,\"keywordImageModelPk\":12,\"photoImageModelPk\":12,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[\"初夏约会\",\"都市通勤\",\"海边度假\",\"复古港风\",\"运动休闲\",\"简约高级感\"],\"homeCategories\":[\"通勤\",\"法式\",\"休闲\",\"简约\",\"度假\"],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"colors\":[{\"label\":\"粉色\",\"value\":\"#ff7eac\"},{\"label\":\"奶茶\",\"value\":\"#dfb785\"},{\"label\":\"浅蓝\",\"value\":\"#83a8ef\"},{\"label\":\"黑色\",\"value\":\"#171717\"},{\"label\":\"紫色\",\"value\":\"#875ef1\"},{\"label\":\"雾蓝\",\"value\":\"#cbd8ff\"}],\"items\":[{\"label\":\"外套\"},{\"label\":\"上衣\"},{\"label\":\"裤子\"},{\"label\":\"裙子\"},{\"label\":\"鞋子\"},{\"label\":\"包包\"}],\"imageModels\":[{\"group\":\"BLTCY\",\"label\":\"GPT-4o Image\",\"value\":\"gpt-4o-image\",\"supportsPhotoInput\":false}]}}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:19:05.489214', '2026-04-30 17:19:05.489214');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (37, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":5,\"keywordImageModelPk\":12,\"photoImageModelPk\":12,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[\"初夏约会\",\"都市通勤\",\"海边度假\",\"复古港风\",\"运动休闲\",\"简约高级感\"],\"homeCategories\":[\"通勤\",\"法式\",\"休闲\",\"简约\",\"度假\"],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"colors\":[{\"label\":\"粉色\",\"value\":\"#ff7eac\"},{\"label\":\"奶茶\",\"value\":\"#dfb785\"},{\"label\":\"浅蓝\",\"value\":\"#83a8ef\"},{\"label\":\"黑色\",\"value\":\"#171717\"},{\"label\":\"紫色\",\"value\":\"#875ef1\"},{\"label\":\"雾蓝\",\"value\":\"#cbd8ff\"}],\"items\":[{\"label\":\"外套\"},{\"label\":\"上衣\"},{\"label\":\"裤子\"},{\"label\":\"裙子\"},{\"label\":\"鞋子\"},{\"label\":\"包包\"}],\"imageModels\":[{\"group\":\"BLTCY\",\"label\":\"GPT-4o Image\",\"value\":\"gpt-4o-image\",\"supportsPhotoInput\":false}]}}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 17:19:46.860729', '2026-04-30 17:19:46.860729');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (38, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":1,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[\"初夏约会\",\"都市通勤\",\"海边度假\",\"复古港风\",\"运动休闲\",\"简约高级感\"],\"homeCategories\":[\"通勤\",\"法式\",\"休闲\",\"简约\",\"度假\"],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 18:51:22.157785', '2026-04-30 18:51:22.157785');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (39, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[\"初夏约会\",\"都市通勤\",\"海边度假\",\"复古港风\",\"运动休闲\",\"简约高级感\"],\"homeCategories\":[\"通勤\",\"法式\",\"休闲\",\"简约\",\"度假\"],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 18:54:58.447861', '2026-04-30 18:54:58.447861');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (40, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"colors\":[{\"label\":\"粉色\",\"value\":', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-04-30 21:21:40.253915', '2026-04-30 21:21:40.253915');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (41, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"系统管理\",\"menuSort\":5,\"status\":\"0\",\"icon\":\"ant-design:setting-outlined\",\"path\":\"system\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 08:57:14.290460', '2026-05-01 08:57:14.290460');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (42, 'AI模型服务商', '4', 'admin', 'AiModelController.deleteProvider()', '::1', '  ', '0', '/ai-model/providers/15', 'DELETE', NULL, '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 09:18:26.731100', '2026-05-01 09:18:26.731100');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (43, '菜单管理', '2', 'admin', 'MenuController.add()', '::1', '  ', '0', '/menus', 'POST', '{\"menuType\":\"M\",\"menuName\":\"移动端配置\",\"menuSort\":2,\"status\":\"0\",\"icon\":\"ant-design:apple-outlined\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:11:43.737450', '2026-05-01 11:11:43.737450');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (44, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1051', 'PUT', '{\"parentId\":1052,\"menuType\":\"C\",\"menuName\":\"H5配置\",\"menuSort\":1,\"status\":\"0\",\"icon\":\"ant-design:mobile-outlined\",\"path\":\"h5-config\",\"component\":\"ai/h5-config/index\",\"permission\":\"ai:model:list\",\"isVisible\":\"1\",\"isLink\":\"0\",\"isFrame\":\"0\",\"isCache\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:11:56.294401', '2026-05-01 11:11:56.294401');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (45, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/2', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"系统监控\",\"menuSort\":3,\"status\":\"0\",\"icon\":\"ant-design:fund-outlined\",\"path\":\"monitor\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:12:24.598785', '2026-05-01 11:12:24.598785');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (46, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/2', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"系统监控\",\"menuSort\":4,\"status\":\"0\",\"icon\":\"ant-design:fund-outlined\",\"path\":\"monitor\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:12:34.177515', '2026-05-01 11:12:34.177515');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (47, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/4', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"项目源码\",\"menuSort\":5,\"status\":\"0\",\"icon\":\"ant-design:link-outlined\",\"path\":\"https://github.com/haiweilian/vivy-nest-admin\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:12:38.795039', '2026-05-01 11:12:38.795039');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (48, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"系统管理\",\"menuSort\":100,\"status\":\"0\",\"icon\":\"ant-design:setting-outlined\",\"path\":\"system\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 11:12:44.328322', '2026-05-01 11:12:44.328322');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (49, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1051', 'PUT', '{\"parentId\":1052,\"menuType\":\"C\",\"menuName\":\"云裳 AI 配置\",\"menuSort\":1,\"status\":\"0\",\"icon\":\"ant-design:mobile-outlined\",\"path\":\"h5-config\",\"component\":\"ai/h5-config/index\",\"permission\":\"ai:model:list\",\"isVisible\":\"1\",\"isLink\":\"0\",\"isFrame\":\"0\",\"isCache\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 16:58:27.024678', '2026-05-01 16:58:27.024678');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (50, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"colors\":[{\"label\":\"粉色\",\"value\":', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 16:58:45.899924', '2026-05-01 16:58:45.899924');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (51, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 17:28:52.289444', '2026-05-01 17:28:52.289444');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (52, 'AI提示词', '2', 'admin', 'AiModelController.addPrompt()', '::1', '  ', '1', '/ai-model/prompts', 'POST', '{\"promptName\":\"Codex验收提示词-1777630028041\",\"scene\":\"验收测试\",\"promptType\":\"text\",\"status\":\"0\",\"description\":\"用于本地功能验收后删除\",\"promptContent\":\"请基于用户输入生成结构化穿搭建议。\",\"usageGuide\":\"仅用于 Codex 本地接口验收。\",\"applicableModels\":[\"gpt-4o-mini\"],\"sortOrder\":99}', '{\"data\":null,\"code\":500,\"message\":\"usageCount must be an integer number\"}', 'usageCount must be an integer number', '2026-05-01 18:07:08.068876', '2026-05-01 18:07:08.068876');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (53, 'AI提示词使用', '3', 'admin', 'AiModelController.usePrompt()', '::1', '  ', '0', '/ai-model/prompts/2/use', 'POST', NULL, '{\"data\":{\"createBy\":\"system\",\"createTime\":\"2026-05-01 17:29:13\",\"updateBy\":null,\"updateTime\":\"2026-05-01 18:18:02\",\"promptId\":2,\"promptName\":\"商品图生成提示词\",\"scene\":\"商品图\",\"promptType\":\"image\",\"status\":\"0\",\"description\":\"用于电商商品图生成，突出商品主体、背景简洁清晰。\",\"promptContent\":\"生成一张专业电商商品图，商品主体清晰完整，材质细节真实，背景干净高级，光影自然，适合商品详情页和营销展示。\",\"usageGuide\":\"可补充商品品类、材质、品牌调性、背景色和营销平台要求。\",\"usageCount\":8766,\"lastUsedTime\":\"2026-05-01T10:18:02.000Z\",\"sortOrder\":20,\"applicableModels\":[\"Stable Diffusion\",\"Midjourney\",\"DALL-E\"]},\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:18:02.071972', '2026-05-01 18:18:02.071972');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (54, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"运动\"}],\"scenes\":[{\"icon\":\"home\",\"label\":\"日常通勤\"},{\"icon\":\"heart\",\"label\":\"约会\"},{\"icon\":\"plane\",\"label\":\"旅行\"},{\"icon\":\"map-pin\",\"label\":\"度假\"},{\"icon\":\"sparkles\",\"label\":\"派对\"},{\"icon\":\"briefcase\",\"label\":\"逛街\"}],\"', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:18:21.004474', '2026-05-01 18:18:21.004474');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (55, 'AI提示词', '2', 'admin', 'AiModelController.addPrompt()', '::1', '  ', '0', '/ai-model/prompts', 'POST', '{\"promptName\":\"Codex验收提示词-1777630800668\",\"scene\":\"验收测试\",\"promptType\":\"text\",\"status\":\"0\",\"description\":\"用于本地功能验收后删除\",\"promptContent\":\"请基于用户输入生成结构化穿搭建议。\",\"usageGuide\":\"仅用于 Codex 本地接口验收。\",\"applicableModels\":[\"gpt-4o-mini\"],\"sortOrder\":99}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:20:00.695088', '2026-05-01 18:20:00.695088');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (56, 'AI提示词使用', '3', 'admin', 'AiModelController.usePrompt()', '::1', '  ', '0', '/ai-model/prompts/8/use', 'POST', '{}', '{\"data\":{\"createBy\":\"admin\",\"createTime\":\"2026-05-01 18:20:00\",\"updateBy\":null,\"updateTime\":\"2026-05-01 18:20:00\",\"promptId\":8,\"promptName\":\"Codex验收提示词-1777630800668\",\"scene\":\"验收测试\",\"promptType\":\"text\",\"status\":\"0\",\"description\":\"用于本地功能验收后删除\",\"promptContent\":\"请基于用户输入生成结构化穿搭建议。\",\"usageGuide\":\"仅用于 Codex 本地接口验收。\",\"usageCount\":1,\"lastUsedTime\":\"2026-05-01T10:20:01.000Z\",\"sortOrder\":99,\"applicableModels\":[\"gpt-4o-mini\"]},\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:20:00.716296', '2026-05-01 18:20:00.716296');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (57, 'AI提示词', '3', 'admin', 'AiModelController.updatePrompt()', '::1', '  ', '0', '/ai-model/prompts/8', 'PUT', '{\"description\":\"Codex验收已更新\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:20:00.724019', '2026-05-01 18:20:00.724019');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (58, 'AI提示词', '4', 'admin', 'AiModelController.deletePrompt()', '::1', '  ', '0', '/ai-model/prompts/8', 'DELETE', '{}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 18:20:00.732213', '2026-05-01 18:20:00.732213');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (59, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":true},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:18:29.376241', '2026-05-01 19:18:29.376241');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (60, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":true},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886657', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:19:08.824053', '2026-05-01 19:19:08.824053');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (61, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-151588665', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:19:14.232601', '2026-05-01 19:19:14.232601');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (62, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":3,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":false,\"registerEnabled\":false,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-151588665', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:26:13.328656', '2026-05-01 19:26:13.328656');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (63, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/4', 'PUT', '{\"parentId\":3,\"menuType\":\"M\",\"menuName\":\"项目源码\",\"menuSort\":5,\"status\":\"0\",\"icon\":\"ant-design:link-outlined\",\"path\":\"https://github.com/haiweilian/vivy-nest-admin\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:33:38.084547', '2026-05-01 19:33:38.084547');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (64, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":3,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-15158866576', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:38:56.939808', '2026-05-01 19:38:56.939808');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (65, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":3,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-15158866576', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:41:32.013665', '2026-05-01 19:41:32.013665');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (66, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1062', 'PUT', '{\"parentId\":1052,\"menuType\":\"C\",\"menuName\":\"风格档案查询\",\"menuSort\":2,\"status\":\"0\",\"icon\":\"ant-design:idcard-outlined\",\"path\":\"style-profile\",\"component\":\"ai/style-profile/index\",\"permission\":\"outfit:record:list\",\"isVisible\":\"1\",\"isLink\":\"0\",\"isFrame\":\"0\",\"isCache\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:44:42.256818', '2026-05-01 19:44:42.256818');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (67, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1062', 'PUT', '{\"parentId\":1052,\"menuType\":\"C\",\"menuName\":\"风格档案查询\",\"menuSort\":2,\"status\":\"0\",\"icon\":\"ant-design:idcard-outlined\",\"path\":\"style-profile\",\"component\":\"ai/style-profile/index\",\"permission\":\"outfit:record:list\",\"isVisible\":\"1\",\"isLink\":\"0\",\"isFrame\":\"0\",\"isCache\":\"0\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:58:47.227334', '2026-05-01 19:58:47.227334');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (68, '菜单管理', '3', 'admin', 'MenuController.update()', '::1', '  ', '0', '/menus/1052', 'PUT', '{\"menuType\":\"M\",\"menuName\":\"移动端管理\",\"menuSort\":2,\"status\":\"0\",\"icon\":\"ant-design:apple-outlined\",\"isVisible\":\"1\"}', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 19:58:59.370889', '2026-05-01 19:58:59.370889');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (69, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":false,\"registerEnabled\":false,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 21:08:10.671280', '2026-05-01 21:08:10.671280');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (70, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":1,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-151588665', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 21:59:33.230210', '2026-05-01 21:59:33.230210');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (71, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":9,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":false,\"registerEnabled\":false,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 22:33:51.617190', '2026-05-01 22:33:51.617190');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (72, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":9,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":false,\"registerEnabled\":false,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-1515886', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 22:34:01.528884', '2026-05-01 22:34:01.528884');
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `oper_type`, `oper_name`, `oper_method`, `oper_ip`, `oper_location`, `oper_status`, `request_url`, `request_method`, `request_param`, `request_result`, `request_errmsg`, `create_time`, `update_time`) VALUES (73, 'H5模型配置', '3', 'admin', 'AiModelController.updateH5Config()', '::1', '  ', '0', '/ai-model/app-configs/h5-outfit', 'PUT', '{\"textModelPk\":10,\"keywordImageModelPk\":9,\"photoImageModelPk\":9,\"status\":\"0\",\"options\":{\"dailyFreeGenerationLimit\":100,\"login\":{\"heroImage\":\"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84\",\"heroAlt\":\"浅色衣架上的外套与包袋\",\"brandTitle\":\"云裳 AI 穿搭\",\"subtitle\":\"AI 智能搭配 · 发现更美的你\",\"phonePasswordEnabled\":true,\"registerEnabled\":true,\"wechatEnabled\":false},\"inspirationKeywords\":[],\"homeCategories\":[],\"homeLooks\":[{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"浅奶油通勤\"},{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"柔雾风衣\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"米白度假裙\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"灰调西装\"}],\"seasons\":[{\"label\":\"春\"},{\"label\":\"夏\"},{\"label\":\"秋\"},{\"label\":\"冬\"}],\"weathers\":[{\"label\":\"晴天\"},{\"label\":\"多云\"},{\"label\":\"小雨\"},{\"label\":\"大风\"},{\"label\":\"降温\"}],\"temperatures\":[{\"label\":\"8°C\",\"value\":8},{\"label\":\"15°C\",\"value\":15},{\"label\":\"22°C\",\"value\":22},{\"label\":\"28°C\",\"value\":28},{\"label\":\"34°C\",\"value\":34}],\"locations\":[{\"label\":\"城市街拍\"},{\"label\":\"咖啡店\"},{\"label\":\"商场\"},{\"label\":\"办公室\"},{\"label\":\"公园\"},{\"label\":\"海边\"}],\"styles\":[{\"image\":\"https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=900&q=82\",\"label\":\"法式\"},{\"image\":\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=82\",\"label\":\"韩系\"},{\"image\":\"https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=82\",\"label\":\"日系\"},{\"image\":\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=82\",\"label\":\"美式\"},{\"image\":\"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=82\",\"label\":\"复古\"},{\"image\":\"https://images.unsplash.com/photo-151588665', '{\"code\":200,\"message\":\"操作成功\"}', NULL, '2026-05-01 22:34:20.327424', '2026-05-01 22:34:20.327424');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_post
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_post`;
+CREATE TABLE `sys_post` (
+  `post_id` bigint NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
+  `post_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位名称',
+  `post_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位编码',
+  `post_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '岗位状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`post_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='岗位信息表';
+
+-- ----------------------------
+-- Records of sys_post
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_post` (`post_id`, `post_name`, `post_code`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, '董事长', 'CEO', 1, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_post` (`post_id`, `post_name`, `post_code`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '项目经理', 'SE', 2, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_post` (`post_id`, `post_name`, `post_code`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, '人力资源', 'HR', 3, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_post` (`post_id`, `post_name`, `post_code`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, '普通员工', 'USER', 4, '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_role`;
+CREATE TABLE `sys_role` (
+  `role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+  `role_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色名称',
+  `role_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色编码',
+  `role_sort` int NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `data_scope` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '数据范围（1全部数据权限 2自定数据权限 3本部门数据权限 4本部门及以下数据权限 5仅本人数据权限）',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '角色状态（0正常 1停用）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`role_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色信息表';
+
+-- ----------------------------
+-- Records of sys_role
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_code`, `role_sort`, `data_scope`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, '超级管理员', 'admin', 1, '1', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_code`, `role_sort`, `data_scope`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '普通角色', 'common', 2, '2', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_role_dept
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_role_dept`;
+CREATE TABLE `sys_role_dept` (
+  `role_id` bigint NOT NULL COMMENT '用户ID',
+  `dept_id` bigint NOT NULL COMMENT '部门ID',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`role_id`,`dept_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色和部门关联表 角色1-N部门';
+
+-- ----------------------------
+-- Records of sys_role_dept
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_role_dept` (`role_id`, `dept_id`, `create_time`, `update_time`) VALUES (2, 105, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_role_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_role_menu`;
+CREATE TABLE `sys_role_menu` (
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `menu_id` bigint NOT NULL COMMENT '菜单ID',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`role_id`,`menu_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色和菜单关联表 角色1-N菜单';
+
+-- ----------------------------
+-- Records of sys_role_menu
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 4, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 100, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 101, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 102, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 103, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 104, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 105, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 106, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 107, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 108, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1000, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1001, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1002, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1003, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1004, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1005, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1006, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1007, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1008, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1009, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1010, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1011, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1012, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1013, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1014, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1015, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1016, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1017, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1018, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1019, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1020, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1021, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1022, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1023, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1024, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1025, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1026, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1027, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1028, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1029, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1030, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1031, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1032, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`, `update_time`) VALUES (2, 1033, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_user
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user` (
+  `user_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `dept_id` bigint DEFAULT NULL COMMENT '部门ID',
+  `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
+  `nick_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户昵称',
+  `user_type` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '00' COMMENT '用户类型（00系统用户）',
+  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户邮箱',
+  `phonenumber` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机号码',
+  `sex` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '3' COMMENT '用户性别（1男 2女 3保密）',
+  `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '头像地址',
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '用户状态（0正常 1停用 2删除）',
+  `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `IDX_9d0ba62d30b6362c5651c6c261` (`user_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户信息表';
+
+-- ----------------------------
+-- Records of sys_user
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 100, 'admin', '管理员', '00', 'admin@vivy.com', '18688888888', '1', '/static/avatar/admin.png', '$2b$10$r1Eul7Lc388k9rphYYt9uO0k1LWw.3ArgbX0VrhjjG1h4lDjBq9tq', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, 105, 'test', '测试员', '00', 'test@vivy.com', '18666666666', '1', '/static/avatar/test.png', '$2b$10$r1Eul7Lc388k9rphYYt9uO0k1LWw.3ArgbX0VrhjjG1h4lDjBq9tq', '0', 'admin', '2026-04-30 15:47:20.000000', 'admin', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (3, NULL, '13657949429', '浮尘', '10', NULL, '13657949429', '3', '/uploads/avatar/17776451088905990469e66d24eb3a3c6bdc43cf1ea8e.jpeg', '$2b$10$e.qHLRSCCQAalnaH02zua.zACV4fzP2nVwKXt4x1RpSJvVwcDmDuO', '0', NULL, '2026-05-01 10:25:04.355172', NULL, '2026-05-01 22:18:28.000000');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (4, NULL, '13900009999', '测试用户', '10', NULL, '13900009999', '3', NULL, '$2b$10$cq0fnacp.jzQxqKThYUFd.ua3mjW0z9sqft.6VnR/B6y.q2YP3jxu', '0', NULL, '2026-05-01 16:59:40.678142', NULL, '2026-05-01 16:59:40.678142');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (5, NULL, '13800138000', '云裳用户8000', '10', NULL, '13800138000', '3', NULL, '$2b$10$ttm/Dr0mTbna9Ob1OgL6me9em20QJzTXbkREJm6.OY1PXdrVI7rqO', '0', NULL, '2026-05-01 20:49:35.586101', NULL, '2026-05-01 20:49:35.586101');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (6, NULL, '13870431377', '云裳用户1377', '10', NULL, '13870431377', '3', NULL, '$2b$10$B7jcbaCIJVAlfcdmmTLli.PBZNwRWOgZhEbTgdliUxvkfMWRdxAMC', '0', NULL, '2026-05-01 22:20:30.250387', NULL, '2026-05-01 22:20:30.250387');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_user_post
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_post`;
+CREATE TABLE `sys_user_post` (
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `post_id` bigint NOT NULL COMMENT '岗位ID',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`user_id`,`post_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户与岗位关联表 用户1-N岗位';
+
+-- ----------------------------
+-- Records of sys_user_post
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_user_post` (`user_id`, `post_id`, `create_time`, `update_time`) VALUES (1, 1, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_user_post` (`user_id`, `post_id`, `create_time`, `update_time`) VALUES (2, 2, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_user_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+CREATE TABLE `sys_user_role` (
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `create_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  `update_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  PRIMARY KEY (`user_id`,`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户和角色关联表 用户1-N角色';
+
+-- ----------------------------
+-- Records of sys_user_role
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_user_role` (`user_id`, `role_id`, `create_time`, `update_time`) VALUES (1, 1, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
+INSERT INTO `sys_user_role` (`user_id`, `role_id`, `create_time`, `update_time`) VALUES (2, 2, '2026-04-30 15:47:20.000000', '2026-04-30 15:47:20.000000');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
