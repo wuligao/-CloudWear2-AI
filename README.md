@@ -29,3 +29,21 @@ pnpm run dev
 ```
 
 H5 的后端地址通过 `h5-app/.env.local` 的 `NEXT_PUBLIC_API_BASE_URL` 配置；穿搭生成相关 AI Key 和模型地址放在 `api-server/vivy-modules/vivy-system/src/config/config.local.yaml` 或同名环境变量中。
+
+## 服务器部署
+
+当前服务器部署统一使用项目根目录的 `docker-compose.yaml`：
+
+```sh
+cp deploy/.env.compose.example deploy/.env.compose
+vim deploy/.env.compose
+docker compose --env-file deploy/.env.compose up -d --build
+```
+
+目标端口：
+
+- API：`9200`
+- H5：`9300`
+- Web 管理端：`9400`
+
+部署说明见 `docs/deploy-103.242.14.110.md`。

@@ -1,0 +1,70 @@
+name: cloudwear-ai
+
+services:
+  api:
+    container_name: cloudwear-api
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      CLOUDWEAR_API_PORT: ${CLOUDWEAR_API_PORT:-9200}
+      MYSQL_HOST: ${MYSQL_HOST:-127.0.0.1}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-vivy-nest-admin}
+      MYSQL_USER: ${MYSQL_USER:-cloudwear}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-}
+      REDIS_HOST: ${REDIS_HOST:-127.0.0.1}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_USERNAME: ${REDIS_USERNAME:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      OPENAI_TEXT_API_KEY: ${OPENAI_TEXT_API_KEY:-}
+      OPENAI_TEXT_BASE_URL: ${OPENAI_TEXT_BASE_URL:-}
+      OPENAI_TEXT_MODEL: ${OPENAI_TEXT_MODEL:-}
+      OPENAI_IMAGE_API_KEY: ${OPENAI_IMAGE_API_KEY:-}
+      OPENAI_IMAGE_BASE_URL: ${OPENAI_IMAGE_BASE_URL:-}
+      OPENAI_IMAGE_MODEL: ${OPENAI_IMAGE_MODEL:-}
+    volumes:
+      - cloudwear-api-uploads:/app/api-server/vivy-modules/vivy-system/uploads
+      - cloudwear-api-logs:/app/api-server/vivy-modules/vivy-system/logs
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://127.0.0.1:${CLOUDWEAR_API_PORT:-9200}/'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  h5:
+    container_name: cloudwear-h5
+    build:
+      context: .
+      dockerfile: deploy/docker/h5.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://103.242.14.110:9200}
+    network_mode: host
+    restart: unless-stopped
+    command: sh -c "npm run start -- -p ${CLOUDWEAR_H5_PORT:-9300}"
+    depends_on:
+      api:
+        condition: service_started
+
+  admin:
+    container_name: cloudwear-admin
+    build:
+      context: .
+      dockerfile: deploy/docker/admin.Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  cloudwear-api-uploads:
+  cloudwear-api-logs:

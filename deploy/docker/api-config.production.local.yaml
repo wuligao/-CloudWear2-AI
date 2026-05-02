@@ -1,0 +1,39 @@
+app:
+  port: ${{ CLOUDWEAR_API_PORT }}
+
+datasource:
+  defalut:
+    type: mysql
+    host: ${{ MYSQL_HOST }}
+    port: ${{ MYSQL_PORT }}
+    username: ${{ MYSQL_USER }}
+    password: ${{ MYSQL_PASSWORD }}
+    database: ${{ MYSQL_DATABASE }}
+    synchronize: false
+    autoLoadEntities: true
+    bigNumberStrings: false
+    supportBigNumbers: true
+
+redis:
+  defalut:
+    host: ${{ REDIS_HOST }}
+    port: ${{ REDIS_PORT }}
+    username: ${{ REDIS_USERNAME }}
+    password: ${{ REDIS_PASSWORD }}
+    db: 0
+
+bull:
+  redis:
+    host: ${{ REDIS_HOST }}
+    port: ${{ REDIS_PORT }}
+    username: ${{ REDIS_USERNAME }}
+    password: ${{ REDIS_PASSWORD }}
+    db: 1
+
+outfitAi:
+  textApiKey: ${{ OPENAI_TEXT_API_KEY }}
+  textBaseUrl: ${{ OPENAI_TEXT_BASE_URL }}
+  textModel: ${{ OPENAI_TEXT_MODEL }}
+  imageApiKey: ${{ OPENAI_IMAGE_API_KEY }}
+  imageBaseUrl: ${{ OPENAI_IMAGE_BASE_URL }}
+  imageModel: ${{ OPENAI_IMAGE_MODEL }}
