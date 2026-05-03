@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ConfigService } from '@vivy-common/config'
 import { paginate, Pagination } from 'nestjs-typeorm-paginate'
 import { Brackets, In, Repository } from 'typeorm'
 import { SysUser } from '@/modules/system/user/entities/sys-user.entity'
-import type { OutfitGeneration } from './types/outfit'
+import type { OutfitGeneration, OutfitPhotoModeContext, OutfitRecommendationContext } from './types/outfit'
 import type {
   AdminOutfitRecordListQueryDto,
   CreateOutfitRecordDto,
@@ -16,6 +16,8 @@ import { normalizePersistedOutfitImageUrl, persistOutfitImage, removePersistedOu
 
 @Injectable()
 export class OutfitRecordsService {
+  private readonly logger = new Logger(OutfitRecordsService.name)
+
   constructor(
     @InjectRepository(OutfitRecord)
     private readonly records: Repository<OutfitRecord>,
@@ -26,8 +28,22 @@ export class OutfitRecordsService {
 
   async create(dto: CreateOutfitRecordDto, userId: number) {
     const generation = dto.generation
+    this.logger.log({
+      event: 'outfit.record.create.start',
+      generationId: generation.id,
+      source: dto.source || generation.source || (generation.userPhotoUsed ? 'photo' : 'keyword'),
+      taskId: generation.taskId || generation.id,
+      userId,
+    })
     const existingRecord = await this.findExistingRecordForGeneration(userId, generation)
     if (existingRecord) {
+      this.logger.log({
+        event: 'outfit.record.create.existing_found',
+        generationId: generation.id,
+        recordId: existingRecord.recordId,
+        taskId: generation.taskId || generation.id,
+        userId,
+      })
       let shouldSaveExistingRecord = false
       if (!existingRecord.userId && userId) {
         existingRecord.userId = userId
@@ -35,6 +51,13 @@ export class OutfitRecordsService {
       }
       if (!existingRecord.taskId && generation.taskId) {
         existingRecord.taskId = generation.taskId
+        shouldSaveExistingRecord = true
+      }
+      if (
+        (existingRecord.generationDurationMs === undefined || existingRecord.generationDurationMs === null) &&
+        generation.generationDurationMs !== undefined
+      ) {
+        existingRecord.generationDurationMs = generation.generationDurationMs
         shouldSaveExistingRecord = true
       }
       if (!existingRecord.userPhotoUrl && (generation.userPhotoDataUrl || generation.userPhotoUrl)) {
@@ -48,8 +71,21 @@ export class OutfitRecordsService {
         shouldSaveExistingRecord = true
       }
       if (shouldSaveExistingRecord) {
-        return this.toGeneration(await this.records.save(existingRecord))
+        const savedExistingRecord = await this.records.save(existingRecord)
+        this.logger.log({
+          event: 'outfit.record.create.existing_updated',
+          recordId: savedExistingRecord.recordId,
+          taskId: generation.taskId || generation.id,
+          userId,
+        })
+        return this.toGeneration(savedExistingRecord)
       }
+      this.logger.log({
+        event: 'outfit.record.create.existing_reused',
+        recordId: existingRecord.recordId,
+        taskId: generation.taskId || generation.id,
+        userId,
+      })
       return this.toGeneration(existingRecord)
     }
 
@@ -63,7 +99,19 @@ export class OutfitRecordsService {
     if (recordSource === 'photo' && !userPhotoUrl) {
       throw new BadRequestException({ error: '照片生成记录缺少用户上传原图，请重新生成后保存。' })
     }
+    this.logger.log({
+      event: 'outfit.record.image.persist.start',
+      generationId: generation.id,
+      taskId: generation.taskId || generation.id,
+      userId,
+    })
     const imageUrl = await persistOutfitImage(generation.imageUrl, this.config)
+    this.logger.log({
+      event: 'outfit.record.image.persist.complete',
+      generationId: generation.id,
+      taskId: generation.taskId || generation.id,
+      userId,
+    })
     const record = this.records.create({
       userId,
       generationId: generation.id,
@@ -76,6 +124,7 @@ export class OutfitRecordsService {
       totalCount: generation.totalCount || 1,
       successCount: generation.successCount ?? 1,
       failedCount: generation.failedCount ?? 0,
+      generationDurationMs: generation.generationDurationMs,
       season: generation.season,
       temperature: generation.temperature,
       weather: generation.weather,
@@ -97,6 +146,8 @@ export class OutfitRecordsService {
         colorPreference: generation.colorPreference,
         genderPreference: generation.genderPreference,
         imageModel: generation.imageModel,
+        recommendationContext: generation.recommendationContext,
+        photoMode: generation.photoMode,
       }),
       temperatureAdvice: generation.temperatureAdvice,
       occasionReason: generation.occasionReason,
@@ -107,6 +158,13 @@ export class OutfitRecordsService {
     })
 
     const savedRecord = await this.records.save(record)
+    this.logger.log({
+      event: 'outfit.record.create.complete',
+      generationId: generation.id,
+      recordId: savedRecord.recordId,
+      taskId: generation.taskId || generation.id,
+      userId,
+    })
     return this.toGeneration(savedRecord)
   }
 
@@ -296,6 +354,11 @@ export class OutfitRecordsService {
   }
 
   private toGeneration(record: OutfitRecord): OutfitGeneration {
+    const inputSnapshot = this.parseJson<{
+      photoMode?: OutfitPhotoModeContext
+      recommendationContext?: OutfitRecommendationContext
+    }>(record.inputSnapshot, {})
+
     return {
       id: String(record.recordId),
       taskId: record.taskId || record.generationId || String(record.recordId),
@@ -304,6 +367,7 @@ export class OutfitRecordsService {
       totalCount: record.totalCount,
       successCount: record.successCount,
       failedCount: record.failedCount,
+      generationDurationMs: record.generationDurationMs,
       season: record.season,
       temperature: record.temperature,
       weather: record.weather,
@@ -313,6 +377,8 @@ export class OutfitRecordsService {
       colorPreference: record.colorPreference,
       genderPreference: record.genderPreference,
       imageModel: record.imageModel,
+      recommendationContext: this.normalizeRecommendationContext(inputSnapshot.recommendationContext),
+      photoMode: this.normalizePhotoMode(inputSnapshot.photoMode),
       outfitTitle: record.outfitTitle,
       summary: record.summary,
       styleTags: this.parseJson<string[]>(record.styleTags, []),
@@ -340,6 +406,44 @@ export class OutfitRecordsService {
     if (status === 'running' || status === 'failed') return status
 
     return 'succeeded'
+  }
+
+  private normalizeRecommendationContext(value: unknown): OutfitRecommendationContext | undefined {
+    if (!value || typeof value !== 'object') return undefined
+    const context = value as Partial<OutfitRecommendationContext>
+    if (context.kind !== 'weather') return undefined
+    if (context.periodLabel !== '今日' && context.periodLabel !== '明日') return undefined
+
+    return {
+      kind: 'weather',
+      periodLabel: context.periodLabel,
+      sourceLabel: typeof context.sourceLabel === 'string' ? context.sourceLabel : undefined,
+      forecastDateKey: typeof context.forecastDateKey === 'string' ? context.forecastDateKey : undefined,
+      summary: typeof context.summary === 'string' ? context.summary : undefined,
+      weather: typeof context.weather === 'string' ? context.weather : undefined,
+      temperature: typeof context.temperature === 'number' ? context.temperature : undefined,
+      highTemperature: typeof context.highTemperature === 'number' ? context.highTemperature : undefined,
+      lowTemperature: typeof context.lowTemperature === 'number' ? context.lowTemperature : undefined,
+      precipitationProbability:
+        typeof context.precipitationProbability === 'number' ? context.precipitationProbability : undefined,
+      location: typeof context.location === 'string' ? context.location : undefined,
+      scenarioTaskId: typeof context.scenarioTaskId === 'string' ? context.scenarioTaskId : undefined,
+      title: typeof context.title === 'string' ? context.title : undefined,
+    }
+  }
+
+  private normalizePhotoMode(value: unknown): OutfitPhotoModeContext | undefined {
+    if (!value || typeof value !== 'object') return undefined
+    const mode = value as Partial<OutfitPhotoModeContext>
+    if (typeof mode.id !== 'string' || typeof mode.label !== 'string' || typeof mode.prompt !== 'string') {
+      return undefined
+    }
+
+    return {
+      id: mode.id,
+      label: mode.label,
+      prompt: mode.prompt,
+    }
   }
 
 }

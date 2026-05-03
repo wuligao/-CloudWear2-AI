@@ -6,7 +6,7 @@ import { SysUser } from '@/modules/system/user/entities/sys-user.entity'
 import { AiModelService } from '../ai-model/ai-model.service'
 import { H5StyleProfile } from './entities/h5-style-profile.entity'
 import { OutfitRecord } from './entities/outfit-record.entity'
-import { H5StyleProfileDto } from './h5-profile.dto'
+import { H5StyleProfileDto, H5StyleProfileFeedbackDto, H5StyleProfilePhotoAnalysisDto } from './h5-profile.dto'
 import {
   buildH5ProfileOverview,
   buildH5StyleArchive,
@@ -14,7 +14,11 @@ import {
   H5StyleProfileInput,
   H5ProfileUserInput,
 } from './h5-profile-overview'
-import { normalizePersistedOutfitImageUrl } from './outfit-image-storage'
+import { analyzeStyleProfilePhoto, StyleProfileAnalysisResult } from './ai/openai'
+import { normalizePersistedOutfitImageUrl, persistOutfitImage } from './outfit-image-storage'
+
+type H5StylePhotoType = 'fullBody' | 'face' | 'makeupFree'
+type H5StylePhotoMap = Partial<Record<H5StylePhotoType, { url: string; updatedAt?: string }>>
 
 @Injectable()
 export class H5ProfileService {
@@ -55,7 +59,7 @@ export class H5ProfileService {
 
   async upsertStyleProfile(dto: H5StyleProfileDto, userId: number) {
     const current = await this.findStyleProfile({ userId })
-    const entity = this.styleProfiles.merge(current || this.styleProfiles.create(), {
+    const patch: Partial<H5StyleProfile> = {
       userId,
       height: dto.height,
       weight: dto.weight,
@@ -69,6 +73,86 @@ export class H5ProfileService {
       fitPreferences: stringifyList(dto.fitPreferences),
       bodyMetrics: stringifyObject(dto.bodyMetrics),
       notes: dto.notes,
+    }
+
+    if (Object.prototype.hasOwnProperty.call(dto, 'basePhotos')) {
+      patch.basePhotos = stringifyObject(dto.basePhotos)
+    }
+    if (Object.prototype.hasOwnProperty.call(dto, 'analysisReport')) {
+      patch.analysisReport = stringifyObject(dto.analysisReport)
+    }
+    if (Object.prototype.hasOwnProperty.call(dto, 'recommendedColors')) {
+      patch.recommendedColors = stringifyObject(dto.recommendedColors)
+    }
+    if (Object.prototype.hasOwnProperty.call(dto, 'recommendedStyles')) {
+      patch.recommendedStyles = stringifyObject(dto.recommendedStyles)
+    }
+    if (Object.prototype.hasOwnProperty.call(dto, 'analysisUpdatedAt')) {
+      patch.analysisUpdatedAt = dto.analysisUpdatedAt ? new Date(dto.analysisUpdatedAt) : undefined
+    }
+
+    const entity = this.styleProfiles.merge(current || this.styleProfiles.create(), patch)
+
+    return this.toStyleProfileResponse(await this.styleProfiles.save(entity), userId)
+  }
+
+  async analyzeStyleProfilePhoto(dto: H5StyleProfilePhotoAnalysisDto, userId: number) {
+    const current = await this.findStyleProfile({ userId })
+    const currentInput = this.toStyleProfileInput(current)
+    const aiConfig = {
+      ...this.config.get('outfitAi', {}),
+      ...(await this.aiModelService.getH5RuntimeConfig(undefined, true)),
+    }
+    const [analysis, photoUrl] = await Promise.all([
+      analyzeStyleProfilePhoto(
+        {
+          photoType: dto.photoType,
+          photoDataUrl: dto.photoDataUrl,
+          currentProfile: currentInput,
+        },
+        aiConfig
+      ),
+      persistOutfitImage(dto.photoDataUrl, this.config),
+    ])
+    const now = new Date()
+    const basePhotos: H5StylePhotoMap = {
+      ...parseJson<H5StylePhotoMap>(current?.basePhotos, {}),
+      [dto.photoType]: {
+        url: photoUrl,
+        updatedAt: now.toISOString(),
+      },
+    }
+    const entity = this.styleProfiles.merge(current || this.styleProfiles.create(), {
+      userId,
+      basePhotos: stringifyObject(basePhotos),
+      analysisReport: stringifyObject(analysis.analysisReport),
+      recommendedColors: stringifyObject(analysis.recommendedColors),
+      recommendedStyles: stringifyObject(analysis.recommendedStyles),
+      analysisUpdatedAt: now,
+      favoriteStyles: stringifyList(mergeLists(currentInput.favoriteStyles, analysis.profileUpdates.favoriteStyles)),
+      favoriteColors: stringifyList(mergeLists(currentInput.favoriteColors, analysis.profileUpdates.favoriteColors)),
+      avoidColors: stringifyList(mergeLists(currentInput.avoidColors, analysis.profileUpdates.avoidColors)),
+      elementPreferences: stringifyList(mergeLists(currentInput.elementPreferences, analysis.profileUpdates.elementPreferences)),
+      fitPreferences: stringifyList(mergeLists(currentInput.fitPreferences, analysis.profileUpdates.fitPreferences)),
+      notes: mergeAnalysisNotes(currentInput.notes, analysis),
+    })
+
+    return this.toStyleProfileResponse(await this.styleProfiles.save(entity), userId)
+  }
+
+  async applyStyleProfileFeedback(dto: H5StyleProfileFeedbackDto, userId: number) {
+    const current = await this.findStyleProfile({ userId })
+    const currentInput = this.toStyleProfileInput(current)
+    const updates = buildFeedbackProfileUpdates(dto)
+    const entity = this.styleProfiles.merge(current || this.styleProfiles.create(), {
+      userId,
+      favoriteStyles: stringifyList(mergeLists(currentInput.favoriteStyles, updates.favoriteStyles)),
+      favoriteColors: stringifyList(mergeLists(currentInput.favoriteColors, updates.favoriteColors)),
+      avoidColors: stringifyList(mergeLists(currentInput.avoidColors, updates.avoidColors)),
+      commonOccasions: stringifyList(mergeLists(currentInput.commonOccasions, updates.commonOccasions)),
+      elementPreferences: stringifyList(mergeLists(currentInput.elementPreferences, updates.elementPreferences)),
+      fitPreferences: stringifyList(mergeLists(currentInput.fitPreferences, updates.fitPreferences)),
+      notes: mergeFeedbackNote(currentInput.notes, dto),
     })
 
     return this.toStyleProfileResponse(await this.styleProfiles.save(entity), userId)
@@ -351,6 +435,11 @@ export class H5ProfileService {
       elementPreferences: parseJson(profile.elementPreferences, []),
       fitPreferences: parseJson(profile.fitPreferences, []),
       bodyMetrics: parseJson(profile.bodyMetrics, {}),
+      basePhotos: parseJson(profile.basePhotos, {}),
+      analysisReport: parseJson(profile.analysisReport, undefined),
+      recommendedColors: parseJson(profile.recommendedColors, []),
+      recommendedStyles: parseJson(profile.recommendedStyles, []),
+      analysisUpdatedAt: toIsoDate(profile.analysisUpdatedAt),
       notes: profile.notes,
     }
   }
@@ -372,6 +461,12 @@ export class H5ProfileService {
       elementPreferences: input.elementPreferences || [],
       fitPreferences: input.fitPreferences || [],
       bodyMetrics: input.bodyMetrics || {},
+      basePhotos: normalizeStylePhotoUrls(input.basePhotos, this.config),
+      analysisReport: input.analysisReport,
+      recommendedColors: input.recommendedColors || [],
+      recommendedStyles: input.recommendedStyles || [],
+      analysisUpdatedAt: input.analysisUpdatedAt || toIsoDate(profile?.analysisUpdatedAt),
+      completionPercent: calculateStyleProfileCompletion(input),
       notes: input.notes || '',
       updatedAt: profile?.updateTime,
     }
@@ -400,8 +495,106 @@ function stringifyList(value?: string[]) {
   return JSON.stringify(value || [])
 }
 
-function stringifyObject(value?: Record<string, unknown>) {
+function stringifyObject(value?: unknown) {
   return JSON.stringify(value || {})
+}
+
+function mergeLists(current: string[] = [], next: string[] = []) {
+  return Array.from(new Set([...current, ...next].map((item) => item.trim()).filter(Boolean))).slice(0, 16)
+}
+
+function mergeAnalysisNotes(currentNotes: string | undefined, analysis: StyleProfileAnalysisResult) {
+  const analysisNote = analysis.profileUpdates.notes?.trim()
+  if (!analysisNote) return currentNotes
+  if (!currentNotes) return analysisNote
+  if (currentNotes.includes(analysisNote)) return currentNotes
+
+  return `${currentNotes}\nAI分析：${analysisNote}`.slice(0, 500)
+}
+
+function buildFeedbackProfileUpdates(dto: H5StyleProfileFeedbackDto) {
+  const generation = dto.generation
+  const feedback = dto.feedback
+  const liked = feedback === '喜欢这套'
+  const categories = generation.items.map((item) => item.category).filter(Boolean) as string[]
+  const itemNames = generation.items.map((item) => item.name).filter(Boolean) as string[]
+
+  return {
+    favoriteStyles: liked
+      ? normalizeFeedbackList([
+          generation.style,
+          ...(generation.styleTags || []),
+          generation.photoMode?.label,
+          generation.recommendationContext?.title,
+        ])
+      : normalizeFeedbackList([generation.style]),
+    favoriteColors: liked ? normalizeFeedbackList([generation.colorPreference]) : [],
+    avoidColors: feedback === '颜色不适合' ? normalizeFeedbackList([generation.colorPreference]) : [],
+    commonOccasions: liked ? normalizeFeedbackList([generation.occasion]) : [],
+    elementPreferences:
+      feedback === '太普通'
+        ? normalizeFeedbackList(['更有设计感', '层次感', ...categories.slice(0, 3), ...itemNames.slice(0, 2)])
+        : liked
+          ? normalizeFeedbackList([...categories.slice(0, 4), ...itemNames.slice(0, 2)])
+          : [],
+    fitPreferences: feedback === '想更显瘦' ? ['显瘦', '纵向线条', '比例优化'] : [],
+  }
+}
+
+function mergeFeedbackNote(currentNotes: string | undefined, dto: H5StyleProfileFeedbackDto) {
+  const title = dto.generation.outfitTitle || dto.generation.style || '当前穿搭'
+  const note = `结果反馈：${dto.feedback}（${title}）`
+  if (!currentNotes) return note
+  if (currentNotes.includes(note)) return currentNotes
+
+  return `${currentNotes}\n${note}`.slice(0, 500)
+}
+
+function normalizeFeedbackList(values: Array<string | undefined>) {
+  return values
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value && value !== '不限' && value !== '不限场景'))
+    .slice(0, 8)
+}
+
+function normalizeStylePhotoUrls(basePhotos: H5StyleProfileInput['basePhotos'] = {}, config: ConfigService) {
+  return Object.fromEntries(
+    Object.entries(basePhotos)
+      .map(([key, value]) => [
+        key,
+        value
+          ? {
+              ...value,
+              url: normalizePersistedOutfitImageUrl(value.url, config) || value.url,
+            }
+          : undefined,
+      ])
+      .filter(([, value]) => Boolean(value))
+  )
+}
+
+function calculateStyleProfileCompletion(profile: H5StyleProfileInput) {
+  const checks = [
+    profile.height,
+    profile.weight,
+    profile.clothingSize,
+    profile.shoeSize,
+    profile.favoriteStyles?.length,
+    profile.favoriteColors?.length,
+    profile.commonOccasions?.length,
+    profile.elementPreferences?.length,
+    profile.fitPreferences?.length,
+    profile.bodyMetrics?.shoulder || profile.bodyMetrics?.waist || profile.bodyMetrics?.hip,
+    profile.basePhotos?.fullBody?.url,
+    profile.basePhotos?.face?.url,
+    profile.basePhotos?.makeupFree?.url,
+    profile.analysisReport,
+    profile.recommendedColors?.length,
+    profile.recommendedStyles?.length,
+  ]
+  const done = checks.filter(Boolean).length
+
+  return Math.min(100, Math.max(0, Math.round((done / checks.length) * 100)))
 }
 
 function parseJson<T>(value: string | undefined, fallback: T): T {

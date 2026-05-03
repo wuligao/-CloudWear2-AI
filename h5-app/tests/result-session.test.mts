@@ -46,6 +46,40 @@ test("parseOutfitResultSessionSnapshot keeps valid generated looks", () => {
   assert.equal(session.results[0]?.outfitTitle, "轻潮街拍风方案");
 });
 
+test("parseOutfitResultSessionSnapshot keeps weather recommendation context", () => {
+  const snapshot = JSON.stringify({
+    taskId: "task-1",
+    source: "keyword",
+    createdAt: "2026-05-01T00:00:00.000Z",
+    recommendationContext: {
+      kind: "weather",
+      periodLabel: "明日",
+      sourceLabel: "上海明日天气预报",
+      weather: "小雨",
+      temperature: 18,
+    },
+    results: [generation],
+  });
+
+  const session = parseOutfitResultSessionSnapshot(snapshot);
+
+  assert.deepEqual(session.recommendationContext, {
+    kind: "weather",
+    periodLabel: "明日",
+    sourceLabel: "上海明日天气预报",
+    forecastDateKey: undefined,
+    summary: undefined,
+    weather: "小雨",
+    temperature: 18,
+    highTemperature: undefined,
+    lowTemperature: undefined,
+    precipitationProbability: undefined,
+    location: undefined,
+    scenarioTaskId: undefined,
+    title: undefined,
+  });
+});
+
 test("parseOutfitResultSessionSnapshot falls back for broken snapshots", () => {
   assert.deepEqual(
     parseOutfitResultSessionSnapshot("{broken"),

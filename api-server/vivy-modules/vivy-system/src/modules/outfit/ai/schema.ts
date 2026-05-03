@@ -1,5 +1,27 @@
 import { z } from 'zod'
 
+export const outfitRecommendationContextSchema = z.object({
+  kind: z.literal('weather'),
+  periodLabel: z.enum(['今日', '明日']),
+  sourceLabel: z.string().trim().max(120).optional(),
+  forecastDateKey: z.string().trim().max(20).optional(),
+  summary: z.string().trim().max(240).optional(),
+  weather: z.string().trim().max(40).optional(),
+  temperature: z.coerce.number().int().min(-30).max(50).optional(),
+  highTemperature: z.coerce.number().int().min(-30).max(50).optional(),
+  lowTemperature: z.coerce.number().int().min(-30).max(50).optional(),
+  precipitationProbability: z.coerce.number().int().min(0).max(100).optional(),
+  location: z.string().trim().max(120).optional(),
+  scenarioTaskId: z.string().trim().max(100).optional(),
+  title: z.string().trim().max(120).optional(),
+})
+
+export const outfitPhotoModeContextSchema = z.object({
+  id: z.string().trim().min(1).max(60),
+  label: z.string().trim().min(1).max(40),
+  prompt: z.string().trim().min(1).max(160),
+})
+
 export const outfitInputSchema = z.object({
   season: z.string().trim().min(1).max(10),
   temperature: z.coerce.number().int().min(-30).max(50),
@@ -21,6 +43,8 @@ export const outfitInputSchema = z.object({
     .regex(/^data:image\/(png|jpeg|jpg|webp);base64,/)
     .max(9_000_000)
     .optional(),
+  recommendationContext: outfitRecommendationContextSchema.optional(),
+  photoMode: outfitPhotoModeContextSchema.optional(),
 })
 
 export const outfitItemSchema = z.object({

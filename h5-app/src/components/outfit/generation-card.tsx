@@ -75,7 +75,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
         </div>
       </dl>
       <DeleteConfirmDialog
-        description={`即将删除「${generation.outfitTitle}」，删除后列表中将不再展示这条生成记录。`}
+        description={`即将删除「${generation.outfitTitle}」，删除后 AI 衣橱中将不再展示这套穿搭。`}
         open={deleteConfirmOpen}
         onCancel={() => setDeleteConfirmOpen(false)}
         onConfirm={confirmDelete}

@@ -64,6 +64,16 @@ export function countCompletedGenerationImages(
   return normalizedCount;
 }
 
+export function getGenerationTaskElapsedSeconds(
+  createdAt?: string,
+  now = Date.now(),
+) {
+  const startedAt = Date.parse(String(createdAt || ""));
+  if (!Number.isFinite(startedAt)) return 0;
+
+  return Math.max(0, Math.floor((now - startedAt) / 1000));
+}
+
 export function readActiveGenerationTask(): ActiveGenerationTask | null {
   return readActiveGenerationTasks()[0] || null;
 }

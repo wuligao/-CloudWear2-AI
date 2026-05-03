@@ -86,7 +86,7 @@ export function RequireH5Auth({ children }: { children: ReactNode }) {
         <div className="cw-auth-required-card">
           <span>CloudWear</span>
           <h1>请先登录</h1>
-          <p>登录后即可继续使用生成记录、风格档案和 AI 换搭功能。</p>
+          <p>登录后即可继续使用 AI 衣橱、风格档案和 AI 换搭功能。</p>
           <button type="button" onClick={goLoginNow}>
             <LogIn size={17} />
             <strong>去登录</strong>

@@ -230,6 +230,7 @@ CREATE TABLE `cw_outfit_record` (
   `total_count` int NOT NULL DEFAULT '1' COMMENT '生成总数',
   `success_count` int NOT NULL DEFAULT '1' COMMENT '成功数量',
   `failed_count` int NOT NULL DEFAULT '0' COMMENT '失败数量',
+  `generation_duration_ms` int DEFAULT NULL COMMENT '生成耗时毫秒',
   `season` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '季节',
   `temperature` int NOT NULL COMMENT '温度',
   `weather` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '天气',

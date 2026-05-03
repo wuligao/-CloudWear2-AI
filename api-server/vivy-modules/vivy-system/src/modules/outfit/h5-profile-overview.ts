@@ -25,6 +25,11 @@ export interface H5StyleProfileInput {
   elementPreferences?: string[]
   fitPreferences?: string[]
   bodyMetrics?: Partial<Record<'shoulder' | 'bust' | 'waist' | 'hip' | 'thigh' | 'calf', string>>
+  basePhotos?: Partial<Record<'fullBody' | 'face' | 'makeupFree', { url: string; updatedAt?: string }>>
+  analysisReport?: unknown
+  recommendedColors?: Array<{ label: string; value: string }>
+  recommendedStyles?: Array<{ label: string; description?: string; imageUrl?: string }>
+  analysisUpdatedAt?: string
   notes?: string
 }
 

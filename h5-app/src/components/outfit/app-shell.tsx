@@ -45,7 +45,7 @@ export function AppShell({
               <span>云裳 AI</span>
               <small>CloudWear</small>
             </Link>
-            <Link className="header-history" href="/history" aria-label="查看历史">
+            <Link className="header-history" href="/history" aria-label="查看 AI 衣橱">
               <Clock3 size={16} />
               <span>历史</span>
             </Link>

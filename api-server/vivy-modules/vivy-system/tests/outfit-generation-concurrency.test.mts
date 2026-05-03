@@ -23,23 +23,24 @@ const basePlan: OutfitPlan = {
   imagePrompt: 'street style outfit',
 }
 
-test('generateOutfitVariantResults starts all image generations concurrently', async () => {
+test('generateOutfitVariantResults generates images sequentially', async () => {
   const variants = Array.from({ length: 4 }, (_, index) => ({
     ...basePlan,
     outfitTitle: `方案 ${index + 1}`,
     imagePrompt: `variant ${index + 1}`,
   }))
-  const pendingResolvers: Array<(value: string) => void> = []
   const startedIndexes: number[] = []
+  const finishedIndexes: number[] = []
   const progressMessages: string[] = []
 
-  const runPromise = generateOutfitVariantResults({
+  const results = await generateOutfitVariantResults({
     aiConfig: {},
     imageGenerator: async (plan) => {
-      startedIndexes.push(Number(plan.imagePrompt.replace('variant ', '')))
-      return new Promise<string>((resolve) => {
-        pendingResolvers.push(resolve)
-      })
+      const index = Number(plan.imagePrompt.replace('variant ', ''))
+      startedIndexes.push(index)
+      await Promise.resolve()
+      finishedIndexes.push(index)
+      return `data:image/png;base64,${index}`
     },
     input,
     now: '2026-05-01T06:00:00.000Z',
@@ -49,14 +50,8 @@ test('generateOutfitVariantResults starts all image generations concurrently', a
     variants,
   })
 
-  await Promise.resolve()
-
   assert.deepEqual(startedIndexes, [1, 2, 3, 4])
-  assert.equal(pendingResolvers.length, 4)
-
-  pendingResolvers.forEach((resolve, index) => resolve(`data:image/png;base64,${index + 1}`))
-  const results = await runPromise
-
+  assert.deepEqual(finishedIndexes, [1, 2, 3, 4])
   assert.equal(results.length, 4)
   assert.deepEqual(
     results.map((result) => result.id),
@@ -65,37 +60,59 @@ test('generateOutfitVariantResults starts all image generations concurrently', a
   assert.equal(progressMessages.at(-1), '已完成 4 / 4 套穿搭图片。')
 })
 
-test('generateOutfitVariantResults waits for concurrent requests before reporting failure', async () => {
+test('generateOutfitVariantResults stops when one image generation fails', async () => {
   const variants = Array.from({ length: 2 }, (_, index) => ({
     ...basePlan,
     outfitTitle: `方案 ${index + 1}`,
     imagePrompt: `variant ${index + 1}`,
   }))
-  let resolveSecond: ((value: string) => void) | null = null
-  let rejected = false
+  const startedIndexes: number[] = []
 
-  const runPromise = generateOutfitVariantResults({
-    aiConfig: {},
-    imageGenerator: async (plan) => {
-      if (plan.imagePrompt === 'variant 1') throw new Error('image failed')
-      return new Promise<string>((resolve) => {
-        resolveSecond = resolve
-      })
-    },
-    input,
-    now: '2026-05-01T06:00:00.000Z',
-    safeInput: input,
-    taskId: 'task-2',
-    variants,
-  }).catch((error: Error) => {
-    rejected = true
-    throw error
-  })
+  await assert.rejects(
+    generateOutfitVariantResults({
+      aiConfig: {},
+      imageGenerator: async (plan) => {
+        const index = Number(plan.imagePrompt.replace('variant ', ''))
+        startedIndexes.push(index)
+        if (index === 1) throw new Error('image failed')
+        return `data:image/png;base64,${index}`
+      },
+      input,
+      now: '2026-05-01T06:00:00.000Z',
+      safeInput: input,
+      taskId: 'task-2',
+      variants,
+    }),
+    /image failed/
+  )
 
-  await Promise.resolve()
-  assert.equal(rejected, false)
+  assert.deepEqual(startedIndexes, [1])
+})
 
-  resolveSecond?.('data:image/png;base64,2')
-  await assert.rejects(runPromise, /image failed/)
-  assert.equal(rejected, true)
+test('generateOutfitVariantResults keeps earlier successful results internal until all variants finish', async () => {
+  const variants = Array.from({ length: 2 }, (_, index) => ({
+    ...basePlan,
+    outfitTitle: `方案 ${index + 1}`,
+    imagePrompt: `variant ${index + 1}`,
+  }))
+  const progressMessages: string[] = []
+
+  await assert.rejects(
+    generateOutfitVariantResults({
+      aiConfig: {},
+      imageGenerator: async (plan) => {
+        if (plan.imagePrompt === 'variant 2') throw new Error('image failed')
+        return 'data:image/png;base64,1'
+      },
+      input,
+      now: '2026-05-01T06:00:00.000Z',
+      onProgress: ({ message }) => progressMessages.push(message),
+      safeInput: input,
+      taskId: 'task-2',
+      variants,
+    }),
+    /image failed/
+  )
+
+  assert.deepEqual(progressMessages, ['已完成 1 / 2 套穿搭图片。'])
 })

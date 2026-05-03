@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Put, Query, Req, Res, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, HttpStatus, Post, Put, Query, Req, Res, UnauthorizedException } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { AjaxResult } from '@vivy-common/core'
 import { Public, RequirePermissions, TokenService } from '@vivy-common/security'
@@ -7,6 +7,8 @@ import { ZodError } from 'zod'
 import {
   AdminH5StyleProfileQueryDto,
   h5ProfileOverviewQuerySchema,
+  h5StyleProfileFeedbackSchema,
+  h5StyleProfilePhotoAnalysisSchema,
   h5StyleProfileQuerySchema,
   h5StyleProfileSchema,
 } from './h5-profile.dto'
@@ -54,6 +56,32 @@ export class H5ProfileController {
       return AjaxResult.success(await this.h5ProfileService.upsertStyleProfile(parsedPayload, await this.resolveLoginUserId(request)))
     } catch (error) {
       return this.handleError(error, response, '风格档案内容不完整或格式不正确。')
+    }
+  }
+
+  @Post('archive/analyze-photo')
+  @Public()
+  async analyzeArchivePhoto(@Body() payload: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    try {
+      const parsedPayload = h5StyleProfilePhotoAnalysisSchema.parse(payload)
+      return AjaxResult.success(
+        await this.h5ProfileService.analyzeStyleProfilePhoto(parsedPayload, await this.resolveLoginUserId(request))
+      )
+    } catch (error) {
+      return this.handleError(error, response, '风格照片内容不完整或格式不正确。')
+    }
+  }
+
+  @Post('feedback')
+  @Public()
+  async feedback(@Body() payload: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    try {
+      const parsedPayload = h5StyleProfileFeedbackSchema.parse(payload)
+      return AjaxResult.success(
+        await this.h5ProfileService.applyStyleProfileFeedback(parsedPayload, await this.resolveLoginUserId(request))
+      )
+    } catch (error) {
+      return this.handleError(error, response, '反馈内容不完整或格式不正确。')
     }
   }
 

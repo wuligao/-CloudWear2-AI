@@ -5,10 +5,16 @@ export interface ImageModelOption {
   supportsPhotoInput: boolean
 }
 
-export const defaultImageModel = 'gpt-4o-image'
-export const defaultPhotoImageModel = 'gpt-4o-image'
+export const defaultImageModel = 'gpt-image-2'
+export const defaultPhotoImageModel = 'gpt-image-2'
 
 export const imageModelOptions = [
+  {
+    id: 'gpt-image-2',
+    label: 'gpt-image-2',
+    group: 'OpenAI',
+    supportsPhotoInput: true,
+  },
   {
     id: 'gpt-4o-image',
     label: 'GPT-4o Image',

@@ -36,7 +36,7 @@ const disabledStatus = '1'
 type OptionEditorType = 'label' | 'label-value' | 'image' | 'icon' | 'color' | 'model'
 type OptionGroupKey = Exclude<
   keyof H5OutfitOptionConfig,
-  'dailyFreeGenerationLimit' | 'homeCategories' | 'inspirationKeywords' | 'login'
+  'dailyFreeGenerationLimit' | 'tomorrowRecommendationStartHour' | 'homeCategories' | 'inspirationKeywords' | 'login'
 >
 type ConfigSectionKey = 'home' | 'login' | OptionGroupKey
 
@@ -83,6 +83,7 @@ const defaultLoginConfig: H5LoginConfig = {
 
 const emptyOptions: H5OutfitOptionConfig = {
   dailyFreeGenerationLimit: 3,
+  tomorrowRecommendationStartHour: 20,
   login: defaultLoginConfig,
   inspirationKeywords: [],
   homeCategories: [],
@@ -126,6 +127,15 @@ const parseLines = (value: string) =>
     .filter(Boolean)
 
 const stringifyLines = (value: string[]) => value.join('\n')
+
+const readTextSetting = (value: unknown, fallback: string) =>
+  value === undefined ? fallback : String(value || '').trim() || fallback
+
+const readBooleanSetting = (value: unknown, fallback: boolean) =>
+  value === undefined ? fallback : Boolean(value)
+
+const readLinesSetting = (value: unknown, fallback: string[]) =>
+  value === undefined ? fallback : parseLines(String(value || ''))
 
 const createOption = (type: OptionEditorType): H5OutfitOptionItem => {
   if (type === 'color') return { label: '新颜色', value: '#4f6bff' }
@@ -174,6 +184,7 @@ const H5ConfigPage = () => {
         photoImageModelPk: h5Config.photoImageModelPk,
         status: h5Config.status === normalStatus,
         dailyFreeGenerationLimit: h5Config.options?.dailyFreeGenerationLimit ?? 3,
+        tomorrowRecommendationStartHour: h5Config.options?.tomorrowRecommendationStartHour ?? 20,
         inspirationKeywords: stringifyLines(h5Config.options?.inspirationKeywords || []),
         homeCategories: stringifyLines(h5Config.options?.homeCategories || []),
         loginHeroImage: nextOptions.login.heroImage,
@@ -199,24 +210,34 @@ const H5ConfigPage = () => {
   }
 
   const handleSave = async () => {
-    const values = await form.validateFields()
+    await form.validateFields()
+    const values = form.getFieldsValue(true)
     setSaving(true)
     try {
+      const currentLogin = {
+        ...defaultLoginConfig,
+        ...(options.login || {}),
+      }
       const nextOptions = {
         ...options,
         dailyFreeGenerationLimit: Number(values.dailyFreeGenerationLimit ?? options.dailyFreeGenerationLimit ?? 3),
-        inspirationKeywords: parseLines(values.inspirationKeywords || ''),
-        homeCategories: parseLines(values.homeCategories || ''),
+        tomorrowRecommendationStartHour: Number(
+          values.tomorrowRecommendationStartHour ?? options.tomorrowRecommendationStartHour ?? 20,
+        ),
+        inspirationKeywords: readLinesSetting(values.inspirationKeywords, options.inspirationKeywords || []),
+        homeCategories: readLinesSetting(values.homeCategories, options.homeCategories || []),
         login: {
-          ...defaultLoginConfig,
-          ...options.login,
-          heroImage: String(values.loginHeroImage || '').trim() || defaultLoginConfig.heroImage,
-          heroAlt: String(values.loginHeroAlt || '').trim() || defaultLoginConfig.heroAlt,
-          brandTitle: String(values.loginBrandTitle || '').trim() || defaultLoginConfig.brandTitle,
-          subtitle: String(values.loginSubtitle || '').trim() || defaultLoginConfig.subtitle,
-          phonePasswordEnabled: Boolean(values.loginPhonePasswordEnabled),
-          registerEnabled: Boolean(values.loginRegisterEnabled),
-          wechatEnabled: Boolean(values.loginWechatEnabled),
+          ...currentLogin,
+          heroImage: readTextSetting(values.loginHeroImage, currentLogin.heroImage),
+          heroAlt: readTextSetting(values.loginHeroAlt, currentLogin.heroAlt),
+          brandTitle: readTextSetting(values.loginBrandTitle, currentLogin.brandTitle),
+          subtitle: readTextSetting(values.loginSubtitle, currentLogin.subtitle),
+          phonePasswordEnabled: readBooleanSetting(
+            values.loginPhonePasswordEnabled,
+            currentLogin.phonePasswordEnabled,
+          ),
+          registerEnabled: readBooleanSetting(values.loginRegisterEnabled, currentLogin.registerEnabled),
+          wechatEnabled: readBooleanSetting(values.loginWechatEnabled, currentLogin.wechatEnabled),
         },
       }
       await updateH5ModelConfig({
@@ -325,9 +346,18 @@ const H5ConfigPage = () => {
                 <InputNumber min={0} max={100} precision={0} addonAfter="张/天" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
+            <Col xs={24} md={10} lg={8}>
+              <Form.Item
+                name="tomorrowRecommendationStartHour"
+                label="明日推荐开始时间"
+                rules={[{ required: true, message: '请输入明日推荐开始时间' }]}
+              >
+                <InputNumber min={0} max={23} precision={0} addonAfter="点后" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
             <Col xs={24} md={14} lg={16}>
               <Typography.Text type="secondary">
-                设置为 0 时，H5 用户当天不能免费生成图片；如果一次选择 3 张，会一次性扣 3 张额度。
+                设置为 0 时，H5 用户当天不能免费生成图片；明日推荐开始时间用于控制 H5 首页几点后改用明天天气。
               </Typography.Text>
             </Col>
           </Row>
@@ -603,18 +633,6 @@ function OptionEditor({
                   placeholder="值"
                   value={String(item.value ?? '')}
                   onChange={(event) => updateItem(index, { value: event.target.value })}
-                />
-              ) : null}
-              {type === 'model' ? (
-                <Select
-                  className="value-input"
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="选择模型"
-                  value={item.value ? String(item.value) : undefined}
-                  options={modelOptions}
-                  onChange={(modelPk) => updateItem(index, { value: modelPk })}
                 />
               ) : null}
               {type === 'image' ? (

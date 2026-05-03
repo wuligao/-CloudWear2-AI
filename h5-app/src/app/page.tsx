@@ -5,6 +5,7 @@ import { RequireH5Auth } from "@/components/outfit/require-h5-auth";
 type HomeProps = {
   searchParams?: Promise<{
     screen?: string;
+    taskId?: string;
   }>;
 };
 
@@ -13,6 +14,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const initialScreen =
     params?.screen === "photo" || params?.screen === "keyword"
       ? params.screen
+      : params?.taskId
+        ? "keyword"
       : "home";
 
   return (

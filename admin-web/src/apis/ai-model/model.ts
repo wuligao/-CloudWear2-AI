@@ -119,6 +119,7 @@ export interface H5LoginConfig {
 
 export interface H5OutfitOptionConfig {
   dailyFreeGenerationLimit: number
+  tomorrowRecommendationStartHour: number
   login: H5LoginConfig
   inspirationKeywords: string[]
   homeCategories: string[]

@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft,
-  ChevronRight,
-  Download,
   Eye,
   Filter,
   ImageIcon,
+  LoaderCircle,
+  MoreHorizontal,
   RotateCw,
   Search,
+  TriangleAlert,
 } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/outfit/delete-confirm-dialog";
 import { outfitApiEndpoints, resolveBackendAssetUrl } from "@/lib/api-endpoints";
@@ -19,9 +20,15 @@ import {
   type ActiveGenerationTask,
   readActiveGenerationTasks,
 } from "@/lib/generation-task-state";
+import { formatGenerationDuration } from "@/lib/generation-duration";
 import { deleteOutfitRecord, listOutfitRecords } from "@/lib/outfit-records";
+import { getPhotoModeLabel } from "@/lib/photo-modes";
 import { buildRecordPreviewStack } from "@/lib/record-preview-stack";
 import type { RecordPreviewStack } from "@/lib/record-preview-stack";
+import {
+  appendRecommendationContextParams,
+  getRecommendationContextLabel,
+} from "@/lib/scenario-tasks";
 import type {
   ApiErrorResponse,
   GenerateOutfitTaskSnapshot,
@@ -117,7 +124,7 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : "生成记录读取失败，请稍后重试。",
+              : "AI 衣橱读取失败，请稍后重试。",
           );
         }
       } finally {
@@ -140,9 +147,9 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
   }, [activeTaskRefreshTick, keyword, status]);
 
   const visibleTitle = useMemo(() => {
-    if (status === "all") return "全部生成记录";
+    if (status === "all") return "全部 AI 衣橱";
     return (
-      statusTabs.find((item) => item.value === status)?.label || "生成记录"
+      statusTabs.find((item) => item.value === status)?.label || "AI 衣橱"
     );
   }, [status]);
 
@@ -165,21 +172,12 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "生成记录删除失败。",
+          : "AI 衣橱删除失败。",
       );
       return false;
     } finally {
       setDeletingId("");
     }
-  }
-
-  function downloadGeneration(generation: OutfitGeneration) {
-    const link = document.createElement("a");
-    link.href = resolveBackendAssetUrl(generation.imageUrl);
-    link.download = `${sanitizeDownloadName(generation.outfitTitle)}.png`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
   }
 
   return (
@@ -195,7 +193,7 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
         >
           <ChevronLeft size={25} />
         </button>
-        <h1>生成记录</h1>
+        <h1>AI 衣橱</h1>
         <button
           className="record-filter-button"
           type="button"
@@ -218,7 +216,7 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
       <div
         className={`record-tabs status-${status}`}
         role="tablist"
-        aria-label="生成记录状态"
+        aria-label="AI 衣橱状态"
       >
         {statusTabs.map((item) => (
           <button
@@ -254,12 +252,14 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
               onDelete={() => setPendingDelete(generation)}
               onDetail={() => {
                 if (generation.recordStatus === "running") {
-                  router.push(`/?taskId=${encodeURIComponent(generation.taskId || generation.id)}`);
+                  const source = generation.source === "photo" ? "photo" : "keyword";
+                  router.push(
+                    `/?screen=${source}&taskId=${encodeURIComponent(generation.taskId || generation.id)}`,
+                  );
                   return;
                 }
                 router.push(`/history/${generation.id}`);
               }}
-              onDownload={() => downloadGeneration(generation)}
               onRegenerate={() => router.push(buildRegenerateHref(generation))}
             />
           ))
@@ -269,7 +269,7 @@ export function HistoryPage({ initialStatus = "all" }: HistoryPageProps) {
       <DeleteConfirmDialog
         description={
           pendingDelete
-            ? `即将删除「${pendingDelete.outfitTitle}」，删除后列表中将不再展示这条生成记录。`
+            ? `即将删除「${pendingDelete.outfitTitle}」，删除后 AI 衣橱中将不再展示这套穿搭。`
             : undefined
         }
         loading={Boolean(pendingDelete && deletingId === pendingDelete.id)}
@@ -371,11 +371,13 @@ function buildRunningRecord(
     colorPreference: input.colorPreference,
     genderPreference: input.genderPreference,
     imageModel: input.imageModel,
+    recommendationContext: input.recommendationContext,
+    photoMode: input.photoMode,
     outfitTitle: activeTask.source === "photo" ? "照片换搭生成中" : "图片生成中",
     summary: task.message || `正在并发生成 ${generationCount} 套穿搭图片。`,
     styleTags: ["生成中"],
     temperatureAdvice: "生成完成后会更新天气和体感建议。",
-    occasionReason: "任务正在执行，完成后会保存到生成记录。",
+    occasionReason: "任务正在执行，完成后会保存到 AI 衣橱。",
     items: [],
     imagePrompt: "",
     imageUrl: "",
@@ -395,18 +397,16 @@ function RecordTaskCard({
   generation,
   onDelete,
   onDetail,
-  onDownload,
   onRegenerate,
 }: {
   generation: OutfitGeneration;
   onDelete: () => void;
   onDetail: () => void;
-  onDownload: () => void;
   onRegenerate: () => void;
 }) {
   const status = generation.recordStatus || "succeeded";
   const isRunning = status === "running";
-  const isDownloadable = status === "succeeded" && generation.imageUrl;
+  const isFailed = status === "failed";
   const resultStack = buildRecordPreviewStack({
     imageUrl: generation.imageUrl,
     recordStatus: status,
@@ -414,67 +414,106 @@ function RecordTaskCard({
     successCount: generation.successCount,
     totalCount: generation.totalCount,
   });
+  const previewImage =
+    status === "succeeded" && generation.imageUrl
+      ? resolveBackendAssetUrl(generation.imageUrl)
+      : isPhotoGeneration(generation) && generation.userPhotoUrl
+        ? resolveBackendAssetUrl(generation.userPhotoUrl)
+        : "";
+  const modeLabel = getRecordModeLabel(generation, resultStack.totalCount);
+  const actionDetailLabel = isRunning ? "查看进度" : "查看穿搭";
+  const durationLabel = formatGenerationDuration(generation.generationDurationMs);
 
   return (
-    <article className="record-task-card">
-      <div className="record-card-top">
-        <div className="record-card-title">
-          <h2>{generation.outfitTitle}</h2>
-          <span>{getRecordModeLabel(generation, resultStack.totalCount)}</span>
+    <article className={`record-task-card record-history-card is-${status}`}>
+      <div
+        className={`record-history-thumb ${
+          previewImage ? "" : "is-empty"
+        } ${isRunning ? "is-running" : ""}`}
+      >
+        {previewImage ? (
+          <Image
+            src={previewImage}
+            alt={generation.outfitTitle}
+            width={132}
+            height={132}
+            unoptimized
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="record-history-thumb-empty">
+            <ImageIcon size={22} />
+          </span>
+        )}
+        {isRunning ? (
+          <span className="record-history-thumb-overlay">
+            <LoaderCircle size={18} />
+            <b>AI</b>
+          </span>
+        ) : null}
+        {isFailed ? (
+          <span className="record-history-thumb-overlay failed">
+            <TriangleAlert size={18} />
+          </span>
+        ) : null}
+        {durationLabel ? (
+          <span className="record-history-duration">{durationLabel}</span>
+        ) : null}
+      </div>
+
+      <div className="record-history-main">
+        <div className="record-history-head">
+          <div className="record-card-title">
+            <h2>{generation.outfitTitle}</h2>
+            <span>{modeLabel}</span>
+          </div>
+          {!isRunning ? (
+            <button
+              className="record-history-more"
+              type="button"
+              aria-label="删除记录"
+              onClick={onDelete}
+            >
+              <MoreHorizontal size={18} />
+            </button>
+          ) : null}
         </div>
-        <div className="record-card-status">
+
+        <div className="record-history-meta">
+          <span>{generation.occasion || "不限场景"}</span>
+          <small>{formatRecordTime(generation.createdAt)}</small>
           <StatusBadge status={status} />
-          <button type="button" aria-label="查看详情" onClick={onDetail}>
-            <ChevronRight size={19} />
-          </button>
+        </div>
+
+        {isRunning ? (
+          <div className="record-progress-panel">
+            <strong>AI 正在为你生成穿搭方案...</strong>
+            <span>
+              <i />
+            </span>
+            <small>{generation.summary || "生成完成后会自动保存到生成记录。"}</small>
+          </div>
+        ) : isFailed ? (
+          <p className="record-history-note failed">生成失败，请重试</p>
+        ) : (
+          <p className="record-history-note">{generation.summary}</p>
+        )}
+
+        <div className="record-actions record-history-actions">
+          {!isRunning ? (
+            <button type="button" onClick={onRegenerate}>
+              <RotateCw size={16} />
+              {isFailed ? "重新生成" : "再生成"}
+            </button>
+          ) : null}
+          {!isFailed ? (
+            <button type="button" onClick={onDetail}>
+              <Eye size={16} />
+              {actionDetailLabel}
+            </button>
+          ) : null}
         </div>
       </div>
-
-      <div className="record-meta">
-        <p>生成时间：{formatRecordTime(generation.createdAt)}</p>
-      </div>
-
-      <div className="record-preview-row">
-        <PreviewThumb generation={generation} tone="source" />
-        <span className="record-arrow">→</span>
-        <ResultStackPreview generation={generation} stack={resultStack} />
-        <div className="record-count-panel">
-          <strong>{resultStack.totalCount}</strong>
-          <span>生成数量</span>
-          <i />
-          <small>
-            成功 {resultStack.successCount}
-            <b>|</b>
-            失败 {resultStack.failedCount}
-          </small>
-        </div>
-      </div>
-
-      <div className="record-actions">
-        <button type="button" onClick={onDetail}>
-          <Eye size={17} />
-          {isRunning ? "查看进度" : "查看详情"}
-        </button>
-        <button type="button" disabled={isRunning} onClick={onRegenerate}>
-          <RotateCw size={17} />
-          再次生成
-        </button>
-        <button
-          className="record-download"
-          type="button"
-          disabled={!isDownloadable}
-          onClick={onDownload}
-        >
-          <Download size={17} />
-          下载
-        </button>
-      </div>
-
-      {isRunning ? null : (
-        <button className="record-delete" type="button" onClick={onDelete}>
-          删除记录
-        </button>
-      )}
     </article>
   );
 }
@@ -513,6 +552,15 @@ function PreviewThumb({
 
 function getRecordModeLabel(generation: OutfitGeneration, totalCount: number) {
   const isBatch = totalCount > 1;
+  if (generation.recommendationContext) {
+    return isBatch
+      ? `${getRecommendationContextLabel(generation.recommendationContext)}批量`
+      : getRecommendationContextLabel(generation.recommendationContext);
+  }
+  if (generation.photoMode) {
+    const label = getPhotoModeLabel(generation.photoMode);
+    return isBatch ? `${label}批量` : label;
+  }
   if (isPhotoGeneration(generation)) return isBatch ? "照片批量生成" : "照片生成";
 
   return isBatch ? "批量生成" : "单图生成";
@@ -569,11 +617,11 @@ function ResultStackPreview({
 
 function StatusBadge({ status }: { status: OutfitGeneration["recordStatus"] }) {
   if (status === "failed")
-    return <span className="record-status failed">失败</span>;
+    return <span className="record-status failed">生成失败</span>;
   if (status === "running")
-    return <span className="record-status running">进行中</span>;
+    return <span className="record-status running">生成中</span>;
 
-  return <span className="record-status succeeded">已完成</span>;
+  return <span className="record-status succeeded">已生成</span>;
 }
 
 function RecordEmpty({ title }: { title: string }) {
@@ -581,7 +629,7 @@ function RecordEmpty({ title }: { title: string }) {
     <section className="record-empty">
       <ImageIcon size={34} />
       <h2>{title}为空</h2>
-      <p>生成完成后保存到衣橱，就会在这里形成可搜索、可下载的任务记录。</p>
+      <p>保存几套喜欢的 Look 后，这里会形成可搜索、可下载、可再次调搭的 AI 衣橱。</p>
     </section>
   );
 }
@@ -613,6 +661,7 @@ function filterRecords(
       record.summary,
       record.occasion,
       record.style,
+      record.photoMode?.label,
       record.taskId,
       record.id,
     ]
@@ -623,6 +672,8 @@ function filterRecords(
 
 function buildRegenerateHref(generation: OutfitGeneration) {
   const query = new URLSearchParams({
+    autoGenerate: "1",
+    screen: "keyword",
     season: generation.season,
     temperature: String(generation.temperature),
     weather: generation.weather,
@@ -634,6 +685,7 @@ function buildRegenerateHref(generation: OutfitGeneration) {
     query.set("colorPreference", generation.colorPreference);
   if (generation.genderPreference)
     query.set("genderPreference", generation.genderPreference);
+  appendRecommendationContextParams(query, generation.recommendationContext);
 
   return `/?${query.toString()}`;
 }
@@ -642,15 +694,27 @@ function formatRecordTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
+  const now = new Date();
+  const todayKey = toDateKey(now);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const dateKey = toDateKey(date);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   const hour = String(date.getHours()).padStart(2, "0");
   const minute = String(date.getMinutes()).padStart(2, "0");
 
+  if (dateKey === todayKey) return `今天 ${hour}:${minute}`;
+  if (dateKey === toDateKey(yesterday)) return `昨天 ${hour}:${minute}`;
+
   return `${year}-${month}-${day} ${hour}:${minute}`;
 }
 
-function sanitizeDownloadName(name: string) {
-  return name.replace(/[\\/:*?"<>|]/g, "-").slice(0, 40) || "cloudwear-outfit";
+function toDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }

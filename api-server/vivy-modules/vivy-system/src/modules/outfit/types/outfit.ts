@@ -1,3 +1,25 @@
+export interface OutfitRecommendationContext {
+  kind: 'weather'
+  periodLabel: '今日' | '明日'
+  sourceLabel?: string
+  forecastDateKey?: string
+  summary?: string
+  weather?: string
+  temperature?: number
+  highTemperature?: number
+  lowTemperature?: number
+  precipitationProbability?: number
+  location?: string
+  scenarioTaskId?: string
+  title?: string
+}
+
+export interface OutfitPhotoModeContext {
+  id: string
+  label: string
+  prompt: string
+}
+
 export interface OutfitInput {
   season: string
   temperature: number
@@ -10,6 +32,8 @@ export interface OutfitInput {
   imageModel?: string
   generationCount?: number
   userPhotoDataUrl?: string
+  recommendationContext?: OutfitRecommendationContext
+  photoMode?: OutfitPhotoModeContext
 }
 
 export interface OutfitItem {
@@ -38,6 +62,7 @@ export interface OutfitGeneration extends OutfitInput, OutfitPlan {
   totalCount?: number
   successCount?: number
   failedCount?: number
+  generationDurationMs?: number
   imageUrl: string
   userPhotoUsed?: boolean
   userPhotoUrl?: string

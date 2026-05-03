@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { BaseIsEnum, BaseStatusEnum, ServiceException } from '@vivy-common/core'
 import { Repository } from 'typeorm'
+import { generateImageFromPrompt } from '../outfit/ai/openai'
 import {
   CreateAiModelItemDto,
   CreateAiModelProviderDto,
@@ -209,17 +210,7 @@ export class AiModelService {
     }
 
     if (dto.testType === 'image') {
-      const response = await client.images.generate({
-        model: modelId,
-        prompt: dto.prompt,
-        size: '1024x1024',
-        response_format: 'b64_json',
-      })
-      const image = response.data?.[0]
-      const imageUrl = image?.b64_json
-        ? `data:image/png;base64,${image.b64_json}`
-        : image?.url
-      if (!imageUrl) throw new ServiceException('模型未返回图片')
+      const imageUrl = await generateImageFromPrompt(client, modelId, dto.prompt, '1024x1024', '模型未返回图片')
 
       return {
         success: true,
@@ -254,15 +245,24 @@ export class AiModelService {
     const keywordImageModel = await this.getModelForConfig(config.keywordImageModelPk, ['image', 'multimodal'])
     const photoImageModel = await this.getModelForConfig(config.photoImageModelPk, ['image', 'multimodal'])
     const { options, ...modelConfig } = config
+    const currentOptions = this.parseH5Options(current.optionConfig)
+    const nextOptions = options
+      ? mergeH5OutfitOptions({
+          ...currentOptions,
+          ...options,
+          login: {
+            ...currentOptions.login,
+            ...(options.login || {}),
+          },
+        })
+      : currentOptions
 
     await this.appConfigRepository.update(current.configId, {
       ...modelConfig,
       textProviderId: textModel?.providerId,
       keywordImageProviderId: keywordImageModel?.providerId,
       photoImageProviderId: photoImageModel?.providerId,
-      optionConfig: options
-        ? JSON.stringify(mergeH5OutfitOptions(options))
-        : current.optionConfig || JSON.stringify(defaultH5OutfitOptions),
+      optionConfig: JSON.stringify(nextOptions),
     })
   }
 

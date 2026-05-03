@@ -19,6 +19,11 @@ import {
 import { DeleteConfirmDialog } from "@/components/outfit/delete-confirm-dialog";
 import { resolveBackendAssetUrl } from "@/lib/api-endpoints";
 import { deleteOutfitRecord, getOutfitRecord } from "@/lib/outfit-records";
+import { getPhotoModeLabel } from "@/lib/photo-modes";
+import {
+  getRecommendationContextDetail,
+  getRecommendationContextLabel,
+} from "@/lib/scenario-tasks";
 import type { OutfitGeneration } from "@/types/outfit";
 
 interface HistoryDetailProps {
@@ -32,6 +37,11 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [activeTag, setActiveTag] = useState("");
+  const [previewImage, setPreviewImage] = useState<{
+    label: string;
+    src: string;
+    title: string;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,7 +126,7 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
   return (
     <article className="history-detail-screen">
       <header className="history-detail-topbar">
-        <Link href="/history" aria-label="返回生成记录">
+        <Link href="/history" aria-label="返回 AI 衣橱">
           <ArrowLeft size={18} />
         </Link>
         <div>
@@ -142,12 +152,14 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
           {generation.userPhotoUrl ? (
             <HistoryDetailImage
               label="用户上传原图"
+              onOpen={setPreviewImage}
               src={resolveBackendAssetUrl(generation.userPhotoUrl)}
               title={generation.outfitTitle}
             />
           ) : null}
           <HistoryDetailImage
             label="AI 生成结果"
+            onOpen={setPreviewImage}
             priority
             src={resolveBackendAssetUrl(generation.imageUrl)}
             title={generation.outfitTitle}
@@ -175,6 +187,20 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
       </section>
 
       <section className="history-detail-metrics" aria-label="穿搭信息">
+        {generation.recommendationContext ? (
+          <DetailMetric
+            icon={<CloudSun size={16} />}
+            label="来源"
+            value={getRecommendationContextLabel(generation.recommendationContext)}
+          />
+        ) : null}
+        {generation.photoMode ? (
+          <DetailMetric
+            icon={<Sparkles size={16} />}
+            label="换搭"
+            value={getPhotoModeLabel(generation.photoMode)}
+          />
+        ) : null}
         <DetailMetric
           icon={<CloudSun size={16} />}
           label="天气"
@@ -192,6 +218,22 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
       </section>
 
       <section className="history-detail-notes">
+        {generation.recommendationContext ? (
+          <TextBlock
+            title="推荐依据"
+            value={
+              getRecommendationContextDetail(generation.recommendationContext) ||
+              generation.recommendationContext.summary ||
+              "这套穿搭来自首页天气推荐。"
+            }
+          />
+        ) : null}
+        {generation.photoMode ? (
+          <TextBlock
+            title="照片换搭模式"
+            value={`${generation.photoMode.label}：${generation.photoMode.prompt}`}
+          />
+        ) : null}
         <TextBlock title="温度适配" value={generation.temperatureAdvice} />
         <TextBlock title="场景理由" value={generation.occasionReason} />
       </section>
@@ -220,21 +262,12 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
       <footer className="history-detail-actions">
         <Link href="/history">
           <ArrowLeft size={17} />
-          <span>记录</span>
+          <span>衣橱</span>
         </Link>
         <Link
           href={{
             pathname: "/",
-            query: {
-              season: generation.season,
-              temperature: generation.temperature,
-              weather: generation.weather,
-              location: generation.location,
-              occasion: generation.occasion,
-              style: generation.style,
-              colorPreference: generation.colorPreference,
-              genderPreference: generation.genderPreference,
-            },
+            query: buildSimilarStyleQuery(generation),
           }}
         >
           <RefreshCw size={17} />
@@ -243,7 +276,7 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
       </footer>
 
       <DeleteConfirmDialog
-        description={`即将删除「${generation.outfitTitle}」，删除后会返回生成记录列表。`}
+        description={`即将删除「${generation.outfitTitle}」，删除后会返回 AI 衣橱列表。`}
         loading={deleting}
         open={deleteConfirmOpen}
         onCancel={() => {
@@ -251,6 +284,32 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
         }}
         onConfirm={() => void removeGeneration()}
       />
+      {previewImage ? (
+        <div
+          className="history-image-viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${previewImage.label}放大预览`}
+          onClick={() => setPreviewImage(null)}
+        >
+          <button type="button" aria-label="关闭预览" onClick={() => setPreviewImage(null)}>
+            ×
+          </button>
+          <figure onClick={(event) => event.stopPropagation()}>
+            <Image
+              alt={previewImage.label}
+              src={previewImage.src}
+              width={1200}
+              height={1600}
+              unoptimized
+            />
+            <figcaption>
+              <strong>{previewImage.label}</strong>
+              <span>{previewImage.title}</span>
+            </figcaption>
+          </figure>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -258,19 +317,26 @@ export function HistoryDetail({ id }: HistoryDetailProps) {
 function HistoryDetailImage({
   emptyText = "暂无图片",
   label,
+  onOpen,
   priority = false,
   src,
   title,
 }: {
   emptyText?: string;
   label: string;
+  onOpen?: (image: { label: string; src: string; title: string }) => void;
   priority?: boolean;
   src?: string;
   title: string;
 }) {
-  return (
-    <div className={src ? "history-detail-image" : "history-detail-image is-empty"}>
-      {src ? (
+  if (src) {
+    return (
+      <button
+        className="history-detail-image"
+        type="button"
+        aria-label={`放大查看${label}`}
+        onClick={() => onOpen?.({ label, src, title })}
+      >
         <Image
           src={src}
           alt={label}
@@ -279,13 +345,18 @@ function HistoryDetailImage({
           unoptimized
           priority={priority}
         />
-      ) : (
-        <div className="history-detail-image-empty">
-          <ImageIcon size={26} />
-          <strong>{emptyText}</strong>
-          <p>{title}</p>
-        </div>
-      )}
+        <span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="history-detail-image is-empty">
+      <div className="history-detail-image-empty">
+        <ImageIcon size={26} />
+        <strong>{emptyText}</strong>
+        <p>{title}</p>
+      </div>
       <span>{label}</span>
     </div>
   );
@@ -331,4 +402,36 @@ function formatDetailTime(value: string) {
   const minute = String(date.getMinutes()).padStart(2, "0");
 
   return `${month}.${day} ${hour}:${minute}`;
+}
+
+function buildSimilarStyleQuery(generation: OutfitGeneration) {
+  return {
+    autoGenerate: "1",
+    screen: "keyword",
+    season: generation.season,
+    temperature: generation.temperature,
+    weather: generation.weather,
+    location: generation.location,
+    occasion: generation.occasion,
+    style: generation.style,
+    colorPreference: generation.colorPreference,
+    genderPreference: generation.genderPreference,
+    recommendationSource: generation.recommendationContext?.kind,
+    recommendationPeriod: generation.recommendationContext?.periodLabel,
+    recommendationSourceLabel: generation.recommendationContext?.sourceLabel,
+    recommendationDate: generation.recommendationContext?.forecastDateKey,
+    recommendationSummary: generation.recommendationContext?.summary,
+    recommendationWeather: generation.recommendationContext?.weather,
+    recommendationTemperature: generation.recommendationContext?.temperature,
+    recommendationHighTemperature:
+      generation.recommendationContext?.highTemperature,
+    recommendationLowTemperature:
+      generation.recommendationContext?.lowTemperature,
+    recommendationPrecipitation:
+      generation.recommendationContext?.precipitationProbability,
+    recommendationLocation: generation.recommendationContext?.location,
+    recommendationScenarioTaskId:
+      generation.recommendationContext?.scenarioTaskId,
+    recommendationTitle: generation.recommendationContext?.title,
+  };
 }

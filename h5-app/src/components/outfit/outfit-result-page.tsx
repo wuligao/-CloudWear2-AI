@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -20,16 +20,28 @@ import {
   Thermometer,
 } from "lucide-react";
 import { outfitApiEndpoints, resolveBackendAssetUrl } from "@/lib/api-endpoints";
+import {
+  buildTuneHref,
+  feedbackActions,
+  tuneActions,
+} from "@/lib/outfit-playground";
+import { getPhotoModeLabel } from "@/lib/photo-modes";
+import {
+  getRecommendationContextDetail,
+  getRecommendationContextLabel,
+} from "@/lib/scenario-tasks";
 import { getOutfitRecord, saveOutfitRecord } from "@/lib/outfit-records";
 import {
   readOutfitResultSession,
   type OutfitResultSession,
 } from "@/lib/result-session";
+import { submitOutfitFeedback } from "@/lib/style-feedback";
 import type {
   ApiErrorResponse,
   GenerateOutfitTaskSnapshot,
   OutfitGeneration,
   OutfitItem,
+  OutfitRecommendationContext,
 } from "@/types/outfit";
 
 type ToastState = {
@@ -42,9 +54,12 @@ export function OutfitResultPage() {
   const [activeId, setActiveId] = useState("");
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState("");
+  const [selectedFeedback, setSelectedFeedback] = useState("");
+  const [feedbackSaving, setFeedbackSaving] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const toastSeqRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +109,8 @@ export function OutfitResultPage() {
   const activeTags = activeResult?.styleTags.slice(0, 5) ?? [];
 
   function showToast(message: string) {
-    setToast({ id: Date.now(), message });
+    toastSeqRef.current += 1;
+    setToast({ id: toastSeqRef.current, message });
   }
 
   async function saveCurrent() {
@@ -144,10 +160,33 @@ export function OutfitResultPage() {
       return;
     }
 
-    await navigator.share({
-      title: "云裳 AI 穿搭方案",
-      text: `${activeResult.outfitTitle}：${activeResult.summary}`,
-    });
+    try {
+      await navigator.share({
+        title: "云裳 AI 穿搭方案",
+        text: `${activeResult.outfitTitle}：${activeResult.summary}`,
+      });
+      showToast("已打开系统分享");
+    } catch (caughtError) {
+      if (caughtError instanceof DOMException && caughtError.name === "AbortError") {
+        return;
+      }
+      showToast("分享失败，请稍后重试");
+    }
+  }
+
+  async function handleFeedback(action: string) {
+    if (!activeResult || feedbackSaving) return;
+
+    setSelectedFeedback(action);
+    setFeedbackSaving(action);
+    try {
+      await submitOutfitFeedback({ feedback: action, generation: activeResult });
+      showToast(action === "喜欢这套" ? "已同步到风格档案" : `已记录反馈：${action}`);
+    } catch (caughtError) {
+      showToast(caughtError instanceof Error ? caughtError.message : "穿搭反馈保存失败");
+    } finally {
+      setFeedbackSaving("");
+    }
   }
 
   if (loading) {
@@ -201,19 +240,29 @@ export function OutfitResultPage() {
       <main className="outfit-result-main">
         <section className="outfit-result-intro">
           <div>
-            <span>LOOK {String(activeIndex).padStart(2, "0")}</span>
+            <span>
+              {activeResult.recommendationContext
+                ? getRecommendationContextLabel(activeResult.recommendationContext)
+                : activeResult.photoMode
+                  ? getPhotoModeLabel(activeResult.photoMode)
+                : `LOOK ${String(activeIndex).padStart(2, "0")}`}
+            </span>
             <h1>{activeResult.outfitTitle}</h1>
             <p>{activeResult.summary}</p>
           </div>
           <span>{results.length} 套方案</span>
         </section>
 
+        {activeResult.recommendationContext ? (
+          <RecommendationBrief context={activeResult.recommendationContext} />
+        ) : null}
+
         <section className="outfit-result-hero">
           <button
             className="outfit-result-poster"
             type="button"
             onClick={downloadCurrent}
-            aria-label="保存当前大图"
+            aria-label="下载当前穿搭海报图"
           >
             <Image
               alt={activeResult.outfitTitle}
@@ -228,6 +277,9 @@ export function OutfitResultPage() {
               <strong>
                 {activeResult.weather} / {activeResult.temperature}°C
               </strong>
+              <small>
+                {activeResult.location} · {activeResult.occasion}
+              </small>
             </div>
           </button>
           <div className="outfit-result-tags" aria-label="方案标签">
@@ -237,24 +289,74 @@ export function OutfitResultPage() {
           </div>
         </section>
 
-        <section className="outfit-result-switcher" aria-label="切换方案">
-          {results.map((result, index) => (
-            <button
-              className={result.id === activeResult.id ? "is-active" : undefined}
-              key={result.id}
-              type="button"
-              onClick={() => setActiveId(result.id)}
-            >
-              <Image
-                alt={result.outfitTitle}
-                src={resolveBackendAssetUrl(result.imageUrl)}
-                width={220}
-                height={300}
-                unoptimized
-              />
-              <span>方案 {index + 1}</span>
-            </button>
-          ))}
+        <section className="outfit-result-pk-panel" aria-label="多套方案 PK">
+          <div className="outfit-result-pk-title">
+            <div>
+              <span>LOOK PICKER</span>
+              <strong>哪套更适合你？</strong>
+            </div>
+            <small>
+              {activeIndex} / {results.length}
+            </small>
+          </div>
+          <div className="outfit-result-switcher" aria-label="切换方案">
+            {results.map((result, index) => (
+              <button
+                className={result.id === activeResult.id ? "is-active" : undefined}
+                key={result.id}
+                type="button"
+                onClick={() => {
+                  setActiveId(result.id);
+                  setSelectedFeedback("");
+                }}
+              >
+                <Image
+                  alt={result.outfitTitle}
+                  src={resolveBackendAssetUrl(result.imageUrl)}
+                  width={220}
+                  height={300}
+                  unoptimized
+                />
+                <span>方案 {index + 1}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="outfit-result-playground">
+          <SectionTitle kicker="TUNE THIS LOOK" title="继续调搭" />
+          <div className="outfit-result-feedback" aria-label="快速反馈">
+            {feedbackActions.map((action) => (
+              <button
+                className={selectedFeedback === action ? "is-active" : undefined}
+                key={action}
+                type="button"
+                disabled={Boolean(feedbackSaving)}
+                onClick={() => void handleFeedback(action)}
+              >
+                {feedbackSaving === action ? "记录中" : action}
+              </button>
+            ))}
+          </div>
+          <div className="outfit-result-tune-actions">
+            {tuneActions.map((action) => (
+              <Link href={buildTuneHref(activeResult, action)} key={action.id}>
+                <Sparkles size={16} />
+                <span>{action.label}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="outfit-result-share-card">
+          <div>
+            <span>SHARE CARD</span>
+            <strong>保存这张穿搭卡，也可以直接分享给朋友。</strong>
+          </div>
+          <button type="button" onClick={() => void shareCurrent()}>
+            <Share2 size={16} />
+            分享方案
+          </button>
         </section>
 
         <section className="outfit-result-panel">
@@ -268,6 +370,13 @@ export function OutfitResultPage() {
               label="色彩"
               value={activeResult.colorPreference || "不限"}
             />
+            {activeResult.photoMode ? (
+              <Info
+                icon={<Sparkles size={17} />}
+                label="换搭"
+                value={activeResult.photoMode.label}
+              />
+            ) : null}
           </div>
         </section>
 
@@ -318,6 +427,27 @@ export function OutfitResultPage() {
       </footer>
 
       {toast ? <div className="outfit-result-toast">{toast.message}</div> : null}
+    </section>
+  );
+}
+
+function RecommendationBrief({
+  context,
+}: {
+  context: OutfitRecommendationContext;
+}) {
+  return (
+    <section className="outfit-result-recommendation">
+      <div>
+        <CloudSun size={17} />
+        <span>{context.sourceLabel || getRecommendationContextLabel(context)}</span>
+      </div>
+      <strong>{context.title || `${context.periodLabel}穿搭推荐`}</strong>
+      <p>
+        {getRecommendationContextDetail(context) ||
+          context.summary ||
+          "这套方案来自首页天气推荐。"}
+      </p>
     </section>
   );
 }
@@ -383,14 +513,30 @@ function isPersistedRecord(generation: OutfitGeneration) {
 async function readBackendResultSession(session: OutfitResultSession) {
   if (session.taskId) {
     const taskResults = await readTaskResults(session.taskId);
-    if (taskResults.length) return taskResults;
+    if (taskResults.length) return mergeSessionRecommendationContext(taskResults, session);
   }
 
   if (session.recordIds?.length) {
-    return Promise.all(session.recordIds.map((recordId) => getOutfitRecord(recordId)));
+    const records = await Promise.all(
+      session.recordIds.map((recordId) => getOutfitRecord(recordId)),
+    );
+    return mergeSessionRecommendationContext(records, session);
   }
 
   throw new Error("未找到可同步的生成结果，请返回衣橱查看已保存记录。");
+}
+
+function mergeSessionRecommendationContext(
+  results: OutfitGeneration[],
+  session: OutfitResultSession,
+) {
+  if (!session.recommendationContext) return results;
+
+  return results.map((result) => ({
+    ...result,
+    recommendationContext:
+      result.recommendationContext || session.recommendationContext,
+  }));
 }
 
 async function readTaskResults(taskId: string) {

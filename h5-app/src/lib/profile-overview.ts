@@ -79,6 +79,39 @@ export async function updateH5StyleProfileArchive(
   return payload.data;
 }
 
+export async function analyzeH5StyleProfilePhoto(payload: {
+  photoType: "fullBody" | "face" | "makeupFree";
+  photoDataUrl: string;
+}) {
+  const response = await fetch(outfitApiEndpoints.h5ProfileArchiveAnalyzePhoto(), {
+    method: "POST",
+    headers: {
+      ...getH5AuthHeader(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const responsePayload = (await response.json().catch(() => null)) as
+    | H5StyleProfileArchiveResponse
+    | ApiErrorResponse
+    | null;
+
+  if (!response.ok) {
+    throw new Error(extractErrorMessage(responsePayload) || "风格照片分析失败。");
+  }
+
+  if (
+    !responsePayload ||
+    !("code" in responsePayload) ||
+    responsePayload.code !== 200 ||
+    !responsePayload.data
+  ) {
+    throw new Error("风格照片分析失败。");
+  }
+
+  return responsePayload.data;
+}
+
 export const defaultH5ProfileOverview: H5ProfileOverview = {
   user: {
     displayName: "云裳用户",

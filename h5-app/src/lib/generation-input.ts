@@ -1,4 +1,4 @@
-import { buildColorPreference } from "./outfit-preferences";
+import { buildColorPreference } from "./outfit-preferences.ts";
 import type { H5OutfitConfigOptions } from "./h5-config";
 import type { OutfitInput } from "../types/outfit";
 

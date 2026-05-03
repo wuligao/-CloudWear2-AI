@@ -1,4 +1,4 @@
-import type { OutfitGeneration } from "@/types/outfit";
+import type { OutfitGeneration, OutfitRecommendationContext } from "@/types/outfit";
 
 const outfitResultSessionKey = "cloudwear.current-result.v1";
 
@@ -6,6 +6,7 @@ export interface OutfitResultSession {
   taskId?: string;
   source?: "keyword" | "photo";
   createdAt: string;
+  recommendationContext?: OutfitRecommendationContext;
   recordIds?: string[];
   results: OutfitGeneration[];
 }
@@ -33,6 +34,9 @@ export function writeOutfitResultSession(session: OutfitResultSession) {
       taskId: session.taskId,
       source: session.source,
       createdAt: session.createdAt,
+      recommendationContext: normalizeRecommendationContext(
+        session.recommendationContext,
+      ),
       recordIds: getSessionRecordIds(session),
     }),
   );
@@ -64,8 +68,11 @@ export function parseOutfitResultSessionSnapshot(
           : undefined,
       createdAt:
         typeof parsedValue.createdAt === "string" ? parsedValue.createdAt : "",
+      recommendationContext: normalizeRecommendationContext(
+        parsedValue.recommendationContext,
+      ),
       recordIds,
-      results: [],
+      results,
     };
   } catch {
     return emptyOutfitResultSession;
@@ -89,4 +96,49 @@ function isOutfitGeneration(value: unknown): value is OutfitGeneration {
     typeof candidate.imageUrl === "string" &&
     typeof candidate.outfitTitle === "string"
   );
+}
+
+function normalizeRecommendationContext(
+  value: unknown,
+): OutfitRecommendationContext | undefined {
+  if (!value || typeof value !== "object") return undefined;
+
+  const context = value as Partial<OutfitRecommendationContext>;
+  if (context.kind !== "weather") return undefined;
+  if (context.periodLabel !== "今日" && context.periodLabel !== "明日") {
+    return undefined;
+  }
+
+  return {
+    kind: "weather",
+    periodLabel: context.periodLabel,
+    sourceLabel:
+      typeof context.sourceLabel === "string" ? context.sourceLabel : undefined,
+    forecastDateKey:
+      typeof context.forecastDateKey === "string"
+        ? context.forecastDateKey
+        : undefined,
+    summary: typeof context.summary === "string" ? context.summary : undefined,
+    weather: typeof context.weather === "string" ? context.weather : undefined,
+    temperature:
+      typeof context.temperature === "number" ? context.temperature : undefined,
+    highTemperature:
+      typeof context.highTemperature === "number"
+        ? context.highTemperature
+        : undefined,
+    lowTemperature:
+      typeof context.lowTemperature === "number"
+        ? context.lowTemperature
+        : undefined,
+    precipitationProbability:
+      typeof context.precipitationProbability === "number"
+        ? context.precipitationProbability
+        : undefined,
+    location: typeof context.location === "string" ? context.location : undefined,
+    scenarioTaskId:
+      typeof context.scenarioTaskId === "string"
+        ? context.scenarioTaskId
+        : undefined,
+    title: typeof context.title === "string" ? context.title : undefined,
+  };
 }

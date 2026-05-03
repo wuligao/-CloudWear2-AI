@@ -88,8 +88,40 @@ export interface H5StyleProfileArchive {
   elementPreferences: string[];
   fitPreferences: string[];
   bodyMetrics: Partial<Record<"shoulder" | "bust" | "waist" | "hip" | "thigh" | "calf", string>>;
+  basePhotos?: Partial<Record<"fullBody" | "face" | "makeupFree", H5StyleProfilePhoto>>;
+  analysisReport?: H5StyleAnalysisReport;
+  recommendedColors?: H5ColorPreferenceItem[];
+  recommendedStyles?: H5RecommendedStyleItem[];
+  analysisUpdatedAt?: string;
+  completionPercent?: number;
   notes: string;
   updatedAt?: string;
+}
+
+export interface H5StyleProfilePhoto {
+  url: string;
+  updatedAt?: string;
+}
+
+export interface H5StyleAnalysisReport {
+  bodyFeature?: H5StyleAnalysisItem;
+  skinFeature?: H5StyleAnalysisItem;
+  facialFeature?: H5StyleAnalysisItem;
+  hairFeature?: H5StyleAnalysisItem;
+  colorSeason?: H5StyleAnalysisItem;
+  stylePositioning?: H5StyleAnalysisItem;
+}
+
+export interface H5StyleAnalysisItem {
+  title?: string;
+  points: string[];
+  advice?: string;
+}
+
+export interface H5RecommendedStyleItem {
+  label: string;
+  description?: string;
+  imageUrl?: string;
 }
 
 export interface H5ProfileOverview {

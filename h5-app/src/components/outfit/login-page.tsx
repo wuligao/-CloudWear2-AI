@@ -336,6 +336,16 @@ export function LoginPage() {
         ) : null}
       </section>
 
+      <section className="cw-login-poem" aria-label="云裳灵感文案">
+        <span>东方衣境</span>
+        <p>
+          云想衣裳花想容
+          <br />
+          春风拂槛露华浓
+        </p>
+        <small>登录后同步衣橱偏好与历史方案</small>
+      </section>
+
       <AuthLoadingOverlay
         visible={isSubmitting}
         title={mode === "login" ? "正在进入云裳" : "正在创建账号"}

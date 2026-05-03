@@ -141,7 +141,7 @@ export function ProfilePage() {
             ))}
           </div>
         ) : (
-          <ArchiveEmpty text="保存几条生成记录后，会自动生成风格占比。" />
+          <ArchiveEmpty text="保存几套 AI 衣橱 Look 后，会自动生成风格占比。" />
         )}
       </StyleProfileSection>
 
@@ -165,7 +165,7 @@ export function ProfilePage() {
             ))}
           </div>
         ) : (
-          <ArchiveEmpty text="单品、面料和细节偏好会从生成记录里归纳。" />
+          <ArchiveEmpty text="单品、面料和细节偏好会从 AI 衣橱里归纳。" />
         )}
       </StyleProfileSection>
 

@@ -20,6 +20,7 @@ export interface H5LoginConfig {
 
 export interface H5OutfitConfigOptions {
   dailyFreeGenerationLimit: number;
+  tomorrowRecommendationStartHour: number;
   login: H5LoginConfig;
   inspirationKeywords: string[];
   homeCategories: string[];
@@ -47,6 +48,7 @@ export interface H5OutfitConfigResponse {
 
 export const defaultH5OutfitConfigOptions: H5OutfitConfigOptions = {
   dailyFreeGenerationLimit: 3,
+  tomorrowRecommendationStartHour: 20,
   login: {
     heroImage: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84",
     heroAlt: "浅色衣架上的外套与包袋",
@@ -130,7 +132,7 @@ export const defaultH5OutfitConfigOptions: H5OutfitConfigOptions = {
     { label: "雾蓝", value: "#cbd8ff" },
   ],
   items: ["外套", "上衣", "裤子", "裙子", "鞋子", "包包"].map((label) => ({ label })),
-  imageModels: [{ label: "GPT-4o Image", value: "gpt-4o-image", group: "BLTCY" }],
+  imageModels: [{ label: "gpt-image-2", value: "gpt-image-2" }],
   generationCounts: [1, 2, 3].map((value) => ({ label: `${value} 张`, value })),
 };
 
@@ -138,11 +140,15 @@ export function mergeH5ConfigOptions(options?: Partial<H5OutfitConfigOptions>): 
   const dailyFreeGenerationLimit = normalizeDailyFreeGenerationLimit(
     options?.dailyFreeGenerationLimit,
   );
+  const tomorrowRecommendationStartHour = normalizeTomorrowRecommendationStartHour(
+    options?.tomorrowRecommendationStartHour,
+  );
 
   return {
     ...defaultH5OutfitConfigOptions,
     ...(options || {}),
     dailyFreeGenerationLimit,
+    tomorrowRecommendationStartHour,
     login: {
       ...defaultH5OutfitConfigOptions.login,
       ...(options?.login || {}),
@@ -157,4 +163,13 @@ export function normalizeDailyFreeGenerationLimit(value: unknown) {
   }
 
   return Math.min(100, Math.max(0, Math.round(parsedValue)));
+}
+
+export function normalizeTomorrowRecommendationStartHour(value: unknown) {
+  const parsedValue = Number(value);
+  if (!Number.isFinite(parsedValue)) {
+    return defaultH5OutfitConfigOptions.tomorrowRecommendationStartHour;
+  }
+
+  return Math.min(23, Math.max(0, Math.round(parsedValue)));
 }

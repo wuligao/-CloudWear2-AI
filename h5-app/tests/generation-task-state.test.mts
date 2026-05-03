@@ -9,6 +9,7 @@ const generationTaskStateModule = generationTaskState as typeof generationTaskSt
 };
 const {
   clearActiveGenerationTask,
+  getGenerationTaskElapsedSeconds,
   readActiveGenerationTask,
   readActiveGenerationTasks,
   readStoredActiveGenerationTasks,
@@ -95,6 +96,60 @@ test("task id in the url selects the progress task and preserves its source", ()
     createdAt: "2026-05-01T08:00:00.000Z",
     input: undefined,
   });
+});
+
+test("active generation task preserves recommendation context in input", () => {
+  installWindow("https://h5.cloudwear.local/?screen=keyword&taskId=task-weather");
+  writeActiveGenerationTask(
+    {
+      taskId: "task-weather",
+      source: "keyword",
+      input: {
+        season: "春",
+        temperature: 18,
+        weather: "小雨",
+        location: "上海",
+        occasion: "日常通勤",
+        style: "法式通勤",
+        recommendationContext: {
+          kind: "weather",
+          periodLabel: "明日",
+          weather: "小雨",
+          temperature: 18,
+          scenarioTaskId: "daily-rainy-commute",
+          title: "雨天通勤不狼狈",
+        },
+      },
+    },
+    { syncUrl: false },
+  );
+
+  assert.deepEqual(readActiveGenerationTask()?.input?.recommendationContext, {
+    kind: "weather",
+    periodLabel: "明日",
+    weather: "小雨",
+    temperature: 18,
+    scenarioTaskId: "daily-rainy-commute",
+    title: "雨天通勤不狼狈",
+  });
+});
+
+test("generation task elapsed seconds are calculated from task creation time", () => {
+  assert.equal(
+    getGenerationTaskElapsedSeconds(
+      "2026-05-01T08:00:00.000Z",
+      Date.parse("2026-05-01T08:02:05.900Z"),
+    ),
+    125,
+  );
+  assert.equal(
+    getGenerationTaskElapsedSeconds(
+      "2026-05-01T08:02:05.900Z",
+      Date.parse("2026-05-01T08:00:00.000Z"),
+    ),
+    0,
+  );
+  assert.equal(getGenerationTaskElapsedSeconds("bad-date"), 0);
 });
 
 test("removing one active generation task keeps the other task available", () => {

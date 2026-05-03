@@ -14,7 +14,7 @@ const navItems = [
   },
   {
     href: "/history",
-    label: "生成记录",
+    label: "AI衣橱",
     icon: Clock3,
     id: "history",
   },

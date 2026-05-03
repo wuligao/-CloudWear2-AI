@@ -51,6 +51,9 @@ export const outfitApiEndpoints = {
     buildApiUrl("/api/h5/profile/overview", baseUrl),
   h5ProfileArchive: (baseUrl?: string) =>
     buildApiUrl("/api/h5/profile/archive", baseUrl),
+  h5ProfileArchiveAnalyzePhoto: () => buildApiUrl("/api/h5/profile/archive/analyze-photo"),
+  h5ProfileFeedback: (baseUrl?: string) =>
+    buildApiUrl("/api/h5/profile/feedback", baseUrl),
   createGeneration: () => buildApiUrl("/api/generate-outfit"),
   generationTask: (taskId: string) => buildApiUrl(`/api/generate-outfit/${taskId}`),
   generationEvents: (taskId: string) =>

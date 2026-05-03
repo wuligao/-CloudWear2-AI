@@ -29,3 +29,10 @@ test("h5 style archive endpoint is separate from account settings", () => {
     "https://api.example.com/api/h5/profile/archive",
   );
 });
+
+test("h5 profile feedback endpoint records result preferences", () => {
+  assert.equal(
+    outfitApiEndpoints.h5ProfileFeedback("https://api.example.com"),
+    "https://api.example.com/api/h5/profile/feedback",
+  );
+});

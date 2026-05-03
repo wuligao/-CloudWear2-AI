@@ -103,6 +103,14 @@ export class OutfitRecord extends BaseBusinessEntity {
   failedCount: number
 
   @Column({
+    name: 'generation_duration_ms',
+    type: 'int',
+    nullable: true,
+    comment: '生成耗时毫秒',
+  })
+  generationDurationMs?: number
+
+  @Column({
     name: 'season',
     type: 'varchar',
     length: 20,

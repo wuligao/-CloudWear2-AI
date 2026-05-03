@@ -1,15 +1,38 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, Loader2, Palette, Ruler, Tags, UserRound } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
-import { readH5AuthSession, subscribeH5AuthSession } from "@/lib/auth";
 import {
+  Camera,
+  Check,
+  ChevronLeft,
+  Loader2,
+  Palette,
+  RefreshCw,
+  Ruler,
+  Settings2,
+  Sparkles,
+  Tags,
+  Upload,
+  UserRound,
+} from "lucide-react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { readH5AuthSession, subscribeH5AuthSession } from "@/lib/auth";
+import { resolveBackendAssetUrl } from "@/lib/api-endpoints";
+import {
+  analyzeH5StyleProfilePhoto,
   fetchH5StyleProfileArchive,
   updateH5StyleProfileArchive,
 } from "@/lib/profile-overview";
-import type { H5StyleProfileArchive } from "@/types/profile";
+import type {
+  H5ColorPreferenceItem,
+  H5RecommendedStyleItem,
+  H5StyleAnalysisItem,
+  H5StyleProfileArchive,
+} from "@/types/profile";
 
 type StyleProfileForm = {
   height: string;
@@ -31,8 +54,9 @@ type StyleProfileForm = {
   notes: string;
 };
 
+type PhotoType = "fullBody" | "face" | "makeupFree";
+
 type ToastState = {
-  id: number;
   message: string;
 };
 
@@ -56,15 +80,41 @@ const emptyStyleProfileForm: StyleProfileForm = {
   notes: "",
 };
 
+const photoCards: Array<{ id: PhotoType; title: string; description: string; accent: string }> = [
+  { id: "fullBody", title: "全身照", description: "展示你的身材比例", accent: "#c79665" },
+  { id: "face", title: "脸部照", description: "用于分析五官特征", accent: "#9b8977" },
+  { id: "makeupFree", title: "素颜照", description: "用于分析肤色特性", accent: "#b98277" },
+];
+
+const reportCards: Array<{ key: keyof NonNullable<H5StyleProfileArchive["analysisReport"]>; label: string }> = [
+  { key: "bodyFeature", label: "身材特征" },
+  { key: "skinFeature", label: "肤色特征" },
+  { key: "facialFeature", label: "五官特征" },
+  { key: "hairFeature", label: "发质特征" },
+  { key: "colorSeason", label: "个人色彩" },
+  { key: "stylePositioning", label: "风格定位" },
+];
+
+const stylePreviewImages = [
+  "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=480&q=82",
+  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=480&q=82",
+  "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=480&q=82",
+  "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=480&q=82",
+  "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=480&q=82",
+];
+
 export function StyleProfileArchivePage() {
   const router = useRouter();
+  const settingsRef = useRef<HTMLDivElement | null>(null);
   const [session, setSession] = useState<ReturnType<typeof readH5AuthSession>>(null);
   const [styleForm, setStyleForm] = useState<StyleProfileForm>(emptyStyleProfileForm);
+  const [archive, setArchive] = useState<H5StyleProfileArchive | null>(null);
   const [savedStyleSnapshot, setSavedStyleSnapshot] = useState(
     serializeStyleForm(emptyStyleProfileForm),
   );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState<PhotoType | null>(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
 
@@ -80,12 +130,14 @@ export function StyleProfileArchivePage() {
       .then((nextStyleProfile) => {
         if (cancelled) return;
         const nextStyleForm = styleProfileToForm(nextStyleProfile);
+        setArchive(nextStyleProfile);
         setStyleForm(nextStyleForm);
         setSavedStyleSnapshot(serializeStyleForm(nextStyleForm));
         setError("");
       })
       .catch((caughtError) => {
         if (cancelled) return;
+        setArchive(null);
         setStyleForm(emptyStyleProfileForm);
         setSavedStyleSnapshot(serializeStyleForm(emptyStyleProfileForm));
         setError(caughtError instanceof Error ? caughtError.message : "风格档案读取失败。");
@@ -106,9 +158,21 @@ export function StyleProfileArchivePage() {
   }, [toast]);
 
   const dirty = serializeStyleForm(styleForm) !== savedStyleSnapshot;
+  const completionPercent = Math.max(0, Math.min(100, Math.round(archive?.completionPercent ?? 0)));
+  const recommendedColors = archive?.recommendedColors || [];
+  const recommendedStyles = archive?.recommendedStyles || [];
+  const photoCount = photoCards.filter((item) => archive?.basePhotos?.[item.id]?.url).length;
+  const updatedText = useMemo(() => formatArchiveUpdatedAt(archive?.analysisUpdatedAt || archive?.updatedAt), [
+    archive?.analysisUpdatedAt,
+    archive?.updatedAt,
+  ]);
 
   function updateStyleField(field: keyof StyleProfileForm, value: string) {
     setStyleForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function scrollToSettings() {
+    settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -116,19 +180,19 @@ export function StyleProfileArchivePage() {
     if (saving) return;
 
     if (!dirty) {
-      setToast({ id: Date.now(), message: "档案没有变化" });
+      setToast({ message: "档案没有变化" });
       return;
     }
 
     setSaving(true);
     setError("");
     try {
-      const savedStyle = styleProfileToForm(
-        await updateH5StyleProfileArchive(formToStyleProfile(styleForm)),
-      );
-      setStyleForm(savedStyle);
-      setSavedStyleSnapshot(serializeStyleForm(savedStyle));
-      setToast({ id: Date.now(), message: "风格档案已保存" });
+      const savedStyle = await updateH5StyleProfileArchive(formToStyleProfile(styleForm));
+      const savedStyleForm = styleProfileToForm(savedStyle);
+      setArchive(savedStyle);
+      setStyleForm(savedStyleForm);
+      setSavedStyleSnapshot(serializeStyleForm(savedStyleForm));
+      setToast({ message: "风格档案已保存" });
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "风格档案保存失败。");
     } finally {
@@ -136,34 +200,149 @@ export function StyleProfileArchivePage() {
     }
   }
 
+  async function analyzePhoto(photoType: PhotoType, event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || uploadingPhoto) return;
+    if (!file.type.startsWith("image/")) {
+      setError("请上传 png、jpg 或 webp 图片。");
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      setError("上传照片不能超过 6MB。");
+      return;
+    }
+
+    setUploadingPhoto(photoType);
+    setError("");
+    try {
+      const photoDataUrl = await readFileAsDataUrl(file);
+      const nextArchive = await analyzeH5StyleProfilePhoto({ photoType, photoDataUrl });
+      const nextStyleForm = styleProfileToForm(nextArchive);
+      setArchive(nextArchive);
+      setStyleForm(nextStyleForm);
+      setSavedStyleSnapshot(serializeStyleForm(nextStyleForm));
+      setToast({ message: "AI 分析已更新" });
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "风格照片分析失败。");
+    } finally {
+      setUploadingPhoto(null);
+    }
+  }
+
   return (
-    <form className="profile-settings-screen" onSubmit={submit}>
-      <div className="profile-settings-topbar">
+    <form className="style-guide-screen" onSubmit={submit}>
+      <div className="style-guide-topbar">
         <button type="button" aria-label="返回" onClick={() => router.back()}>
           <ChevronLeft size={20} />
         </button>
-        <h1>风格档案</h1>
-        <button className="profile-settings-top-save" disabled={!dirty || saving} type="submit">
-          {saving ? <Loader2 className="profile-settings-spinner" size={17} /> : <Check size={17} />}
+        <div>
+          <h1>风格档案 <Sparkles size={18} /></h1>
+          <p>了解自己，遇见更美的穿搭</p>
+        </div>
+        <button className="style-guide-settings-button" type="button" onClick={scrollToSettings}>
+          <Settings2 size={17} />
+          <span>档案设置</span>
         </button>
       </div>
 
-      <section className="profile-settings-hero" aria-busy={loading}>
-        <div className="style-archive-edit-icon">
-          <UserRound size={34} />
+      {error ? <div className="profile-settings-error">{error}</div> : null}
+
+      <section className="style-guide-completion-card" aria-busy={loading}>
+        <div className="style-guide-avatar">
+          {session?.user.avatar ? (
+            <img alt={session.user.nickName || "头像"} src={resolveBackendAssetUrl(session.user.avatar)} />
+          ) : (
+            <UserRound size={30} />
+          )}
         </div>
-        <div className="profile-settings-hero-copy">
-          <strong>{session?.user.nickName || "我的风格档案"}</strong>
-          <span>{session ? "已登录同步" : "本机保存，登录后可同步"}</span>
+        <div className="style-guide-completion-copy">
+          <strong>{session?.user.nickName || "完善档案，生成更精准的穿搭方案"}</strong>
+          <span>
+            {photoCount ? `已上传 ${photoCount}/3 张基础照片` : "上传基础照片后，AI 会生成专属分析报告"}
+          </span>
+          <button type="button" onClick={scrollToSettings}>完善档案</button>
+        </div>
+        <div className="style-guide-completion-ring" style={{ "--percent": completionPercent } as CSSProperties}>
+          <span>{completionPercent}%</span>
+          <small>完整度</small>
         </div>
       </section>
 
-      {error ? <div className="profile-settings-error">{error}</div> : null}
+      <SectionHeader title="基础照片" actionText={updatedText} />
+      <section className="style-guide-photo-grid">
+        {photoCards.map((photo) => {
+          const uploaded = archive?.basePhotos?.[photo.id];
+          const imageUrl = resolveBackendAssetUrl(uploaded?.url);
+          const uploading = uploadingPhoto === photo.id;
 
-      <section className="profile-settings-panel">
+          return (
+            <label className="style-guide-photo-card" key={photo.id} style={{ "--accent": photo.accent } as CSSProperties}>
+              <input
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                disabled={Boolean(uploadingPhoto)}
+                type="file"
+                onChange={(event) => void analyzePhoto(photo.id, event)}
+              />
+              <div className="style-guide-photo-preview">
+                {imageUrl ? <img alt={photo.title} src={imageUrl} /> : <Camera size={30} />}
+                {uploading ? (
+                  <div className="style-guide-photo-loading">
+                    <Loader2 className="profile-settings-spinner" size={22} />
+                    <span>分析中</span>
+                  </div>
+                ) : null}
+              </div>
+              <strong>{photo.title}</strong>
+              <span>{photo.description}</span>
+              <em>{imageUrl ? "重新上传" : "上传照片"}</em>
+            </label>
+          );
+        })}
+      </section>
+
+      <SectionHeader
+        title="AI 分析报告"
+        icon={<RefreshCw className={uploadingPhoto ? "profile-settings-spinner" : ""} size={16} />}
+        actionText={archive?.analysisReport ? "已生成" : "待生成"}
+      />
+      <section className="style-guide-report-grid">
+        {reportCards.map((item) => (
+          <ReportCard
+            key={item.key}
+            label={item.label}
+            item={archive?.analysisReport?.[item.key]}
+          />
+        ))}
+      </section>
+
+      <SectionHeader title="推荐色彩" />
+      {recommendedColors.length ? (
+        <section className="style-guide-color-strip">
+          {recommendedColors.map((color) => (
+            <ColorSwatch color={color} key={`${color.label}-${color.value}`} />
+          ))}
+        </section>
+      ) : (
+        <EmptyGuideState text="上传素颜照后生成适合你的专属色彩" />
+      )}
+
+      <SectionHeader title="推荐风格" />
+      {recommendedStyles.length ? (
+        <section className="style-guide-style-strip">
+          {recommendedStyles.map((style, index) => (
+            <StyleCard item={style} index={index} key={`${style.label}-${index}`} />
+          ))}
+        </section>
+      ) : (
+        <EmptyGuideState text="上传基础照片后生成适合你的风格定位" />
+      )}
+
+      <div ref={settingsRef} />
+      <section className="profile-settings-panel style-guide-settings-panel">
         <div className="profile-settings-panel-title">
           <Ruler size={18} />
-          <h2>身材数据</h2>
+          <h2>档案设置</h2>
         </div>
         <div className="profile-settings-grid">
           <StyleInput label="身高" value={styleForm.height} placeholder="168cm" onChange={(value) => updateStyleField("height", value)} />
@@ -223,6 +402,73 @@ export function StyleProfileArchivePage() {
 
       {toast ? <div className="profile-toast">{toast.message}</div> : null}
     </form>
+  );
+}
+
+function SectionHeader({
+  title,
+  actionText,
+  icon,
+}: {
+  title: string;
+  actionText?: string;
+  icon?: ReactNode;
+}) {
+  return (
+    <div className="style-guide-section-header">
+      <h2>{title}</h2>
+      {actionText || icon ? (
+        <span>
+          {icon}
+          {actionText}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function ReportCard({ label, item }: { label: string; item?: H5StyleAnalysisItem }) {
+  const points = item?.points?.filter(Boolean) || [];
+  return (
+    <article className="style-guide-report-card">
+      <span>{label}</span>
+      <strong>{item?.title || "待补充照片确认"}</strong>
+      {points.length ? (
+        <p>{points.slice(0, 3).join("、")}</p>
+      ) : (
+        <p>上传对应照片后生成更细的风格判断</p>
+      )}
+      {item?.advice ? <em>{item.advice}</em> : null}
+    </article>
+  );
+}
+
+function ColorSwatch({ color }: { color: H5ColorPreferenceItem }) {
+  return (
+    <div className="style-guide-color-swatch">
+      <i style={{ background: color.value }} />
+      <span>{color.label}</span>
+    </div>
+  );
+}
+
+function StyleCard({ item, index }: { item: H5RecommendedStyleItem; index: number }) {
+  const imageUrl = resolveBackendAssetUrl(item.imageUrl) || stylePreviewImages[index % stylePreviewImages.length];
+  return (
+    <article className="style-guide-style-card">
+      <img alt={item.label} src={imageUrl} />
+      <strong>{item.label}</strong>
+      {item.description ? <span>{item.description}</span> : null}
+    </article>
+  );
+}
+
+function EmptyGuideState({ text }: { text: string }) {
+  return (
+    <div className="style-guide-empty">
+      <Upload size={18} />
+      <span>{text}</span>
+    </div>
   );
 }
 
@@ -315,4 +561,20 @@ function splitList(value: string) {
         .filter(Boolean),
     ),
   ).slice(0, 16);
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("照片读取失败。"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatArchiveUpdatedAt(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getMonth() + 1}/${date.getDate()} 已更新`;
 }

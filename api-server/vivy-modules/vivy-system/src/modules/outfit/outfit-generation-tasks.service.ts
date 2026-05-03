@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import { InjectRedis } from '@nestjs-modules/ioredis'
-import { HttpException, HttpStatus, Injectable, OnModuleDestroy } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@vivy-common/config'
 import Redis from 'ioredis'
 import { Subject } from 'rxjs'
@@ -45,6 +45,7 @@ const variantDirections = [
 
 @Injectable()
 export class OutfitGenerationTasksService implements OnModuleDestroy {
+  private readonly logger = new Logger(OutfitGenerationTasksService.name)
   private readonly tasks = new Map<string, GenerateOutfitTaskSnapshot>()
   private readonly streams = new Map<string, Subject<GenerateOutfitTaskSnapshot>>()
   private readonly cleanupTimers = new Map<string, NodeJS.Timeout>()
@@ -61,7 +62,15 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
     if (!userId) {
       throw new HttpException('请先登录后再生成穿搭方案。', HttpStatus.UNAUTHORIZED)
     }
-    const quotaReservation = await this.consumeDailyGenerationQuota(normalizeVariantCount(input.generationCount), userId)
+    const imageCount = normalizeVariantCount(input.generationCount)
+    this.logger.log({
+      event: 'outfit.task.create.start',
+      imageCount,
+      imageModel: input.imageModel,
+      source: input.userPhotoDataUrl ? 'photo' : 'keyword',
+      userId,
+    })
+    const quotaReservation = await this.consumeDailyGenerationQuota(imageCount, userId)
 
     const now = new Date().toISOString()
     const task: GenerateOutfitTaskSnapshot = {
@@ -74,6 +83,12 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
     }
 
     this.tasks.set(task.taskId, task)
+    this.logger.log({
+      event: 'outfit.task.create.queued',
+      imageCount,
+      taskId: task.taskId,
+      userId,
+    })
     void this.run(task.taskId, input, quotaReservation, userId)
 
     return task
@@ -101,7 +116,15 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
   }
 
   private async run(taskId: string, input: OutfitInput, quotaReservation: DailyQuotaReservation, userId: number) {
+    const startedAt = Date.now()
     try {
+      this.logger.log({
+        event: 'outfit.task.run.start',
+        imageModel: input.imageModel,
+        source: input.userPhotoDataUrl ? 'photo' : 'keyword',
+        taskId,
+        userId,
+      })
       this.update(taskId, {
         status: 'running',
         progress: 18,
@@ -109,7 +132,23 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
       })
 
       const aiConfig = await this.getAiConfig(input)
-      const plan = input.userPhotoDataUrl ? await generateOutfitPlan(input, aiConfig) : buildFastOutfitPlan(input)
+      this.logger.log({
+        event: 'outfit.task.ai_config.loaded',
+        keywordImageModel: aiConfig.keywordImageModel,
+        photoImageModel: aiConfig.photoImageModel,
+        selectedImageModel: input.imageModel,
+        taskId,
+        textModel: aiConfig.textModel,
+      })
+      const plan = input.userPhotoDataUrl
+        ? await generateOutfitPlan(input, aiConfig, { source: 'photo', taskId })
+        : buildFastOutfitPlan(input)
+      this.logger.log({
+        event: 'outfit.task.plan.ready',
+        planSource: input.userPhotoDataUrl ? 'ai' : 'fast',
+        taskId,
+        title: plan.outfitTitle,
+      })
 
       this.update(taskId, {
         status: 'running',
@@ -120,11 +159,16 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
       const variants = buildOutfitVariants(plan, input)
       const { userPhotoDataUrl, ...safeInput } = input
       const now = new Date().toISOString()
+      this.logger.log({
+        event: 'outfit.task.variants.ready',
+        taskId,
+        totalCount: variants.length,
+      })
 
       this.update(taskId, {
         status: 'running',
         progress: 48,
-        message: `正在并发生成 ${variants.length} 套穿搭图片。`,
+        message: `正在生成 ${variants.length} 套穿搭图片。`,
       })
 
       const results = await generateOutfitVariantResults({
@@ -135,7 +179,32 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
         taskId,
         variants,
         imageGenerator: generateOutfitImage,
+        onVariantStart: ({ index, title, totalCount }) => {
+          this.logger.log({
+            event: 'outfit.task.variant.image.start',
+            index,
+            taskId,
+            title,
+            totalCount,
+          })
+        },
+        onVariantComplete: ({ imageLength, index, title, totalCount }) => {
+          this.logger.log({
+            event: 'outfit.task.variant.image.complete',
+            imageLength,
+            index,
+            taskId,
+            title,
+            totalCount,
+          })
+        },
         onProgress: ({ message, progress }) => {
+          this.logger.log({
+            event: 'outfit.task.progress',
+            message,
+            progress,
+            taskId,
+          })
           this.update(taskId, {
             status: 'running',
             progress,
@@ -145,12 +214,37 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
       })
 
       if (userPhotoDataUrl) {
+        this.logger.log({
+          event: 'outfit.task.user_photo.persist.start',
+          taskId,
+        })
         const userPhotoUrl = await persistOutfitImage(userPhotoDataUrl, this.config)
         results.forEach((result) => {
           result.userPhotoUrl = userPhotoUrl
         })
+        this.logger.log({
+          event: 'outfit.task.user_photo.persist.complete',
+          taskId,
+        })
       }
+      const generationDurationMs = Date.now() - startedAt
+      results.forEach((result) => {
+        result.generationDurationMs = generationDurationMs
+      })
+      this.logger.log({
+        event: 'outfit.task.records.persist.start',
+        elapsedMs: generationDurationMs,
+        resultCount: results.length,
+        taskId,
+        userId,
+      })
       const savedResults = await this.persistGeneratedRecords(results, userId)
+      this.logger.log({
+        event: 'outfit.task.records.persist.complete',
+        savedCount: savedResults.length,
+        taskId,
+        userId,
+      })
 
       this.update(taskId, {
         status: 'succeeded',
@@ -159,8 +253,22 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
         result: savedResults[0],
         results: savedResults,
       })
+      this.logger.log({
+        elapsedMs: Date.now() - startedAt,
+        event: 'outfit.task.run.succeeded',
+        savedCount: savedResults.length,
+        taskId,
+        userId,
+      })
       this.scheduleCleanup(taskId)
     } catch (error) {
+      this.logger.warn({
+        elapsedMs: Date.now() - startedAt,
+        event: 'outfit.task.run.failed',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorName: error instanceof Error ? error.name : typeof error,
+        taskId,
+      })
       await this.refundDailyGenerationQuota(quotaReservation)
       this.update(taskId, {
         status: 'failed',
@@ -174,7 +282,14 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
 
   private async persistGeneratedRecords(results: OutfitGeneration[] = [], userId: number): Promise<OutfitGeneration[]> {
     const savedResults: OutfitGeneration[] = []
-    for (const generation of results) {
+    for (const [index, generation] of results.entries()) {
+      this.logger.log({
+        event: 'outfit.task.record.persist.start',
+        generationId: generation.id,
+        index: index + 1,
+        taskId: generation.taskId,
+        userId,
+      })
       savedResults.push(
         await this.outfitRecordsService.create(
           {
@@ -184,6 +299,14 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
           userId
         )
       )
+      this.logger.log({
+        event: 'outfit.task.record.persist.complete',
+        generationId: generation.id,
+        index: index + 1,
+        recordId: savedResults[savedResults.length - 1]?.id,
+        taskId: generation.taskId,
+        userId,
+      })
     }
 
     return savedResults
@@ -191,7 +314,13 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
 
   private update(taskId: string, patch: Partial<Omit<GenerateOutfitTaskSnapshot, 'taskId' | 'createdAt'>>) {
     const current = this.tasks.get(taskId)
-    if (!current) return
+    if (!current) {
+      this.logger.warn({
+        event: 'outfit.task.update.missing_task',
+        taskId,
+      })
+      return
+    }
 
     const next: GenerateOutfitTaskSnapshot = {
       ...current,
@@ -201,6 +330,12 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
 
     this.tasks.set(taskId, next)
     this.streams.get(taskId)?.next(next)
+    this.logger.log({
+      event: 'outfit.task.update',
+      progress: next.progress,
+      status: next.status,
+      taskId,
+    })
 
     if (next.status === 'succeeded' || next.status === 'failed') {
       this.streams.get(taskId)?.complete()
@@ -212,6 +347,12 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
 
     const message = error instanceof Error ? error.message : '生成失败，请稍后再试。'
     if (/rate limit|429/i.test(message)) return '图片模型当前限流，请稍后再试。'
+    if (/upstream request failed|model_not_found|no available channel|503|502/i.test(message)) {
+      return '当前生图模型通道不可用，请在后台切换到支持照片换搭的图片模型或服务商。'
+    }
+    if (/timeout|timed out|abort|aborted|connection error|fetch failed|socket hang up|terminated|ECONNRESET|UND_ERR_SOCKET/i.test(message)) {
+      return '图片服务连接失败或响应超时，请稍后重试或在后台切换可用的生图模型。'
+    }
 
     return message
   }

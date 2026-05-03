@@ -28,6 +28,19 @@ test("outfitInputSchema accepts a requested generation count", () => {
   assert.equal(parsed.generationCount, 3);
 });
 
+test("outfitInputSchema accepts photo mode context", () => {
+  const parsed = outfitInputSchema.parse({
+    ...validInput,
+    photoMode: {
+      id: "slimmer",
+      label: "更显瘦",
+      prompt: "照片换搭模式：更显瘦，优化身材比例。",
+    },
+  });
+
+  assert.equal(parsed.photoMode?.label, "更显瘦");
+});
+
 test("outfitInputSchema rejects unsupported generation counts", () => {
   assert.throws(
     () =>

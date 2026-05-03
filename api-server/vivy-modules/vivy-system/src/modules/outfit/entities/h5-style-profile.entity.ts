@@ -52,6 +52,21 @@ export class H5StyleProfile extends BaseBusinessEntity {
   @Column({ name: 'body_metrics', type: 'longtext', nullable: true, comment: '身体围度JSON' })
   bodyMetrics?: string
 
+  @Column({ name: 'base_photos', type: 'longtext', nullable: true, comment: '基础照片JSON' })
+  basePhotos?: string
+
+  @Column({ name: 'analysis_report', type: 'longtext', nullable: true, comment: 'AI分析报告JSON' })
+  analysisReport?: string
+
+  @Column({ name: 'recommended_colors', type: 'longtext', nullable: true, comment: '推荐色彩JSON' })
+  recommendedColors?: string
+
+  @Column({ name: 'recommended_styles', type: 'longtext', nullable: true, comment: '推荐风格JSON' })
+  recommendedStyles?: string
+
+  @Column({ name: 'analysis_updated_at', type: 'datetime', nullable: true, comment: 'AI分析更新时间' })
+  analysisUpdatedAt?: Date
+
   @Column({ name: 'notes', type: 'varchar', length: 500, nullable: true, comment: '备注' })
   notes?: string
 }

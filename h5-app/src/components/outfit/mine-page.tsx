@@ -175,13 +175,20 @@ export function MinePage() {
       </section>
 
       <section className="profile-stats-card">
-        <div className="profile-stat">
+        <div className="profile-stat profile-stat-primary">
           <span>今日生成</span>
           <strong>{overview.stats.dailyGenerated}</strong>
-          <em>剩余 {overview.stats.remainingToday} 次</em>
+          <em>今日已完成</em>
         </div>
-        <div className="profile-stat-divider" />
         <div className="profile-stat">
+          <span>剩余次数</span>
+          <strong>
+            {overview.stats.remainingToday}
+            <small>次</small>
+          </strong>
+          <em>上限 {overview.stats.dailyLimit} 次</em>
+        </div>
+        <div className="profile-stat profile-stat-points">
           <span>积分余额</span>
           <strong>{overview.stats.pointsBalance}</strong>
           <button type="button">去获取</button>
@@ -190,7 +197,7 @@ export function MinePage() {
 
       <section className="profile-card">
         <div className="profile-section-title">
-          <h2>生成记录</h2>
+          <h2>AI 衣橱</h2>
           <Link href="/history">
             查看全部
             <ChevronRight size={14} />

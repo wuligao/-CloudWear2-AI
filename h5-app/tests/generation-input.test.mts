@@ -27,17 +27,28 @@ const configDefaults: OutfitInput = {
 
 const emptyConfigOptions: H5OutfitConfigOptions = {
   colors: [],
+  dailyFreeGenerationLimit: 3,
   generationCounts: [],
   homeCategories: [],
   homeLooks: [],
   imageModels: [],
   inspirationKeywords: [],
   items: [],
+  login: {
+    brandTitle: "",
+    heroAlt: "",
+    heroImage: "",
+    phonePasswordEnabled: true,
+    registerEnabled: true,
+    subtitle: "",
+    wechatEnabled: true,
+  },
   locations: [],
   scenes: [],
   seasons: [],
   styles: [],
   temperatures: [],
+  tomorrowRecommendationStartHour: 20,
   weathers: [],
 };
 
