@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeCheck, Clock3, Home, Shirt, Sparkles, UserRound } from "lucide-react";
+import { BadgeCheck, Clock3, Home, MessageCircle, Shirt, Sparkles, UserRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
@@ -17,6 +17,12 @@ const navItems = [
     label: "AI衣橱",
     icon: Clock3,
     id: "history",
+  },
+  {
+    href: "/chat",
+    label: "AI顾问",
+    icon: MessageCircle,
+    id: "chat",
   },
   {
     href: "/?screen=photo",
@@ -154,6 +160,7 @@ function isNavItemActive(
     return pathname === "/result" || (pathname === "/" && (screen === "photo" || screen === "keyword"));
   }
   if (item.id === "home") return pathname === "/" && !screen;
+  if (item.id === "chat") return pathname === "/chat";
   if (item.id === "style") return pathname === "/profile" || pathname.startsWith("/profile/archive");
   if (item.id === "mine") {
     return pathname.startsWith("/profile/settings") || pathname.startsWith("/profile/account");

@@ -20,6 +20,12 @@ export interface OpenMeteoCurrentWeatherResponse {
   };
 }
 
+interface ReverseGeocodeResponse {
+  city?: string;
+  locality?: string;
+  principalSubdivision?: string;
+}
+
 export const defaultDailyWeather: DailyWeatherContext = {
   season: seasonFromDate(new Date()),
   temperature: 22,
@@ -36,7 +42,10 @@ const defaultGeoPoint: GeoPoint = {
 };
 const defaultWeatherLocation = "上海";
 const weatherRequestTimeoutMs = 2800;
+const locationRequestTimeoutMs = 1800;
 const tomorrowRecommendationStartHour = 20;
+const dailyWeatherCacheKey = "cloudwear.daily-weather-context.v1";
+const dailyWeatherCacheMaxAgeMs = 1000 * 60 * 30;
 
 export interface DailyWeatherFetchOptions {
   tomorrowRecommendationStartHour?: number;
@@ -60,6 +69,78 @@ export function buildDefaultDailyWeatherContext({
     forecastDateKey: buildDateKey(target.date),
     periodLabel: target.periodLabel,
   };
+}
+
+export function buildPendingDailyWeatherContext({
+  now = new Date(),
+  tomorrowRecommendationStartHour: configuredTomorrowStartHour,
+}: {
+  now?: Date;
+  tomorrowRecommendationStartHour?: number;
+} = {}): DailyWeatherContext {
+  const target = getRecommendationForecastTarget(
+    now,
+    configuredTomorrowStartHour,
+  );
+
+  return {
+    ...defaultDailyWeather,
+    season: seasonFromDate(target.date),
+    forecastDateKey: buildDateKey(target.date),
+    location: "定位中",
+    periodLabel: target.periodLabel,
+    sourceLabel: "正在获取本地天气",
+  };
+}
+
+export function readCachedDailyWeatherContext({
+  now = new Date(),
+  tomorrowRecommendationStartHour: configuredTomorrowStartHour,
+}: {
+  now?: Date;
+  tomorrowRecommendationStartHour?: number;
+} = {}) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const snapshot = window.localStorage.getItem(dailyWeatherCacheKey);
+    if (!snapshot) return null;
+
+    const payload = JSON.parse(snapshot) as {
+      cachedAt?: string;
+      weather?: DailyWeatherContext;
+    };
+    const cachedAt = payload.cachedAt ? new Date(payload.cachedAt).getTime() : Number.NaN;
+    const target = getRecommendationForecastTarget(
+      now,
+      configuredTomorrowStartHour,
+    );
+
+    if (!Number.isFinite(cachedAt)) return null;
+    if (Date.now() - cachedAt > dailyWeatherCacheMaxAgeMs) return null;
+    if (payload.weather?.forecastDateKey !== buildDateKey(target.date)) return null;
+    if (payload.weather.periodLabel !== target.periodLabel) return null;
+
+    return normalizeCachedDailyWeatherContext(payload.weather);
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedDailyWeatherContext(weather: DailyWeatherContext) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(
+      dailyWeatherCacheKey,
+      JSON.stringify({
+        cachedAt: new Date().toISOString(),
+        weather,
+      }),
+    );
+  } catch {
+    // Cache write failure should not block live weather rendering.
+  }
 }
 
 export function buildOpenMeteoForecastUrl(
@@ -88,11 +169,22 @@ export async function fetchDailyWeatherContext({
 
   try {
     const point = await getBrowserGeoPoint();
-    const location = point ? "当前位置" : defaultWeatherLocation;
-    const response = await fetchWithTimeout(buildOpenMeteoForecastUrl(point || defaultGeoPoint));
+    const [weatherResult, locationResult] = await Promise.allSettled([
+      fetchWithTimeout(buildOpenMeteoForecastUrl(point || defaultGeoPoint)),
+      point ? fetchReverseGeocodeLocation(point) : Promise.resolve(defaultWeatherLocation),
+    ]);
+    if (weatherResult.status === "rejected") throw weatherResult.reason;
+
+    const location =
+      locationResult.status === "fulfilled" && locationResult.value
+        ? locationResult.value
+        : point
+          ? "当前位置"
+          : defaultWeatherLocation;
+    const response = weatherResult.value;
     if (!response.ok) throw new Error(`${target.periodLabel}天气读取失败。`);
     const payload = (await response.json()) as OpenMeteoCurrentWeatherResponse;
-    return normalizeOpenMeteoCurrentWeather(payload, {
+    const weather = normalizeOpenMeteoCurrentWeather(payload, {
       date: target.date,
       dayIndex: target.dayIndex,
       location,
@@ -102,6 +194,8 @@ export async function fetchDailyWeatherContext({
           ? `${location}明日天气预报`
           : `${location}实时天气`,
     });
+    writeCachedDailyWeatherContext(weather);
+    return weather;
   } catch (error) {
     console.warn(error instanceof Error ? error.message : `${target.periodLabel}天气读取失败。`);
     return {
@@ -111,6 +205,61 @@ export async function fetchDailyWeatherContext({
       periodLabel: target.periodLabel,
     };
   }
+}
+
+async function fetchReverseGeocodeLocation(point: GeoPoint) {
+  const url = new URL("https://api.bigdatacloud.net/data/reverse-geocode-client");
+  url.searchParams.set("latitude", formatCoordinate(point.latitude));
+  url.searchParams.set("longitude", formatCoordinate(point.longitude));
+  url.searchParams.set("localityLanguage", "zh");
+
+  const controller = new AbortController();
+  const timer = globalThis.setTimeout(() => controller.abort(), locationRequestTimeoutMs);
+  try {
+    const response = await fetch(url.toString(), {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as ReverseGeocodeResponse;
+    return normalizeLocationName(
+      payload.city || payload.locality || payload.principalSubdivision,
+    );
+  } catch {
+    return null;
+  } finally {
+    globalThis.clearTimeout(timer);
+  }
+}
+
+function normalizeLocationName(value?: string) {
+  const location = value?.trim();
+  if (!location) return null;
+
+  return location.replace(/市$/u, "");
+}
+
+function normalizeCachedDailyWeatherContext(
+  weather: DailyWeatherContext,
+): DailyWeatherContext | null {
+  if (!weather || typeof weather !== "object") return null;
+  if (!weather.location || !weather.forecastDateKey || !weather.periodLabel) {
+    return null;
+  }
+
+  return {
+    ...defaultDailyWeather,
+    ...weather,
+    temperature: Number.isFinite(Number(weather.temperature))
+      ? Math.round(Number(weather.temperature))
+      : defaultDailyWeather.temperature,
+    highTemperature: normalizeOptionalNumber(Number(weather.highTemperature)),
+    lowTemperature: normalizeOptionalNumber(Number(weather.lowTemperature)),
+    precipitationProbability: normalizeOptionalNumber(
+      Number(weather.precipitationProbability),
+    ),
+  };
 }
 
 export function normalizeOpenMeteoCurrentWeather(

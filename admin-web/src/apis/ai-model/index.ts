@@ -99,3 +99,15 @@ export function updateH5ModelConfig(params: UpdateAiAppModelConfigParams) {
     data: params,
   })
 }
+
+export function refreshH5HomeContent() {
+  return request<AiAppModelConfig>('/ai-model/app-configs/h5-outfit/daily-refresh', {
+    method: RequestEnum.POST,
+  })
+}
+
+export function refreshH5LoginContent() {
+  return request<AiAppModelConfig>('/ai-model/app-configs/h5-outfit/login-refresh', {
+    method: RequestEnum.POST,
+  })
+}

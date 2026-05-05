@@ -98,6 +98,7 @@ export type H5StyleProfileFeedbackDto = z.infer<typeof h5StyleProfileFeedbackSch
 export const h5StyleProfileQuerySchema = h5ProfileOverviewQuerySchema
 
 export const h5StyleProfileSchema = z.object({
+  genderPreference: optionalText(40),
   height: optionalText(40),
   weight: optionalText(40),
   clothingSize: optionalText(40),

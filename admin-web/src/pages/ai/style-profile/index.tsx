@@ -207,6 +207,7 @@ function ArchiveDashboard({ archive, card }: { archive: H5StyleArchive; card?: H
   ]
   const profileFacts = [
     card?.userId ? `ID: ${String(card.userId).padStart(4, '0')}` : undefined,
+    archive.profile.genderPreference ? `穿搭性别：${archive.profile.genderPreference}` : undefined,
     archive.profile.height,
     archive.profile.weight,
     archive.profile.clothingSize,

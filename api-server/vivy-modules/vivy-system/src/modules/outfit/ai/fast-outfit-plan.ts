@@ -5,6 +5,7 @@ export function buildFastOutfitPlan(input: OutfitInput): OutfitPlan {
   const primaryStyle = styleTags[0] || input.style.trim()
   const colorText = input.colorPreference?.trim()
   const genderText = input.genderPreference?.trim()
+  const profileText = buildStyleProfileText(input)
   const imagePrompt = [
     'Full-body realistic fashion editorial image of one adult model.',
     `Outfit keywords from the user: ${input.style}.`,
@@ -15,6 +16,7 @@ export function buildFastOutfitPlan(input: OutfitInput): OutfitPlan {
     `Occasion: ${input.occasion}.`,
     colorText ? `Color preference: ${colorText}.` : '',
     genderText ? `Gender expression preference: ${genderText}.` : '',
+    profileText ? `Personal style profile guidance: ${profileText}.` : '',
     'Create wearable clothing, shoes, and accessories that match the keywords and context.',
     'Use realistic fabric texture, natural lighting, clean composition, no text, no logo, no watermark.',
   ]
@@ -39,4 +41,27 @@ function splitPhrases(value: string) {
     .filter(Boolean)
 
   return Array.from(new Set(phrases))
+}
+
+function buildStyleProfileText(input: OutfitInput) {
+  const profile = input.styleProfileContext
+  if (!profile) return ''
+
+  return [
+    profile.bodySummary,
+    listText('favorite styles', profile.favoriteStyles),
+    listText('favorite colors', profile.favoriteColors),
+    listText('avoid colors', profile.avoidColors),
+    listText('common occasions', profile.commonOccasions),
+    listText('preferred elements', profile.elementPreferences),
+    listText('preferred fit', profile.fitPreferences),
+    profile.notes ? `notes ${profile.notes}` : '',
+  ]
+    .filter(Boolean)
+    .join('; ')
+}
+
+function listText(label: string, values?: string[]) {
+  const list = values?.map((item) => item.trim()).filter(Boolean).slice(0, 6)
+  return list?.length ? `${label} ${list.join(', ')}` : ''
 }

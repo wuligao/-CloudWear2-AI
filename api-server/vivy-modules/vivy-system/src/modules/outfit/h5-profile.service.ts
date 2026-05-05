@@ -61,6 +61,7 @@ export class H5ProfileService {
     const current = await this.findStyleProfile({ userId })
     const patch: Partial<H5StyleProfile> = {
       userId,
+      genderPreference: dto.genderPreference,
       height: dto.height,
       weight: dto.weight,
       clothingSize: dto.clothingSize,
@@ -428,6 +429,7 @@ export class H5ProfileService {
       weight: profile.weight,
       clothingSize: profile.clothingSize,
       shoeSize: profile.shoeSize,
+      genderPreference: profile.genderPreference,
       favoriteStyles: parseJson(profile.favoriteStyles, []),
       favoriteColors: parseJson(profile.favoriteColors, []),
       avoidColors: parseJson(profile.avoidColors, []),
@@ -450,6 +452,7 @@ export class H5ProfileService {
     return {
       profileId: profile?.profileId,
       userId: profile?.userId || userId,
+      genderPreference: input.genderPreference || '',
       height: input.height || '',
       weight: input.weight || '',
       clothingSize: input.clothingSize || '',
@@ -575,6 +578,7 @@ function normalizeStylePhotoUrls(basePhotos: H5StyleProfileInput['basePhotos'] =
 
 function calculateStyleProfileCompletion(profile: H5StyleProfileInput) {
   const checks = [
+    profile.genderPreference,
     profile.height,
     profile.weight,
     profile.clothingSize,

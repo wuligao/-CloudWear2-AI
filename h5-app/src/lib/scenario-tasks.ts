@@ -33,6 +33,7 @@ export interface DailyWeatherContext {
 }
 
 export interface DailyScenarioProfile {
+  genderPreference?: string;
   favoriteStyles?: string[];
   favoriteColors?: string[];
   commonOccasions?: string[];
@@ -175,7 +176,7 @@ export function buildScenarioTaskSummary({
   const weatherContext = normalizeWeatherContext(weather);
   const profileContext = normalizeProfile(profile);
   const forecastText = buildForecastSummary(weatherContext);
-  const preferences = [profileContext.style, profileContext.color]
+  const preferences = [profileContext.gender, profileContext.style, profileContext.color]
     .filter(Boolean)
     .join(" / ");
   const periodLabel = weatherContext.periodLabel || "今日";
@@ -342,6 +343,7 @@ function parseOptionalNumber(value: string | null) {
 function buildDailyCandidates(
   weather: DailyWeatherContext,
   profile: Required<Pick<DailyScenarioProfile, "favoriteStyles" | "favoriteColors" | "commonOccasions" | "elementPreferences" | "fitPreferences">> & {
+    gender: string;
     style: string;
     color: string;
     occasion: string;
@@ -355,7 +357,7 @@ function buildDailyCandidates(
   const occasion = profile.occasion || "日常通勤";
   const element = profile.element;
   const fit = profile.fit;
-  const base = `${style}${color ? `，${color}色系` : ""}`;
+  const base = `${profile.gender ? `${profile.gender}穿搭，` : ""}${style}${color ? `，${color}色系` : ""}`;
   const detail = [element, fit].filter(Boolean).join("，");
   const weatherStyle = buildWeatherStyle(theme, weather);
   const shared = {
@@ -596,8 +598,10 @@ function normalizeProfile(profile?: DailyScenarioProfile | null) {
   const commonOccasions = normalizeList(profile?.commonOccasions);
   const elementPreferences = normalizeList(profile?.elementPreferences);
   const fitPreferences = normalizeList(profile?.fitPreferences);
+  const gender = normalizeGenderPreference(profile?.genderPreference);
 
   return {
+    gender,
     favoriteStyles,
     favoriteColors,
     commonOccasions,
@@ -609,6 +613,12 @@ function normalizeProfile(profile?: DailyScenarioProfile | null) {
     element: elementPreferences[0] || "",
     fit: fitPreferences[0] || "",
   };
+}
+
+function normalizeGenderPreference(value?: string) {
+  const text = value?.trim();
+  if (!text || text === "不限" || text === "不限定") return "";
+  return text;
 }
 
 function normalizeList(value?: string[]) {

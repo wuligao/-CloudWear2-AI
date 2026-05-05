@@ -9,6 +9,14 @@
     "debug": "nest start --debug --watch"
   },
   "dependencies": {
+    "@vivy-common/config": "workspace:*",
+    "@vivy-common/core": "workspace:*",
+    "@vivy-common/datascope": "workspace:*",
+    "@vivy-common/excel": "workspace:*",
+    "@vivy-common/logger": "workspace:*",
+    "@vivy-common/mybatis": "workspace:*",
+    "@vivy-common/security": "workspace:*",
+    "@vivy-common/swagger": "workspace:*",
     "ali-oss": "^6.23.0",
     "archiver": "^7.0.1",
     "camelcase": "^6.0.0",

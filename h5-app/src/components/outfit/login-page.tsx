@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { FormEvent, MouseEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   ChevronRight,
   Eye,
@@ -12,26 +12,99 @@ import {
   MessageCircle,
   Phone,
   Sparkles,
+  X,
 } from "lucide-react";
 import {
+  fetchH5Profile,
   loginH5User,
   normalizeH5RedirectPath,
   normalizeLoginPhone,
   registerH5User,
 } from "@/lib/auth";
-import { outfitApiEndpoints, resolveBackendAssetUrl } from "@/lib/api-endpoints";
-import { fetchWithTimeout } from "@/lib/request-timeout";
+import { resolveBackendAssetUrl } from "@/lib/api-endpoints";
 import {
   defaultH5OutfitConfigOptions,
-  H5LoginConfig,
-  H5OutfitConfigResponse,
-  mergeH5ConfigOptions,
+  fetchH5OutfitConfigOptions,
+  H5LoginHeroImageConfig,
+  H5LoginPoemConfig,
+  H5OutfitConfigOptions,
 } from "@/lib/h5-config";
 import { AuthLoadingOverlay } from "@/components/outfit/auth-loading-overlay";
+import { fetchDailyWeatherContext } from "@/lib/daily-weather";
+import { fetchH5ProfileOverview } from "@/lib/profile-overview";
 
 type LoginMode = "login" | "register";
+type LegalDocType = "terms" | "privacy";
 const authLoadingMinimumMs = 900;
 const loginConfigTimeoutMs = 2500;
+
+const legalDocuments: Record<
+  LegalDocType,
+  {
+    title: string;
+    subtitle: string;
+    updatedAt: string;
+    sections: Array<{
+      title: string;
+      content: string;
+    }>;
+  }
+> = {
+  terms: {
+    title: "用户协议",
+    subtitle: "使用 CloudWear AI 前，请了解账号、服务和内容生成规则。",
+    updatedAt: "2026-05-04",
+    sections: [
+      {
+        title: "账号与登录",
+        content:
+          "你需要使用真实可用的手机号注册或登录，并妥善保管账号密码。因账号外借、泄露或设备丢失造成的操作记录，由账号持有人自行承担。",
+      },
+      {
+        title: "AI 穿搭服务",
+        content:
+          "CloudWear AI 会根据你提交的关键词、照片、天气、风格档案和历史生成记录提供穿搭建议。AI 生成内容仅供审美和搭配参考，不构成医疗、法律、投资或其他专业建议。",
+      },
+      {
+        title: "上传内容规范",
+        content:
+          "请勿上传侵犯他人权益、含敏感身份信息、违法违规或未经授权的人像照片。你应确认对上传内容拥有合法使用权，并授权平台为完成穿搭生成、展示和记录保存而处理相关内容。",
+      },
+      {
+        title: "服务变更与限制",
+        content:
+          "平台可能因模型维护、额度限制、网络异常或安全风控暂停部分功能。若生成失败或结果不符合预期，可根据页面提示重试或切换可用模型。",
+      },
+    ],
+  },
+  privacy: {
+    title: "隐私政策",
+    subtitle: "我们尽量只收集完成穿搭生成和账号服务所必需的信息。",
+    updatedAt: "2026-05-04",
+    sections: [
+      {
+        title: "我们收集的信息",
+        content:
+          "为提供服务，我们会处理你的手机号、昵称、登录状态、风格档案、穿搭偏好、上传照片、生成结果、生成耗时和必要的设备网络日志。",
+      },
+      {
+        title: "信息如何使用",
+        content:
+          "上述信息用于账号登录、身份校验、AI 穿搭生成、历史记录展示、每日推荐、问题排查、安全风控和服务质量优化。",
+      },
+      {
+        title: "照片与生成记录",
+        content:
+          "你上传的照片会用于本次 AI 换搭生成，并可能与生成结果一起保存在你的历史记录中，方便你查看、放大、复用或删除。",
+      },
+      {
+        title: "你的选择",
+        content:
+          "你可以在个人中心维护风格档案和账号信息，也可以删除不需要的生成记录。未勾选同意前，平台不会提交登录或注册请求。",
+      },
+    ],
+  },
+};
 
 export function LoginPage() {
   const router = useRouter();
@@ -41,15 +114,34 @@ export function LoginPage() {
   const [nickName, setNickName] = useState("");
   const [remember, setRemember] = useState(true);
   const [accepted, setAccepted] = useState(false);
+  const [activeLegalDoc, setActiveLegalDoc] = useState<LegalDocType | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const currentSearch = useLocationSearch();
   const loginParams = useMemo(() => new URLSearchParams(currentSearch), [currentSearch]);
   const redirectTo = normalizeH5RedirectPath(loginParams.get("redirect"));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginConfig, setLoginConfig] = useState<H5LoginConfig | null>(null);
+  const [h5Options, setH5Options] = useState<H5OutfitConfigOptions | null>(null);
   const [configError, setConfigError] = useState("");
-  const activeLoginConfig = loginConfig || defaultH5OutfitConfigOptions.login;
+  const activeLoginConfig = h5Options?.login || defaultH5OutfitConfigOptions.login;
+  const activeLoginHero = useMemo(
+    () =>
+      pickRandomItem<H5LoginHeroImageConfig>(
+        activeLoginConfig.heroImages?.length
+          ? activeLoginConfig.heroImages
+          : [{ image: activeLoginConfig.heroImage, alt: activeLoginConfig.heroAlt }],
+      ),
+    [activeLoginConfig],
+  );
+  const activeLoginPoem = useMemo(
+    () =>
+      pickRandomItem<H5LoginPoemConfig>(
+        activeLoginConfig.poems?.length
+          ? activeLoginConfig.poems
+          : defaultH5OutfitConfigOptions.login.poems,
+      ),
+    [activeLoginConfig],
+  );
   const phonePasswordEnabled = activeLoginConfig.phonePasswordEnabled !== false;
   const registerEnabled = phonePasswordEnabled && activeLoginConfig.registerEnabled !== false;
   const wechatEnabled = activeLoginConfig.wechatEnabled !== false;
@@ -60,23 +152,19 @@ export function LoginPage() {
 
     async function loadH5Config() {
       try {
-        const response = await fetchWithTimeout(outfitApiEndpoints.h5Config(), {
-          cache: "no-store",
-        }, loginConfigTimeoutMs);
-        const payload = (await response.json()) as H5OutfitConfigResponse;
-        if (!response.ok || payload.code !== 200) {
-          throw new Error(payload.message || "H5配置读取失败。");
-        }
+        const options = await fetchH5OutfitConfigOptions({
+          timeoutMs: loginConfigTimeoutMs,
+        });
         if (!cancelled) {
           setConfigError("");
-          setLoginConfig(mergeH5ConfigOptions(payload.data?.options).login);
+          setH5Options(options);
         }
       } catch (caughtError) {
         if (!cancelled) {
           setConfigError(
             caughtError instanceof Error ? caughtError.message : "H5配置读取失败。",
           );
-          setLoginConfig(defaultH5OutfitConfigOptions.login);
+          setH5Options(defaultH5OutfitConfigOptions);
         }
         console.warn(
           caughtError instanceof Error
@@ -136,6 +224,7 @@ export function LoginPage() {
           remember,
         });
       }
+      await preloadH5LandingData(h5Options || defaultH5OutfitConfigOptions);
       await minimumLoading;
       router.replace(redirectTo);
     } catch (caughtError) {
@@ -150,7 +239,13 @@ export function LoginPage() {
     setError("");
   }
 
-  if (!loginConfig) {
+  function openLegalDoc(event: MouseEvent<HTMLButtonElement>, docType: LegalDocType) {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveLegalDoc(docType);
+  }
+
+  if (!h5Options) {
     return <LoginConfigLoadingScreen error={configError} />;
   }
 
@@ -158,12 +253,12 @@ export function LoginPage() {
     <div className="cw-login-screen">
       <section className="cw-login-hero" aria-label="云裳 AI 穿搭">
         <Image
-          alt={activeLoginConfig.heroAlt}
+          alt={activeLoginHero.alt}
           className="cw-login-hero-image"
           fill
           priority
           sizes="430px"
-          src={resolveBackendAssetUrl(activeLoginConfig.heroImage)}
+          src={resolveBackendAssetUrl(activeLoginHero.image)}
           unoptimized
         />
         <div className="cw-login-brand">
@@ -302,8 +397,14 @@ export function LoginPage() {
                 onChange={(event) => setAccepted(event.target.checked)}
               />
               <span>
-                我已阅读并同意 <button type="button">《用户协议》</button> 和{" "}
-                <button type="button">《隐私政策》</button>
+                我已阅读并同意{" "}
+                <button type="button" onClick={(event) => openLegalDoc(event, "terms")}>
+                  《用户协议》
+                </button>{" "}
+                和{" "}
+                <button type="button" onClick={(event) => openLegalDoc(event, "privacy")}>
+                  《隐私政策》
+                </button>
               </span>
             </label>
           </form>
@@ -337,31 +438,109 @@ export function LoginPage() {
       </section>
 
       <section className="cw-login-poem" aria-label="云裳灵感文案">
-        <span>东方衣境</span>
+        <span>{activeLoginPoem.kicker}</span>
         <p>
-          云想衣裳花想容
-          <br />
-          春风拂槛露华浓
+          {activeLoginPoem.line1}
+          {activeLoginPoem.line2 ? (
+            <>
+              <br />
+              {activeLoginPoem.line2}
+            </>
+          ) : null}
         </p>
-        <small>登录后同步衣橱偏好与历史方案</small>
+        <small>{activeLoginPoem.footer}</small>
       </section>
+
+      {activeLegalDoc ? (
+        <LegalDocumentDialog
+          document={legalDocuments[activeLegalDoc]}
+          onClose={() => setActiveLegalDoc(null)}
+        />
+      ) : null}
 
       <AuthLoadingOverlay
         visible={isSubmitting}
         title={mode === "login" ? "正在进入云裳" : "正在创建账号"}
-        subtitle="正在校验登录态，并为你同步个人衣橱偏好。"
+        subtitle="正在一次性加载首页配置、天气推荐和个人风格档案。"
         steps={
           mode === "login"
-            ? ["账号校验", "同步偏好", "准备首页"]
-            : ["创建身份", "写入衣橱", "自动登录"]
+            ? ["账号校验", "加载配置", "同步天气", "准备首页"]
+            : ["创建身份", "加载配置", "同步档案", "准备首页"]
         }
       />
     </div>
   );
 }
 
+function LegalDocumentDialog({
+  document,
+  onClose,
+}: {
+  document: (typeof legalDocuments)[LegalDocType];
+  onClose: () => void;
+}) {
+  return (
+    <div className="cw-legal-dialog" role="dialog" aria-modal="true" aria-label={document.title}>
+      <button
+        className="cw-legal-dialog-backdrop"
+        type="button"
+        aria-label="关闭协议"
+        onClick={onClose}
+      />
+      <section className="cw-legal-dialog-panel">
+        <header className="cw-legal-dialog-head">
+          <div>
+            <span>CloudWear AI</span>
+            <h2>{document.title}</h2>
+            <p>{document.subtitle}</p>
+            <small>更新日期：{document.updatedAt}</small>
+          </div>
+          <button type="button" aria-label="关闭" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </header>
+        <div className="cw-legal-dialog-content">
+          {document.sections.map((section) => (
+            <article key={section.title}>
+              <h3>{section.title}</h3>
+              <p>{section.content}</p>
+            </article>
+          ))}
+        </div>
+        <button className="cw-legal-dialog-confirm" type="button" onClick={onClose}>
+          我知道了
+        </button>
+      </section>
+    </div>
+  );
+}
+
+async function preloadH5LandingData(options: H5OutfitConfigOptions) {
+  await Promise.all([
+    fetchH5Profile(),
+    fetchH5OutfitConfigOptions({
+      timeoutMs: loginConfigTimeoutMs,
+    }),
+    fetchH5ProfileOverview(),
+    fetchDailyWeatherContext({
+      tomorrowRecommendationStartHour: options.tomorrowRecommendationStartHour,
+    }),
+  ]);
+}
+
 function wait(duration: number) {
   return new Promise((resolve) => window.setTimeout(resolve, duration));
+}
+
+function pickRandomItem<T>(items: T[]): T {
+  const fallback = items[0];
+  if (items.length <= 1) return fallback;
+
+  const randomIndex =
+    typeof crypto !== "undefined" && "getRandomValues" in crypto
+      ? crypto.getRandomValues(new Uint32Array(1))[0] % items.length
+      : Math.floor(Math.random() * items.length);
+  return items[randomIndex] || fallback;
 }
 
 function useLocationSearch() {

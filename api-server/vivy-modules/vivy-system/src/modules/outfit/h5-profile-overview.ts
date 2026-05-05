@@ -14,6 +14,7 @@ export interface H5ProfileUserInput {
 }
 
 export interface H5StyleProfileInput {
+  genderPreference?: string
   height?: string
   weight?: string
   clothingSize?: string
@@ -93,6 +94,7 @@ export interface H5StyleArchive {
     displayName: string
     statusLabel: string
     avatar?: string
+    genderPreference?: string
     height?: string
     weight?: string
     clothingSize?: string
@@ -105,6 +107,8 @@ export interface H5StyleArchive {
   }
   stylePreferences: H5StylePreferenceItem[]
   colorPreferences: H5ColorPreferenceItem[]
+  avoidColors: string[]
+  commonOccasions: string[]
   elementPreferences: string[]
   bodyMetrics: H5BodyMetricItem[]
     fitTypes: H5FitTypeItem[]
@@ -247,6 +251,7 @@ export function buildH5StyleArchive(
       displayName,
       statusLabel: recordCount > 0 ? '风格档案中' : '待生成记录',
       avatar: user.avatar,
+      genderPreference: styleProfile.genderPreference,
       height: styleProfile.height,
       weight: styleProfile.weight,
       clothingSize: styleProfile.clothingSize,
@@ -259,6 +264,8 @@ export function buildH5StyleArchive(
     },
     stylePreferences,
     colorPreferences,
+    avoidColors: styleProfile.avoidColors || [],
+    commonOccasions: styleProfile.commonOccasions || [],
     elementPreferences,
     bodyMetrics: buildBodyMetrics(styleProfile.bodyMetrics),
     fitTypes: styleProfile.fitPreferences?.length ? buildManualFitTypes(styleProfile.fitPreferences) : buildFitTypes(succeededRecords),

@@ -2,8 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { AlertCircle, BadgeCheck, Loader2, Sparkles } from "lucide-react";
 import {
+  AlertCircle,
+  BadgeCheck,
+  ImagePlus,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
+import {
+  type CSSProperties,
   type PointerEvent,
   Suspense,
   useCallback,
@@ -36,9 +43,10 @@ type MonitorItem = {
 type OrbPosition = { x: number; y: number };
 
 const orbPositionStoreKey = "cloudwear.global-generation-orb-position.v1";
-const orbWidth = 148;
-const orbHeight = 52;
+const orbWidth = 124;
+const orbHeight = 48;
 const orbMargin = 12;
+const topbarSafeGap = 118;
 const bottomNavSafeGap = 104;
 
 function logMonitorTrace(event: string, payload: Record<string, unknown> = {}) {
@@ -72,7 +80,12 @@ function GlobalGenerationMonitorContent() {
     startX: number;
     startY: number;
   } | null>(null);
-  const isProgressPage = pathname === "/" && Boolean(searchParams.get("taskId"));
+  const liveTaskId =
+    typeof window === "undefined"
+      ? null
+      : new URL(window.location.href).searchParams.get("taskId");
+  const isProgressPage =
+    pathname === "/" && Boolean(searchParams.get("taskId") || liveTaskId);
 
   const mergeStoredTasks = useCallback((storedTasks: ActiveGenerationTask[]) => {
     logMonitorTrace("tasks.merge_stored", {
@@ -362,14 +375,9 @@ function GlobalGenerationMonitorContent() {
     ),
   );
   const orbCount = runningVisibleItems.length || visibleItems.length;
-  const orbTitle =
-    runningVisibleItems.length > 1
-      ? `${runningVisibleItems.length} 个生成`
-      : runningVisibleItems.length === 1
-        ? "1 个生成"
-        : `${visibleItems.length} 条更新`;
+  const orbTitle = runningVisibleItems.length ? "生成中" : "新结果";
   const orbMeta = runningVisibleItems.length
-    ? `${formatMonitorElapsedTime(primaryElapsedSeconds)} · ${primaryProgress}%`
+    ? `${primaryProgress}% · ${formatMonitorElapsedTime(primaryElapsedSeconds)}`
     : "有新结果";
   const panelAlignClass =
     activeOrbPosition.x + orbWidth / 2 < window.innerWidth / 2
@@ -446,9 +454,15 @@ function GlobalGenerationMonitorContent() {
         onPointerDown={handleOrbPointerDown}
         onPointerMove={handleOrbPointerMove}
         onPointerUp={handleOrbPointerUp}
+        style={
+          {
+            "--cw-global-progress": `${primaryProgress}%`,
+          } as CSSProperties
+        }
       >
-        <span className="cw-global-generation-orb-glow" aria-hidden="true" />
-        <Sparkles size={19} />
+        <span className="cw-global-generation-orb-mark" aria-hidden="true">
+          <ImagePlus size={16} />
+        </span>
         <span className="cw-global-generation-orb-copy">
           <strong>{orbTitle}</strong>
           <small>{orbMeta}</small>
@@ -588,11 +602,15 @@ function clampOrbPosition(position: OrbPosition): OrbPosition {
   if (typeof window === "undefined") return position;
 
   const maxX = Math.max(orbMargin, window.innerWidth - orbWidth - orbMargin);
-  const maxY = Math.max(orbMargin, window.innerHeight - orbHeight - orbMargin);
+  const minY = Math.min(
+    topbarSafeGap,
+    Math.max(orbMargin, window.innerHeight - orbHeight - orbMargin),
+  );
+  const maxY = Math.max(minY, window.innerHeight - orbHeight - orbMargin);
 
   return {
     x: Math.min(maxX, Math.max(orbMargin, position.x)),
-    y: Math.min(maxY, Math.max(orbMargin, position.y)),
+    y: Math.min(maxY, Math.max(minY, position.y)),
   };
 }
 

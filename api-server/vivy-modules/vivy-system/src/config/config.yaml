@@ -41,14 +41,3 @@ uploadOss:
   accessKeySecret: ${{ ACCESS_KEY_SECRET }}
   authorizationV4: true
   domain: https://vivy-nest-admin.oss-cn-beijing.aliyuncs.com
-
-# H5 AI 生成配置
-outfitAi:
-  apiKey: ${{ OPENAI_API_KEY }}
-  baseUrl: ${{ OPENAI_BASE_URL }}
-  textApiKey: ${{ OPENAI_TEXT_API_KEY }}
-  textBaseUrl: ${{ OPENAI_TEXT_BASE_URL }}
-  textModel: ${{ OPENAI_TEXT_MODEL }}
-  imageApiKey: ${{ OPENAI_IMAGE_API_KEY }}
-  imageBaseUrl: ${{ OPENAI_IMAGE_BASE_URL }}
-  imageModel: ${{ OPENAI_IMAGE_MODEL }}

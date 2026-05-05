@@ -29,11 +29,3 @@ bull:
     username: ${{ REDIS_USERNAME }}
     password: ${{ REDIS_PASSWORD }}
     db: 1
-
-outfitAi:
-  textApiKey: ${{ OPENAI_TEXT_API_KEY }}
-  textBaseUrl: ${{ OPENAI_TEXT_BASE_URL }}
-  textModel: ${{ OPENAI_TEXT_MODEL }}
-  imageApiKey: ${{ OPENAI_IMAGE_API_KEY }}
-  imageBaseUrl: ${{ OPENAI_IMAGE_BASE_URL }}
-  imageModel: ${{ OPENAI_IMAGE_MODEL }}

@@ -1,34 +1,93 @@
 name: cloudwear-ai
 
 services:
+  mysql:
+    container_name: cloudwear-mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-cloudwear_root_change_me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-vivy-nest-admin}
+      MYSQL_USER: ${MYSQL_USER:-cloudwear}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cloudwear_change_me}
+      TZ: ${TZ:-Asia/Shanghai}
+    command:
+      [
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci',
+        '--default-time-zone=+08:00',
+      ]
+    volumes:
+      - cloudwear-mysql-data:/var/lib/mysql
+      - ./api-server/sql/vivy-nest-admin.sql:/docker-entrypoint-initdb.d/001-vivy-nest-admin.sql:ro
+      - ./api-server/sql/2026-05-03-h5-style-profile-guide.sql:/docker-entrypoint-initdb.d/002-h5-style-profile-guide.sql:ro
+      - ./api-server/sql/2026-05-04-h5-chat.sql:/docker-entrypoint-initdb.d/003-h5-chat.sql:ro
+    ports:
+      - '${CLOUDWEAR_MYSQL_BIND_HOST:-0.0.0.0}:${CLOUDWEAR_MYSQL_HOST_PORT:-13306}:3306'
+    networks:
+      - cloudwear-private
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mysqladmin ping -h 127.0.0.1 -uroot -p"$${MYSQL_ROOT_PASSWORD}" --silent',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  redis:
+    container_name: cloudwear-redis
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    volumes:
+      - cloudwear-redis-data:/data
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '${CLOUDWEAR_REDIS_BIND_HOST:-0.0.0.0}:${CLOUDWEAR_REDIS_HOST_PORT:-16379}:6379'
+    networks:
+      - cloudwear-private
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
   api:
     container_name: cloudwear-api
     build:
       context: .
       dockerfile: deploy/docker/api.Dockerfile
-    network_mode: host
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+    ports:
+      - '${CLOUDWEAR_API_PORT:-9200}:${CLOUDWEAR_API_PORT:-9200}'
+    networks:
+      - cloudwear-public
+      - cloudwear-private
     restart: unless-stopped
     environment:
       NODE_ENV: production
       CLOUDWEAR_API_PORT: ${CLOUDWEAR_API_PORT:-9200}
-      MYSQL_HOST: ${MYSQL_HOST:-127.0.0.1}
-      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
       MYSQL_DATABASE: ${MYSQL_DATABASE:-vivy-nest-admin}
       MYSQL_USER: ${MYSQL_USER:-cloudwear}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-}
-      REDIS_HOST: ${REDIS_HOST:-127.0.0.1}
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      REDIS_USERNAME: ${REDIS_USERNAME:-}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-      OPENAI_TEXT_API_KEY: ${OPENAI_TEXT_API_KEY:-}
-      OPENAI_TEXT_BASE_URL: ${OPENAI_TEXT_BASE_URL:-}
-      OPENAI_TEXT_MODEL: ${OPENAI_TEXT_MODEL:-}
-      OPENAI_IMAGE_API_KEY: ${OPENAI_IMAGE_API_KEY:-}
-      OPENAI_IMAGE_BASE_URL: ${OPENAI_IMAGE_BASE_URL:-}
-      OPENAI_IMAGE_MODEL: ${OPENAI_IMAGE_MODEL:-}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cloudwear_change_me}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_USERNAME: ''
+      REDIS_PASSWORD: ''
     volumes:
       - cloudwear-api-uploads:/app/api-server/vivy-modules/vivy-system/uploads
       - cloudwear-api-logs:/app/api-server/vivy-modules/vivy-system/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -46,25 +105,40 @@ services:
       context: .
       dockerfile: deploy/docker/h5.Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://103.242.14.110:9200}
-    network_mode: host
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+    ports:
+      - '${CLOUDWEAR_H5_PORT:-9300}:${CLOUDWEAR_H5_PORT:-9300}'
+    networks:
+      - cloudwear-public
     restart: unless-stopped
     command: sh -c "npm run start -- -p ${CLOUDWEAR_H5_PORT:-9300}"
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
 
   admin:
     container_name: cloudwear-admin
     build:
       context: .
       dockerfile: deploy/docker/admin.Dockerfile
-    network_mode: host
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+    ports:
+      - '${CLOUDWEAR_ADMIN_PORT:-9400}:9400'
+    networks:
+      - cloudwear-public
     restart: unless-stopped
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
+  cloudwear-mysql-data:
+  cloudwear-redis-data:
   cloudwear-api-uploads:
   cloudwear-api-logs:
+
+networks:
+  cloudwear-public:
+  cloudwear-private:

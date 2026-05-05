@@ -25,7 +25,6 @@ export class HealthController {
   async check(): Promise<HealthCheckResult> {
     try {
       return await this.health.check([
-        () => this.healthService.checkNetwork(),
         () => this.healthService.checkMysql(),
         () => this.healthService.checkRedis(),
         () => this.healthService.checkDisk(),

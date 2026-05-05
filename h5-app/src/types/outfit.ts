@@ -20,6 +20,18 @@ export interface OutfitPhotoModeContext {
   prompt: string;
 }
 
+export interface OutfitStyleProfileContext {
+  genderPreference?: string;
+  bodySummary?: string;
+  favoriteStyles?: string[];
+  favoriteColors?: string[];
+  avoidColors?: string[];
+  commonOccasions?: string[];
+  elementPreferences?: string[];
+  fitPreferences?: string[];
+  notes?: string;
+}
+
 export interface OutfitInput {
   season: string;
   temperature: number;
@@ -34,6 +46,7 @@ export interface OutfitInput {
   userPhotoDataUrl?: string;
   recommendationContext?: OutfitRecommendationContext;
   photoMode?: OutfitPhotoModeContext;
+  styleProfileContext?: OutfitStyleProfileContext;
 }
 
 export interface OutfitItem {
@@ -100,6 +113,7 @@ export interface GenerateOutfitTaskSnapshot {
   status: GenerationTaskStatus;
   progress: number;
   message: string;
+  planPreview?: OutfitPlan;
   result?: OutfitGeneration;
   results?: OutfitGeneration[];
   error?: string;

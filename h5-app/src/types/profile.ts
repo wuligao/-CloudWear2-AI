@@ -54,6 +54,7 @@ export interface H5StyleArchive {
     displayName: string;
     statusLabel: string;
     avatar?: string;
+    genderPreference?: string;
     height?: string;
     weight?: string;
     clothingSize?: string;
@@ -66,6 +67,8 @@ export interface H5StyleArchive {
   };
   stylePreferences: H5StylePreferenceItem[];
   colorPreferences: H5ColorPreferenceItem[];
+  avoidColors: string[];
+  commonOccasions: string[];
   elementPreferences: string[];
   bodyMetrics: H5BodyMetricItem[];
   fitTypes: H5FitTypeItem[];
@@ -77,6 +80,7 @@ export interface H5StyleArchive {
 export interface H5StyleProfileArchive {
   profileId?: number;
   userId?: number;
+  genderPreference: string;
   height: string;
   weight: string;
   clothingSize: string;

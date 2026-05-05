@@ -2,10 +2,17 @@ FROM node:22-bookworm-slim AS build
 
 WORKDIR /app/admin-web
 
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
 
 COPY admin-web/package.json admin-web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm config set registry "$NPM_REGISTRY" \
+  && pnpm config set fetch-retries 5 \
+  && pnpm config set fetch-retry-factor 2 \
+  && pnpm config set fetch-retry-mintimeout 20000 \
+  && pnpm config set fetch-retry-maxtimeout 120000 \
+  && pnpm install --frozen-lockfile
 
 COPY admin-web ./
 RUN pnpm run build

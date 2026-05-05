@@ -41,6 +41,26 @@ test("outfitInputSchema accepts photo mode context", () => {
   assert.equal(parsed.photoMode?.label, "更显瘦");
 });
 
+test("outfitInputSchema accepts style profile context for guided generation", () => {
+  const parsed = outfitInputSchema.parse({
+    ...validInput,
+    styleProfileContext: {
+      genderPreference: "女性",
+      bodySummary: "身高 168cm，体重 52kg，服装尺码 M，鞋码 38",
+      favoriteStyles: ["法式通勤", "松弛休闲"],
+      favoriteColors: ["黑色", "燕麦色"],
+      avoidColors: ["荧光粉"],
+      commonOccasions: ["通勤", "约会"],
+      elementPreferences: ["针织", "高腰线"],
+      fitPreferences: ["直筒", "微宽松"],
+      notes: "上班需要低调一点",
+    },
+  });
+
+  assert.deepEqual(parsed.styleProfileContext?.favoriteStyles, ["法式通勤", "松弛休闲"]);
+  assert.equal(parsed.styleProfileContext?.bodySummary, "身高 168cm，体重 52kg，服装尺码 M，鞋码 38");
+});
+
 test("outfitInputSchema rejects unsupported generation counts", () => {
   assert.throws(
     () =>

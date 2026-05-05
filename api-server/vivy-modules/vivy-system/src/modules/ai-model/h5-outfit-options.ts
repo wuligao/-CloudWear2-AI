@@ -11,17 +11,78 @@ export interface H5OutfitOptionItem {
 export interface H5LoginConfig {
   heroImage: string
   heroAlt: string
+  heroImages: H5LoginHeroImageConfig[]
   brandTitle: string
   subtitle: string
+  poems: H5LoginPoemConfig[]
   phonePasswordEnabled: boolean
   registerEnabled: boolean
   wechatEnabled: boolean
+}
+
+export interface H5LoginHeroImageConfig {
+  image: string
+  alt: string
+}
+
+export interface H5LoginPoemConfig {
+  kicker: string
+  line1: string
+  line2: string
+  footer: string
+}
+
+export interface H5HomeHeroConfig {
+  kicker: string
+  titleLine1: string
+  titleLine2: string
+  subtitle: string
+  primaryAction: string
+  secondaryAction: string
+  lensText: string
+  backgroundImage: string
+  backgroundAlt: string
+  generatedAt?: string
+}
+
+export interface H5HomeDailyRefreshConfig {
+  enabled: boolean
+  refreshHour: number
+  lastRefreshDateKey?: string
+  lastRefreshAt?: string
+  lastError?: string
+  isRefreshing?: boolean
+  runningMessage?: string
+}
+
+export interface H5LoginDailyRefreshConfig {
+  enabled: boolean
+  refreshHour: number
+  lastRefreshDateKey?: string
+  lastRefreshAt?: string
+  lastError?: string
+  isRefreshing?: boolean
+  runningMessage?: string
+}
+
+export interface H5ChatAssistantConfig {
+  enabled: boolean
+  welcomeMessage: string
+  quickPrompts: string[]
+  useStyleProfile: boolean
+  useRecentRecords: boolean
+  dailyLimit: number
+  maxHistoryMessages: number
 }
 
 export interface H5OutfitOptionConfig {
   dailyFreeGenerationLimit: number
   tomorrowRecommendationStartHour: number
   login: H5LoginConfig
+  homeHero: H5HomeHeroConfig
+  homeDailyRefresh: H5HomeDailyRefreshConfig
+  loginDailyRefresh: H5LoginDailyRefreshConfig
+  chatAssistant: H5ChatAssistantConfig
   inspirationKeywords: string[]
   homeCategories: string[]
   homeLooks: H5OutfitOptionItem[]
@@ -43,11 +104,73 @@ export const defaultH5OutfitOptions: H5OutfitOptionConfig = {
   login: {
     heroImage: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84',
     heroAlt: '浅色衣架上的外套与包袋',
+    heroImages: [
+      {
+        image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=84',
+        alt: '浅色衣架上的外套与包袋',
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=84',
+        alt: '时装秀场上的摩登穿搭',
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=84',
+        alt: '城市街头的轻熟穿搭',
+      },
+    ],
     brandTitle: '云裳 AI 穿搭',
     subtitle: 'AI 智能搭配 · 发现更美的你',
+    poems: [
+      {
+        kicker: '东方衣境',
+        line1: '云想衣裳花想容',
+        line2: '春风拂槛露华浓',
+        footer: '登录后同步衣橱偏好与历史方案',
+      },
+      {
+        kicker: '今日灵感',
+        line1: '衣随心动，风格自成',
+        line2: '让每一次出门都有答案',
+        footer: '登录后为你保留专属穿搭记忆',
+      },
+      {
+        kicker: 'AI 衣橱',
+        line1: '看见自己，也看见风格',
+        line2: '从一张照片开始变美',
+        footer: '登录后解锁照片换搭与每日推荐',
+      },
+    ],
     phonePasswordEnabled: true,
     registerEnabled: true,
     wechatEnabled: true,
+  },
+  homeHero: {
+    kicker: 'AI STYLING STUDIO',
+    titleLine1: '今日穿搭',
+    titleLine2: '交给云裳 AI',
+    subtitle: '从关键词到本人照片，快速生成更适合场景、天气和个人风格的完整穿搭。',
+    primaryAction: '上传照片',
+    secondaryAction: '写关键词',
+    lensText: '智能搭配中',
+    backgroundImage: '',
+    backgroundAlt: 'AI 穿搭首页背景图',
+  },
+  homeDailyRefresh: {
+    enabled: false,
+    refreshHour: 6,
+  },
+  loginDailyRefresh: {
+    enabled: false,
+    refreshHour: 6,
+  },
+  chatAssistant: {
+    enabled: true,
+    welcomeMessage: '我是你的 AI 穿搭顾问，可以结合风格档案、天气和历史生成记录，帮你把想法整理成可生成的穿搭方案。',
+    quickPrompts: ['明天通勤怎么穿', '按我的档案推荐', '换一套更显高的'],
+    useStyleProfile: true,
+    useRecentRecords: true,
+    dailyLimit: 30,
+    maxHistoryMessages: 8,
   },
   inspirationKeywords: ['初夏约会', '都市通勤', '海边度假', '复古港风', '运动休闲', '简约高级感'],
   homeCategories: ['通勤', '法式', '休闲', '简约', '度假'],
@@ -127,6 +250,26 @@ export function mergeH5OutfitOptions(options?: Partial<H5OutfitOptionConfig>): H
   const tomorrowRecommendationStartHour = normalizeTomorrowRecommendationStartHour(
     options?.tomorrowRecommendationStartHour,
   )
+  const refreshHour = normalizeHour(
+    options?.homeDailyRefresh?.refreshHour,
+    defaultH5OutfitOptions.homeDailyRefresh.refreshHour,
+  )
+  const loginRefreshHour = normalizeHour(
+    options?.loginDailyRefresh?.refreshHour,
+    defaultH5OutfitOptions.loginDailyRefresh.refreshHour,
+  )
+  const chatDailyLimit = normalizeChatDailyLimit(options?.chatAssistant?.dailyLimit)
+  const chatMaxHistoryMessages = normalizeChatMaxHistoryMessages(options?.chatAssistant?.maxHistoryMessages)
+  const mergedLogin = {
+    ...defaultH5OutfitOptions.login,
+    ...(options?.login || {}),
+  }
+  const normalizedLoginHeroImages = normalizeLoginHeroImages(
+    mergedLogin.heroImages,
+    mergedLogin.heroImage,
+    mergedLogin.heroAlt,
+  )
+  const normalizedLoginPoems = normalizeLoginPoems(mergedLogin.poems)
 
   return {
     ...defaultH5OutfitOptions,
@@ -134,8 +277,32 @@ export function mergeH5OutfitOptions(options?: Partial<H5OutfitOptionConfig>): H
     dailyFreeGenerationLimit,
     tomorrowRecommendationStartHour,
     login: {
-      ...defaultH5OutfitOptions.login,
-      ...(options?.login || {}),
+      ...mergedLogin,
+      heroImage: normalizedLoginHeroImages[0]?.image || mergedLogin.heroImage,
+      heroAlt: normalizedLoginHeroImages[0]?.alt || mergedLogin.heroAlt,
+      heroImages: normalizedLoginHeroImages,
+      poems: normalizedLoginPoems,
+    },
+    homeHero: {
+      ...defaultH5OutfitOptions.homeHero,
+      ...(options?.homeHero || {}),
+    },
+    homeDailyRefresh: {
+      ...defaultH5OutfitOptions.homeDailyRefresh,
+      ...(options?.homeDailyRefresh || {}),
+      refreshHour,
+    },
+    loginDailyRefresh: {
+      ...defaultH5OutfitOptions.loginDailyRefresh,
+      ...(options?.loginDailyRefresh || {}),
+      refreshHour: loginRefreshHour,
+    },
+    chatAssistant: {
+      ...defaultH5OutfitOptions.chatAssistant,
+      ...(options?.chatAssistant || {}),
+      quickPrompts: normalizeChatQuickPrompts(options?.chatAssistant?.quickPrompts),
+      dailyLimit: chatDailyLimit,
+      maxHistoryMessages: chatMaxHistoryMessages,
     },
   }
 }
@@ -148,8 +315,75 @@ export function normalizeDailyFreeGenerationLimit(value: unknown) {
 }
 
 export function normalizeTomorrowRecommendationStartHour(value: unknown) {
+  return normalizeHour(value, defaultH5OutfitOptions.tomorrowRecommendationStartHour)
+}
+
+function normalizeHour(value: unknown, fallback: number) {
   const parsedValue = Number(value)
-  if (!Number.isFinite(parsedValue)) return defaultH5OutfitOptions.tomorrowRecommendationStartHour
+  if (!Number.isFinite(parsedValue)) return fallback
 
   return Math.min(23, Math.max(0, Math.round(parsedValue)))
+}
+
+function normalizeChatDailyLimit(value: unknown) {
+  const parsedValue = Number(value)
+  if (!Number.isFinite(parsedValue)) return defaultH5OutfitOptions.chatAssistant.dailyLimit
+
+  return Math.min(500, Math.max(0, Math.round(parsedValue)))
+}
+
+function normalizeChatMaxHistoryMessages(value: unknown) {
+  const parsedValue = Number(value)
+  if (!Number.isFinite(parsedValue)) return defaultH5OutfitOptions.chatAssistant.maxHistoryMessages
+
+  return Math.min(20, Math.max(2, Math.round(parsedValue)))
+}
+
+function normalizeChatQuickPrompts(value: unknown) {
+  const list = Array.isArray(value)
+    ? value.map((item) => String(item || '').trim()).filter(Boolean)
+    : defaultH5OutfitOptions.chatAssistant.quickPrompts
+
+  return list.slice(0, 6).map((item) => item.slice(0, 18))
+}
+
+function normalizeLoginHeroImages(value: unknown, fallbackImage: string, fallbackAlt: string) {
+  const list = Array.isArray(value)
+    ? value
+        .map((item) => {
+          if (!item || typeof item !== 'object') return null
+          const image = String((item as Partial<H5LoginHeroImageConfig>).image || '').trim()
+          if (!image) return null
+          const alt = String((item as Partial<H5LoginHeroImageConfig>).alt || '').trim() || fallbackAlt
+          return { image, alt }
+        })
+        .filter((item): item is H5LoginHeroImageConfig => Boolean(item))
+    : []
+
+  if (list.length) return list.slice(0, 12)
+  return [{ image: fallbackImage, alt: fallbackAlt }]
+}
+
+function normalizeLoginPoems(value: unknown) {
+  const fallbackPoem = defaultH5OutfitOptions.login.poems[0]
+  const list = Array.isArray(value)
+    ? value
+        .map((item) => {
+          if (!item || typeof item !== 'object') return null
+          const kicker = String((item as Partial<H5LoginPoemConfig>).kicker || '').trim()
+          const line1 = String((item as Partial<H5LoginPoemConfig>).line1 || '').trim()
+          const line2 = String((item as Partial<H5LoginPoemConfig>).line2 || '').trim()
+          const footer = String((item as Partial<H5LoginPoemConfig>).footer || '').trim()
+          if (!kicker && !line1 && !line2 && !footer) return null
+          return {
+            kicker: kicker || fallbackPoem.kicker,
+            line1: line1 || fallbackPoem.line1,
+            line2,
+            footer: footer || fallbackPoem.footer,
+          }
+        })
+        .filter((item): item is H5LoginPoemConfig => Boolean(item))
+    : []
+
+  return (list.length ? list : defaultH5OutfitOptions.login.poems).slice(0, 12)
 }

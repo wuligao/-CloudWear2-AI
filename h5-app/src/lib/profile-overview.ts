@@ -1,4 +1,4 @@
-import { getH5AuthHeader } from "@/lib/auth";
+import { getH5AuthHeader, readH5AuthSession } from "@/lib/auth";
 import { outfitApiEndpoints } from "@/lib/api-endpoints";
 import type { ApiErrorResponse } from "@/types/outfit";
 import type {
@@ -7,6 +7,9 @@ import type {
   H5StyleProfileArchive,
   H5StyleProfileArchiveResponse,
 } from "@/types/profile";
+
+const h5ProfileOverviewPreloadCacheKey = "cloudwear.profile-overview-preload.v1";
+const h5ProfileOverviewPreloadMaxAgeMs = 1000 * 60 * 5;
 
 export async function fetchH5ProfileOverview() {
   const response = await fetch(outfitApiEndpoints.h5ProfileOverview(), {
@@ -26,6 +29,7 @@ export async function fetchH5ProfileOverview() {
     throw new Error("个人中心读取失败。");
   }
 
+  writeCachedH5ProfileOverview(payload.data);
   return payload.data;
 }
 
@@ -183,6 +187,7 @@ export const defaultH5ProfileOverview: H5ProfileOverview = {
     profile: {
       displayName: "云裳用户",
       statusLabel: "待生成记录",
+      genderPreference: "",
     },
     summary: {
       recordCount: 0,
@@ -190,6 +195,8 @@ export const defaultH5ProfileOverview: H5ProfileOverview = {
     },
     stylePreferences: [],
     colorPreferences: [],
+    avoidColors: [],
+    commonOccasions: [],
     elementPreferences: [],
     bodyMetrics: [
       { id: "shoulder", label: "肩宽", value: "待完善" },
@@ -214,6 +221,60 @@ export const defaultH5ProfileOverview: H5ProfileOverview = {
     ],
   },
 };
+
+export function readCachedH5ProfileOverview({
+  maxAgeMs = h5ProfileOverviewPreloadMaxAgeMs,
+}: {
+  maxAgeMs?: number;
+} = {}) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const session = readH5AuthSession();
+    const snapshot = window.sessionStorage.getItem(h5ProfileOverviewPreloadCacheKey);
+    if (!session || !snapshot) return null;
+
+    const payload = JSON.parse(snapshot) as {
+      cachedAt?: string;
+      overview?: H5ProfileOverview;
+      userId?: number;
+    };
+    const cachedAt = payload.cachedAt ? new Date(payload.cachedAt).getTime() : Number.NaN;
+    if (
+      payload.userId !== session.user.userId ||
+      !Number.isFinite(cachedAt) ||
+      Date.now() - cachedAt > maxAgeMs ||
+      !payload.overview
+    ) {
+      window.sessionStorage.removeItem(h5ProfileOverviewPreloadCacheKey);
+      return null;
+    }
+
+    return payload.overview;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedH5ProfileOverview(overview: H5ProfileOverview) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const session = readH5AuthSession();
+    if (!session) return;
+
+    window.sessionStorage.setItem(
+      h5ProfileOverviewPreloadCacheKey,
+      JSON.stringify({
+        cachedAt: new Date().toISOString(),
+        overview,
+        userId: session.user.userId,
+      }),
+    );
+  } catch {
+    // Profile preload is an optimization; pages still fetch directly when needed.
+  }
+}
 
 function extractErrorMessage(
   payload: H5ProfileOverviewResponse | H5StyleProfileArchiveResponse | ApiErrorResponse | null,

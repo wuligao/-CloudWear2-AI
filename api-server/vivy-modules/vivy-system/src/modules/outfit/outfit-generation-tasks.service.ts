@@ -153,7 +153,8 @@ export class OutfitGenerationTasksService implements OnModuleDestroy {
       this.update(taskId, {
         status: 'running',
         progress: 44,
-        message: '正在拆解场景和风格，生成多套方案。',
+        message: '搭配企划已生成，正在渲染穿搭图片。',
+        planPreview: plan,
       })
 
       const variants = buildOutfitVariants(plan, input)

@@ -135,6 +135,20 @@ export class AiModelController {
     return AjaxResult.success(await this.aiModelService.updateH5Config(config))
   }
 
+  @Post('app-configs/h5-outfit/daily-refresh')
+  @Log({ title: 'H5首页每日内容生成', operType: OperType.UPDATE })
+  @RequirePermissions('ai:model:update')
+  async refreshH5HomeContent(): Promise<AjaxResult> {
+    return AjaxResult.success(await this.aiModelService.refreshH5HomeContentManually())
+  }
+
+  @Post('app-configs/h5-outfit/login-refresh')
+  @Log({ title: 'H5登录页每日内容生成', operType: OperType.UPDATE })
+  @RequirePermissions('ai:model:update')
+  async refreshH5LoginContent(): Promise<AjaxResult> {
+    return AjaxResult.success(await this.aiModelService.refreshH5LoginContentManually())
+  }
+
   @Post('providers')
   @Log({ title: 'AI模型服务商', operType: OperType.INSERT })
   @RequirePermissions('ai:model:add')

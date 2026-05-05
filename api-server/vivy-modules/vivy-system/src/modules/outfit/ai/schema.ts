@@ -22,6 +22,20 @@ export const outfitPhotoModeContextSchema = z.object({
   prompt: z.string().trim().min(1).max(160),
 })
 
+const styleProfileTextListSchema = z.array(z.string().trim().min(1).max(60)).max(8)
+
+export const outfitStyleProfileContextSchema = z.object({
+  genderPreference: z.string().trim().max(40).optional(),
+  bodySummary: z.string().trim().max(180).optional(),
+  favoriteStyles: styleProfileTextListSchema.optional(),
+  favoriteColors: styleProfileTextListSchema.optional(),
+  avoidColors: styleProfileTextListSchema.optional(),
+  commonOccasions: styleProfileTextListSchema.optional(),
+  elementPreferences: styleProfileTextListSchema.optional(),
+  fitPreferences: styleProfileTextListSchema.optional(),
+  notes: z.string().trim().max(500).optional(),
+})
+
 export const outfitInputSchema = z.object({
   season: z.string().trim().min(1).max(10),
   temperature: z.coerce.number().int().min(-30).max(50),
@@ -45,6 +59,7 @@ export const outfitInputSchema = z.object({
     .optional(),
   recommendationContext: outfitRecommendationContextSchema.optional(),
   photoMode: outfitPhotoModeContextSchema.optional(),
+  styleProfileContext: outfitStyleProfileContextSchema.optional(),
 })
 
 export const outfitItemSchema = z.object({

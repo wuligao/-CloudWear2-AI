@@ -366,12 +366,168 @@
   }
 
   .home-editor {
+    > .ant-row {
+      align-items: stretch;
+    }
+
     .ant-form-item {
-      margin-bottom: 0;
+      margin-bottom: 12px;
+    }
+
+    .home-hero-form {
+      height: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #f8fbff, #fff);
+      border: 1px solid #edf2fb;
+      border-radius: 8px;
+    }
+
+    .home-hero-preview {
+      position: relative;
+      min-height: 300px;
+      overflow: hidden;
+      color: #fff;
+      background: linear-gradient(135deg, #1d2430, #4a3840);
+      border-radius: 8px;
+      box-shadow: 0 14px 30px rgb(22 35 63 / 10%);
+
+      &::after {
+        position: absolute;
+        inset: 0;
+        content: '';
+        background:
+          linear-gradient(90deg, rgb(13 15 20 / 82%), rgb(13 15 20 / 22%)),
+          linear-gradient(180deg, transparent, rgb(13 15 20 / 72%));
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+      }
+
+      div {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        left: 18px;
+        z-index: 1;
+        display: grid;
+        gap: 7px;
+      }
+
+      small {
+        color: rgb(255 247 235 / 72%);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1.08;
+      }
+
+      span {
+        display: block;
+        max-width: 380px;
+        color: rgb(255 247 235 / 78%);
+      }
+    }
+
+    .daily-refresh-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      background: #fffaf7;
+      border: 1px solid #f4dfd3;
+      border-radius: 8px;
+
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .chat-editor {
+    .chat-switch-panel {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: linear-gradient(135deg, #f5fcff, #fff);
+      border: 1px solid #d9eef1;
+      border-radius: 8px;
+
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+    }
+
+    .chat-limit-panel {
+      display: grid;
+      gap: 12px;
+      height: 100%;
+      padding: 14px;
+      background:
+        linear-gradient(135deg, rgb(235 252 255 / 92%), rgb(255 255 255 / 98%)),
+        #fff;
+      border: 1px solid #dcebf0;
+      border-radius: 8px;
+
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+
+      div {
+        display: grid;
+        gap: 6px;
+        align-content: start;
+        padding: 12px;
+        background: rgb(31 160 170 / 8%);
+        border-radius: 8px;
+      }
+
+      strong {
+        color: #184b55;
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      span {
+        color: #5e7379;
+        font-size: 12px;
+        line-height: 1.7;
+      }
     }
   }
 
   .login-editor {
+    .login-preview-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .login-refresh-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #fff8fb;
+      border: 1px solid #f0dbe4;
+      border-radius: 8px;
+
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+    }
+
     .login-method-switches {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -429,6 +585,37 @@
       span {
         color: #626a82;
         font-size: 13px;
+        font-weight: 700;
+      }
+    }
+
+    .login-poem-preview {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      background:
+        radial-gradient(circle at 16% 0, rgb(255 255 255 / 92%), transparent 42%),
+        linear-gradient(135deg, #fff8ef, #f7fbff);
+      border: 1px solid #eadfd2;
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgb(107 80 48 / 8%);
+
+      small {
+        color: #b07a43;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      strong {
+        color: #342a20;
+        font-size: 18px;
+        font-weight: 900;
+        line-height: 1.55;
+      }
+
+      span {
+        color: #7a6e62;
+        font-size: 12px;
         font-weight: 700;
       }
     }

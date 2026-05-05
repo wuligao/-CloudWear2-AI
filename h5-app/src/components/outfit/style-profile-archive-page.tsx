@@ -35,6 +35,7 @@ import type {
 } from "@/types/profile";
 
 type StyleProfileForm = {
+  genderPreference: string;
   height: string;
   weight: string;
   clothingSize: string;
@@ -61,6 +62,7 @@ type ToastState = {
 };
 
 const emptyStyleProfileForm: StyleProfileForm = {
+  genderPreference: "不限定",
   height: "",
   weight: "",
   clothingSize: "",
@@ -79,6 +81,8 @@ const emptyStyleProfileForm: StyleProfileForm = {
   calf: "",
   notes: "",
 };
+
+const genderPreferenceOptions = ["女性", "男性", "中性", "不限定"];
 
 const photoCards: Array<{ id: PhotoType; title: string; description: string; accent: string }> = [
   { id: "fullBody", title: "全身照", description: "展示你的身材比例", accent: "#c79665" },
@@ -344,6 +348,23 @@ export function StyleProfileArchivePage() {
           <Ruler size={18} />
           <h2>档案设置</h2>
         </div>
+        <div className="style-guide-gender-field">
+          <span>穿搭性别偏好</span>
+          <div className="style-guide-gender-options" role="group" aria-label="穿搭性别偏好">
+            {genderPreferenceOptions.map((option) => (
+              <button
+                aria-pressed={styleForm.genderPreference === option}
+                className={styleForm.genderPreference === option ? "is-active" : ""}
+                key={option}
+                type="button"
+                onClick={() => updateStyleField("genderPreference", option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <small>会影响版型、单品和模特表达，不从照片里猜测。</small>
+        </div>
         <div className="profile-settings-grid">
           <StyleInput label="身高" value={styleForm.height} placeholder="168cm" onChange={(value) => updateStyleField("height", value)} />
           <StyleInput label="体重" value={styleForm.weight} placeholder="52kg" onChange={(value) => updateStyleField("weight", value)} />
@@ -498,6 +519,7 @@ function StyleInput({
 
 function styleProfileToForm(profile: H5StyleProfileArchive): StyleProfileForm {
   return {
+    genderPreference: normalizeGenderPreference(profile.genderPreference),
     height: profile.height ?? "",
     weight: profile.weight ?? "",
     clothingSize: profile.clothingSize ?? "",
@@ -522,6 +544,7 @@ function formToStyleProfile(
   form: StyleProfileForm,
 ): Omit<H5StyleProfileArchive, "profileId" | "userId" | "updatedAt"> {
   return {
+    genderPreference: normalizeGenderPreference(form.genderPreference),
     height: form.height.trim(),
     weight: form.weight.trim(),
     clothingSize: form.clothingSize.trim(),
@@ -542,6 +565,12 @@ function formToStyleProfile(
     },
     notes: form.notes.trim(),
   };
+}
+
+function normalizeGenderPreference(value?: string) {
+  const text = value?.trim();
+  if (!text || text === "不限") return "不限定";
+  return genderPreferenceOptions.includes(text) ? text : text.slice(0, 40);
 }
 
 function serializeStyleForm(form: StyleProfileForm) {

@@ -54,6 +54,10 @@ export const outfitApiEndpoints = {
   h5ProfileArchiveAnalyzePhoto: () => buildApiUrl("/api/h5/profile/archive/analyze-photo"),
   h5ProfileFeedback: (baseUrl?: string) =>
     buildApiUrl("/api/h5/profile/feedback", baseUrl),
+  h5ChatBootstrap: () => buildApiUrl("/api/h5/chat/bootstrap"),
+  h5ChatSessions: () => buildApiUrl("/api/h5/chat/sessions"),
+  h5ChatMessages: (sessionId: string | number) =>
+    buildApiUrl(`/api/h5/chat/sessions/${encodeURIComponent(String(sessionId))}/messages`),
   createGeneration: () => buildApiUrl("/api/generate-outfit"),
   generationTask: (taskId: string) => buildApiUrl(`/api/generate-outfit/${taskId}`),
   generationEvents: (taskId: string) =>

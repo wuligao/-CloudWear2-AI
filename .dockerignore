@@ -6,12 +6,12 @@ node_modules
 **/node_modules
 dist
 **/dist
-lib
-**/lib
 .next
 **/.next
 out
 coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
 
 logs
 **/logs
@@ -22,8 +22,13 @@ backups
 .env
 .env.*
 *.env
+**/.env
+**/.env.*
+**/*.env
 !*.env.example
 !.env.*.example
+!**/.env.example
+!**/.env.*.example
 deploy/.env.deploy
 deploy/.env.compose
 

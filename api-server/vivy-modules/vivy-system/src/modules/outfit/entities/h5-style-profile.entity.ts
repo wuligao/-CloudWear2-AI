@@ -31,6 +31,9 @@ export class H5StyleProfile extends BaseBusinessEntity {
   @Column({ name: 'shoe_size', type: 'varchar', length: 40, nullable: true, comment: '鞋码' })
   shoeSize?: string
 
+  @Column({ name: 'gender_preference', type: 'varchar', length: 40, nullable: true, comment: '穿搭性别偏好' })
+  genderPreference?: string
+
   @Column({ name: 'favorite_styles', type: 'longtext', nullable: true, comment: '偏好风格JSON' })
   favoriteStyles?: string
 

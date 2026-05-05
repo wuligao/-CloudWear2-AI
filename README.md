@@ -46,4 +46,6 @@ docker compose --env-file deploy/.env.compose up -d --build
 - H5：`9300`
 - Web 管理端：`9400`
 
+MySQL 和 Redis 已内置在 `docker-compose.yaml` 中，运行在独立 Docker 网络里，默认绑定 `0.0.0.0` 并映射到宿主机 `13306` / `16379`，可用外部工具直连，不占用服务器已有的 `3306` / `6379`；首次启动时会自动创建数据卷并导入初始化 SQL。部署前只需要在 `deploy/.env.compose` 里填写数据库密码，AI 模型服务商、Key、文本模型和生图模型统一在 Web 管理端后台配置。`NEXT_PUBLIC_API_BASE_URL` 默认可留空，H5 会按当前访问域名自动请求 API 的 `9200` 端口。
+
 部署说明见 `docs/deploy-103.242.14.110.md`。

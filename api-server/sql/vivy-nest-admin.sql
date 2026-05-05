@@ -188,6 +188,7 @@ CREATE TABLE `cw_h5_style_profile` (
   `weight` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '体重',
   `clothing_size` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '服装尺码',
   `shoe_size` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '鞋码',
+  `gender_preference` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '穿搭性别偏好',
   `favorite_styles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '偏好风格JSON',
   `favorite_colors` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '偏好颜色JSON',
   `avoid_colors` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '避开颜色JSON',
@@ -209,8 +210,8 @@ CREATE TABLE `cw_h5_style_profile` (
 -- Records of cw_h5_style_profile
 -- ----------------------------
 BEGIN;
-INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'v-test1234', 4, '168cm', '52kg', 'M', '38', '[\"法式通勤\",\"松弛休闲\"]', '[\"黑色\",\"燕麦色\"]', '[]', '[]', '[\"针织\",\"高腰线\"]', '[\"直筒\",\"微宽松\"]', '{\"shoulder\":\"38cm\",\"waist\":\"66cm\"}', '偏低调通勤，周末可以更轻松', NULL, '2026-05-01 16:52:52', NULL, '2026-05-01 16:52:52');
-INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '535cffec-2547-4473-bb9a-34965e07763c', 3, '170', '80', '2XL', '41', '[]', '[]', '[]', '[]', '[]', '[]', '{\"shoulder\":\"42\"}', NULL, NULL, '2026-05-01 17:59:24', NULL, '2026-05-01 17:59:24');
+INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `gender_preference`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1, 'v-test1234', 4, '168cm', '52kg', 'M', '38', '女性', '[\"法式通勤\",\"松弛休闲\"]', '[\"黑色\",\"燕麦色\"]', '[]', '[]', '[\"针织\",\"高腰线\"]', '[\"直筒\",\"微宽松\"]', '{\"shoulder\":\"38cm\",\"waist\":\"66cm\"}', '偏低调通勤，周末可以更轻松', NULL, '2026-05-01 16:52:52', NULL, '2026-05-01 16:52:52');
+INSERT INTO `cw_h5_style_profile` (`profile_id`, `visitor_id`, `user_id`, `height`, `weight`, `clothing_size`, `shoe_size`, `gender_preference`, `favorite_styles`, `favorite_colors`, `avoid_colors`, `common_occasions`, `element_preferences`, `fit_preferences`, `body_metrics`, `notes`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (2, '535cffec-2547-4473-bb9a-34965e07763c', 3, '170', '80', '2XL', '41', '男性', '[]', '[]', '[]', '[]', '[]', '[]', '{\"shoulder\":\"42\"}', NULL, NULL, '2026-05-01 17:59:24', NULL, '2026-05-01 17:59:24');
 COMMIT;
 
 -- ----------------------------

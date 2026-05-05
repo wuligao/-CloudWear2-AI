@@ -148,6 +148,7 @@ export class OutfitRecordsService {
         imageModel: generation.imageModel,
         recommendationContext: generation.recommendationContext,
         photoMode: generation.photoMode,
+        styleProfileContext: generation.styleProfileContext,
       }),
       temperatureAdvice: generation.temperatureAdvice,
       occasionReason: generation.occasionReason,
@@ -357,6 +358,7 @@ export class OutfitRecordsService {
     const inputSnapshot = this.parseJson<{
       photoMode?: OutfitPhotoModeContext
       recommendationContext?: OutfitRecommendationContext
+      styleProfileContext?: OutfitGeneration['styleProfileContext']
     }>(record.inputSnapshot, {})
 
     return {
@@ -379,6 +381,7 @@ export class OutfitRecordsService {
       imageModel: record.imageModel,
       recommendationContext: this.normalizeRecommendationContext(inputSnapshot.recommendationContext),
       photoMode: this.normalizePhotoMode(inputSnapshot.photoMode),
+      styleProfileContext: inputSnapshot.styleProfileContext,
       outfitTitle: record.outfitTitle,
       summary: record.summary,
       styleTags: this.parseJson<string[]>(record.styleTags, []),

@@ -132,11 +132,12 @@ export function writeActiveGenerationTask(
 ) {
   if (typeof window === "undefined") return;
 
-  writeStoredActiveGenerationTasks([
+  const nextTasks = [
     task,
     ...readStoredActiveGenerationTasks().filter((item) => item.taskId !== task.taskId),
-  ]);
+  ];
   if (options.syncUrl) updateTaskIdInUrl(task.taskId);
+  writeStoredActiveGenerationTasks(nextTasks);
 }
 
 export function clearActiveGenerationTask() {

@@ -71,13 +71,19 @@ import {
   type ScenarioTask,
 } from "@/lib/scenario-tasks";
 import {
-  buildDefaultDailyWeatherContext,
+  buildPendingDailyWeatherContext,
   fetchDailyWeatherContext,
+  readCachedDailyWeatherContext,
 } from "@/lib/daily-weather";
 import {
   defaultH5ProfileOverview,
   fetchH5ProfileOverview,
+  readCachedH5ProfileOverview,
 } from "@/lib/profile-overview";
+import {
+  buildStyleProfileGenerationContext,
+  hasStyleProfileGenerationContext,
+} from "@/lib/style-profile-generation";
 import {
   type ActiveGenerationTask,
   type GenerateSource,
@@ -93,13 +99,14 @@ import {
 import { outfitApiEndpoints, resolveBackendAssetUrl } from "@/lib/api-endpoints";
 import {
   defaultH5OutfitConfigOptions,
-  mergeH5ConfigOptions,
+  fetchH5OutfitConfigOptions,
   normalizeDailyFreeGenerationLimit,
+  readCachedH5OutfitConfigOptions,
 } from "@/lib/h5-config";
 import type {
+  H5HomeHeroConfig,
   H5OptionItem,
   H5OutfitConfigOptions,
-  H5OutfitConfigResponse,
 } from "@/lib/h5-config";
 import type {
   ApiErrorResponse,
@@ -107,7 +114,9 @@ import type {
   GenerateOutfitResponse,
   OutfitGeneration,
   OutfitInput,
+  OutfitPlan,
   OutfitRecommendationContext,
+  OutfitStyleProfileContext,
 } from "@/types/outfit";
 import type { H5StyleArchive } from "@/types/profile";
 
@@ -241,6 +250,7 @@ function buildDefaultInput(options: H5OutfitConfigOptions): OutfitInput {
 
 function buildDailyScenarioProfile(archive: H5StyleArchive): DailyScenarioProfile {
   return {
+    genderPreference: archive.profile.genderPreference,
     favoriteStyles: archive.stylePreferences.map((item) => item.label),
     favoriteColors: archive.colorPreferences.map((item) => item.label),
     elementPreferences: archive.elementPreferences,
@@ -319,9 +329,14 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
   const [rotation, setRotation] = useState(0);
   const [dailyTaskRotation, setDailyTaskRotation] = useState(0);
   const [dailyWeather, setDailyWeather] =
-    useState<DailyWeatherContext>(buildDefaultDailyWeatherContext);
+    useState<DailyWeatherContext>(
+      () => readCachedDailyWeatherContext() || buildPendingDailyWeatherContext(),
+    );
   const [dailyScenarioProfile, setDailyScenarioProfile] =
     useState<DailyScenarioProfile | null>(null);
+  const [styleProfileContext, setStyleProfileContext] =
+    useState<OutfitStyleProfileContext>({});
+  const [useStyleProfile, setUseStyleProfile] = useState(true);
   const [activeRecommendationContext, setActiveRecommendationContext] =
     useState<OutfitRecommendationContext | undefined>(
       initialRecommendationContext,
@@ -331,10 +346,14 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
   );
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationMessage, setGenerationMessage] = useState("");
+  const [generationPlanPreview, setGenerationPlanPreview] =
+    useState<OutfitPlan | null>(null);
   const [h5Options, setH5Options] = useState<H5OutfitConfigOptions>(
-    defaultH5OutfitConfigOptions,
+    () => readCachedH5OutfitConfigOptions() || defaultH5OutfitConfigOptions,
   );
-  const [h5ConfigResolved, setH5ConfigResolved] = useState(false);
+  const [h5ConfigResolved, setH5ConfigResolved] = useState(
+    () => Boolean(readCachedH5OutfitConfigOptions()),
+  );
 
   const configuredImageModels = useMemo(
     () =>
@@ -411,6 +430,14 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       }),
     [dailyScenarioProfile, dailyWeather],
   );
+  const styleProfileReady = useMemo(
+    () => hasStyleProfileGenerationContext(styleProfileContext),
+    [styleProfileContext],
+  );
+  const styleProfileSummary = useMemo(
+    () => buildStyleProfileSummary(styleProfileContext),
+    [styleProfileContext],
+  );
   const remainingGenerations = Math.max(
     0,
     dailyGenerationLimit - dailyGenerationCount,
@@ -486,19 +513,14 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
   }, []);
 
   useEffect(() => {
+    if (h5ConfigResolved) return;
     let cancelled = false;
 
     async function loadH5Config() {
       try {
-        const response = await fetch(outfitApiEndpoints.h5Config(), {
-          cache: "no-store",
-        });
-        const payload = (await response.json()) as H5OutfitConfigResponse;
-        if (!response.ok || payload.code !== 200) {
-          throw new Error(payload.message || "H5配置读取失败。");
-        }
+        const options = await fetchH5OutfitConfigOptions();
         if (!cancelled) {
-          setH5Options(mergeH5ConfigOptions(payload.data?.options));
+          setH5Options(options);
         }
       } catch (caughtError) {
         console.warn(
@@ -517,19 +539,26 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [h5ConfigResolved]);
 
   useEffect(() => {
     if (!h5ConfigResolved) return;
     let cancelled = false;
 
     async function loadDailyContext() {
+      const cachedWeather = readCachedDailyWeatherContext({
+        tomorrowRecommendationStartHour:
+          h5Options.tomorrowRecommendationStartHour,
+      });
+      const cachedOverview = readCachedH5ProfileOverview();
       const [weatherResult, profileResult] = await Promise.allSettled([
-        fetchDailyWeatherContext({
-          tomorrowRecommendationStartHour:
-            h5Options.tomorrowRecommendationStartHour,
-        }),
-        fetchH5ProfileOverview(),
+        cachedWeather
+          ? Promise.resolve(cachedWeather)
+          : fetchDailyWeatherContext({
+              tomorrowRecommendationStartHour:
+                h5Options.tomorrowRecommendationStartHour,
+            }),
+        cachedOverview ? Promise.resolve(cachedOverview) : fetchH5ProfileOverview(),
       ]);
 
       if (cancelled) return;
@@ -543,6 +572,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           ? profileResult.value
           : defaultH5ProfileOverview;
       setDailyScenarioProfile(buildDailyScenarioProfile(overview.archive));
+      setStyleProfileContext(buildStyleProfileGenerationContext(overview.archive));
     }
 
     void loadDailyContext();
@@ -620,6 +650,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       setActiveTask(null);
       setGenerationProgress(0);
       setGenerationMessage("");
+      setGenerationPlanPreview(null);
       setStatus("idle");
       writeOutfitResultSession({
         taskId,
@@ -644,6 +675,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       });
       setGenerationProgress(task.progress);
       setGenerationMessage(task.message);
+      setGenerationPlanPreview(task.planPreview || null);
 
       if (task.status === "queued" || task.status === "running") {
         setStatus("loading");
@@ -667,6 +699,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
         setActiveTask(null);
         setGenerationProgress(0);
         setGenerationMessage("");
+        setGenerationPlanPreview(null);
         setError(task.error || "生成失败，请稍后再试。");
         setStatus("idle");
       }
@@ -740,6 +773,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
         setActiveTask(null);
         setGenerationProgress(0);
         setGenerationMessage("");
+        setGenerationPlanPreview(null);
         setError(
           caughtError instanceof Error
             ? caughtError.message
@@ -757,6 +791,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
         setActiveTask(null);
         setGenerationProgress(0);
         setGenerationMessage("");
+        setGenerationPlanPreview(null);
         setStatus("idle");
       });
       return;
@@ -1004,6 +1039,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
     setStatus("loading");
     setError("");
     setPhotoError("");
+    setGenerationPlanPreview(null);
 
     try {
       const generationInput = buildInput(source);
@@ -1046,12 +1082,13 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
         createdAt: taskCreatedAt,
         input: generationInput,
       };
-      writeActiveGenerationTask(activeGenerationTask, { syncUrl: false });
+      const isPendingTask = task.status === "queued" || task.status === "running";
+      writeActiveGenerationTask(activeGenerationTask, { syncUrl: isPendingTask });
       setActiveTask(activeGenerationTask);
       applyTaskSnapshot(task);
       if (
         progressTaskId !== task.taskId &&
-        (task.status === "queued" || task.status === "running")
+        isPendingTask
       ) {
         router.replace(
           `/?screen=${source}&taskId=${encodeURIComponent(task.taskId)}`,
@@ -1064,6 +1101,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
         source,
       });
       setError(caughtError instanceof Error ? caughtError.message : "生成失败");
+      setGenerationPlanPreview(null);
       setStatus("idle");
     }
   }
@@ -1095,16 +1133,26 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       source,
     });
 
+    const profileContext =
+      useStyleProfile && styleProfileReady ? styleProfileContext : undefined;
+    const inputWithProfile = {
+      ...input,
+      genderPreference:
+        normalizeGenerationGenderPreference(profileContext?.genderPreference) ||
+        input.genderPreference,
+      styleProfileContext: profileContext,
+    };
+
     if (source === "keyword" && activeRecommendationContext) {
       return {
-        ...input,
+        ...inputWithProfile,
         recommendationContext: activeRecommendationContext,
       };
     }
 
     if (source === "photo" && selectedPhotoMode) {
       return {
-        ...input,
+        ...inputWithProfile,
         photoMode: {
           id: selectedPhotoMode.id,
           label: selectedPhotoMode.label,
@@ -1113,7 +1161,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       };
     }
 
-    return input;
+    return inputWithProfile;
   }
 
   return (
@@ -1126,6 +1174,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           dailyTaskTitle={dailyRecommendationTitle}
           dailyWeather={dailyWeather}
           dailyWeatherTheme={getDailyWeatherVisualTheme(dailyWeather)}
+          homeHero={h5Options.homeHero}
           homeLooks={h5Options.homeLooks}
           keywords={rotatedKeywords}
           onAddKeyword={addKeyword}
@@ -1145,6 +1194,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           customStyles={customStyles}
           error={error}
           generationMessage={generationMessage}
+          generationPlanPreview={generationPlanPreview}
           generationProgress={generationProgress}
           generationCount={effectiveGenerationCount}
           generationCountOptions={generationCountOptions}
@@ -1153,6 +1203,9 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           remainingGenerations={remainingGenerations}
           recommendationContext={activeRecommendationContext}
           screen="keyword"
+          styleProfileReady={styleProfileReady}
+          styleProfileSummary={styleProfileSummary}
+          useStyleProfile={useStyleProfile}
           taskStartedAt={activeTask?.createdAt}
           configOptions={h5Options}
           imageModelOptions={activeImageModels}
@@ -1168,6 +1221,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           status={status}
           onBack={goHome}
           onGenerate={() => generateOutfit("keyword")}
+          onToggleUseStyleProfile={setUseStyleProfile}
           onSelectLocation={setSelectedLocation}
           onSelectSeason={setSelectedSeason}
           onSelectTemperature={setSelectedTemperature}
@@ -1214,6 +1268,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           customStyles={customStyles}
           error={error}
           generationMessage={generationMessage}
+          generationPlanPreview={generationPlanPreview}
           generationProgress={generationProgress}
           generationCount={effectiveGenerationCount}
           generationCountOptions={generationCountOptions}
@@ -1225,6 +1280,9 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           remainingGenerations={remainingGenerations}
           recommendationContext={undefined}
           screen="photo"
+          styleProfileReady={styleProfileReady}
+          styleProfileSummary={styleProfileSummary}
+          useStyleProfile={useStyleProfile}
           taskStartedAt={activeTask?.createdAt}
           configOptions={h5Options}
           imageModelOptions={activeImageModels}
@@ -1247,6 +1305,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           }}
           photoError={photoError}
           onGenerate={() => generateOutfit("photo")}
+          onToggleUseStyleProfile={setUseStyleProfile}
           onPhotoChange={handlePhotoChange}
           onSelectPhotoMode={setSelectedPhotoModeId}
           onSelectLocation={setSelectedLocation}
@@ -1293,6 +1352,26 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
   );
 }
 
+function normalizeGenerationGenderPreference(value?: string) {
+  const text = value?.trim();
+  if (!text) return "";
+  return text === "不限定" ? "不限" : text;
+}
+
+function buildStyleProfileSummary(context: OutfitStyleProfileContext) {
+  const summary = [
+    normalizeGenerationGenderPreference(context.genderPreference),
+    context.favoriteStyles?.[0],
+    context.favoriteColors?.[0],
+    context.fitPreferences?.[0],
+  ]
+    .map((item) => item?.trim())
+    .filter(Boolean)
+    .join(" · ");
+
+  return summary || "完善风格档案后可用";
+}
+
 function LoginRequiredPrompt() {
   return (
     <div className="cw-auth-redirect-toast" role="status" aria-live="polite">
@@ -1312,6 +1391,7 @@ function HomeScreen({
   dailyTaskTitle,
   dailyWeather,
   dailyWeatherTheme,
+  homeHero,
   homeLooks,
   keywords,
   onAddKeyword,
@@ -1327,6 +1407,7 @@ function HomeScreen({
   dailyTaskTitle: string;
   dailyWeather: DailyWeatherContext;
   dailyWeatherTheme: string;
+  homeHero: H5HomeHeroConfig;
   homeLooks: readonly H5OptionItem[];
   keywords: readonly string[];
   onAddKeyword: (keyword: string) => void;
@@ -1362,6 +1443,11 @@ function HomeScreen({
   const featuredLooks = (
     homeLooks.length ? homeLooks : defaultH5OutfitConfigOptions.homeLooks
   ).slice(0, 4);
+  const heroConfig = {
+    ...defaultH5OutfitConfigOptions.homeHero,
+    ...homeHero,
+  };
+  const heroBackgroundImage = resolveBackendAssetUrl(heroConfig.backgroundImage);
   const visibleCategories = categories.length
     ? categories
     : defaultH5OutfitConfigOptions.homeCategories;
@@ -1376,25 +1462,34 @@ function HomeScreen({
 
   return (
     <section className="cw-home">
-      <section className="cw-home-hero">
+      <section
+        className={heroBackgroundImage ? "cw-home-hero has-background" : "cw-home-hero"}
+        style={
+          heroBackgroundImage
+            ? ({
+                "--cw-home-hero-bg": `url("${heroBackgroundImage}")`,
+              } as CSSProperties)
+            : undefined
+        }
+      >
         <div className="cw-hero-copy">
-          <span>AI STYLING STUDIO</span>
+          <span>{heroConfig.kicker}</span>
           <h1>
-            今日穿搭
+            {heroConfig.titleLine1}
             <br />
-            交给云裳 AI
+            {heroConfig.titleLine2}
           </h1>
           <p>
-            从关键词到本人照片，快速生成更适合场景、天气和个人风格的完整穿搭。
+            {heroConfig.subtitle}
           </p>
           <div className="cw-hero-actions">
             <button type="button" onClick={onOpenPhoto}>
               <ImagePlus size={17} />
-              上传照片
+              {heroConfig.primaryAction}
             </button>
             <button type="button" onClick={onOpenKeyword}>
               <Sparkles size={17} />
-              写关键词
+              {heroConfig.secondaryAction}
             </button>
           </div>
         </div>
@@ -1416,7 +1511,7 @@ function HomeScreen({
           ))}
           <div className="cw-hero-lens">
             <Sparkles size={16} />
-            <span>智能搭配中</span>
+            <span>{heroConfig.lensText}</span>
           </div>
         </div>
       </section>
@@ -1609,6 +1704,7 @@ function GenerateScreen({
   generationCountOptions,
   dailyGenerationLimit,
   generationMessage,
+  generationPlanPreview,
   generationProgress,
   keywordText,
   imageModelOptions,
@@ -1619,7 +1715,10 @@ function GenerateScreen({
   remainingGenerations,
   recommendationContext,
   screen,
+  styleProfileReady,
+  styleProfileSummary,
   taskStartedAt,
+  useStyleProfile,
   selectedColor,
   selectedItems,
   selectedImageModel,
@@ -1634,6 +1733,7 @@ function GenerateScreen({
   onBack,
   onClearPhoto,
   onGenerate,
+  onToggleUseStyleProfile,
   onPhotoChange,
   onSelectPhotoMode,
   onCustomColorChange,
@@ -1663,6 +1763,7 @@ function GenerateScreen({
   generationCountOptions: number[];
   dailyGenerationLimit: number;
   generationMessage: string;
+  generationPlanPreview: OutfitPlan | null;
   generationProgress: number;
   keywordText: string;
   imageModelOptions: H5OptionItem[];
@@ -1673,7 +1774,10 @@ function GenerateScreen({
   remainingGenerations: number;
   recommendationContext?: OutfitRecommendationContext;
   screen: "keyword" | "photo";
+  styleProfileReady: boolean;
+  styleProfileSummary: string;
   taskStartedAt?: string;
+  useStyleProfile: boolean;
   selectedColor: string | null;
   selectedItems: string[];
   selectedImageModel: string;
@@ -1688,6 +1792,7 @@ function GenerateScreen({
   onBack: () => void;
   onClearPhoto?: () => void;
   onGenerate: () => void;
+  onToggleUseStyleProfile: (enabled: boolean) => void;
   onPhotoChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   onSelectPhotoMode?: (modeId: string) => void;
   onCustomColorChange: (color: string) => void;
@@ -1775,6 +1880,7 @@ function GenerateScreen({
         keywords={loadingKeywords}
         progress={generationProgress}
         message={generationMessage}
+        planPreview={generationPlanPreview}
         startedAt={taskStartedAt}
         title={isKeyword ? "生成中" : "照片换装中"}
         onBack={onBack}
@@ -1862,6 +1968,28 @@ function GenerateScreen({
             </label>
           )}
           {photoError ? <p className="cw-error">{photoError}</p> : null}
+
+          <label
+            className={
+              styleProfileReady
+                ? "cw-profile-guide-toggle"
+                : "cw-profile-guide-toggle is-disabled"
+            }
+          >
+            <input
+              checked={useStyleProfile && styleProfileReady}
+              disabled={!styleProfileReady}
+              type="checkbox"
+              onChange={(event) => onToggleUseStyleProfile(event.target.checked)}
+            />
+            <span aria-hidden="true">
+              <i />
+            </span>
+            <div>
+              <strong>参考风格档案</strong>
+              <small>{styleProfileReady ? styleProfileSummary : "档案完善后可用于本次生成"}</small>
+            </div>
+          </label>
 
           {!isKeyword ? (
             <PhotoModeControls
@@ -2124,6 +2252,7 @@ function PhotoModeControls({
 function GenerationLoadingScreen({
   keywords,
   message,
+  planPreview,
   progress,
   startedAt,
   title,
@@ -2131,6 +2260,7 @@ function GenerationLoadingScreen({
 }: {
   keywords: string[];
   message: string;
+  planPreview?: OutfitPlan | null;
   progress: number;
   startedAt?: string;
   title: string;
@@ -2145,9 +2275,29 @@ function GenerationLoadingScreen({
       ? 0
       : Math.max(0, generationExpectedSeconds - elapsedSeconds);
   const loadingTarget = title.includes("照片") ? "照片换搭" : "今日穿搭";
-  const visibleKeywords = keywords.length
-    ? keywords.slice(0, 5)
-    : ["灵感穿搭", "奶油白", "日常出门", "好气色"];
+  const visibleKeywords = keywords.slice(0, 5);
+  const previewItems = planPreview?.items.filter((item) => item.name || item.category).slice(0, 4) ?? [];
+  const formulaText = previewItems
+    .slice(0, 3)
+    .map((item) => [item.category, item.name].filter(Boolean).join(" · "))
+    .filter(Boolean)
+    .join(" + ");
+  const briefingRows = planPreview
+    ? [
+        {
+          label: "搭配公式",
+          value: formulaText || planPreview.outfitTitle,
+        },
+        {
+          label: "风格方向",
+          value: planPreview.styleTags.slice(0, 3).join(" / ") || planPreview.summary,
+        },
+        {
+          label: "出门提醒",
+          value: planPreview.temperatureAdvice || planPreview.occasionReason,
+        },
+      ].filter((item) => item.value)
+    : [];
   const steps = [
     { label: "分析需求关键词", done: normalizedProgress >= 24 },
     { label: "匹配时尚数据库", done: normalizedProgress >= 44 },
@@ -2194,6 +2344,48 @@ function GenerationLoadingScreen({
           </h1>
           <p>{message || "请稍等几秒，AI 正在根据你的灵感组合更适合你的搭配方案。"}</p>
         </div>
+
+        <section
+          className={planPreview ? "cw-loading-briefing is-ready" : "cw-loading-briefing is-pending"}
+          aria-label={planPreview ? "AI 造型简报" : "造型简报生成状态"}
+        >
+          <div className="cw-loading-briefing-kicker">
+            <Sparkles size={15} />
+            <span>{planPreview ? "造型简报已生成" : "正在整理造型简报"}</span>
+          </div>
+          {planPreview ? (
+            <>
+              <h2>{planPreview.outfitTitle}</h2>
+              <p>{planPreview.summary}</p>
+              {briefingRows.length ? (
+                <div className="cw-loading-briefing-grid">
+                  {briefingRows.map((row) => (
+                    <article key={row.label}>
+                      <small>{row.label}</small>
+                      <strong>{row.value}</strong>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <h2>先看方向，成图稍后到</h2>
+              <p>
+                {visibleKeywords.length
+                  ? `AI 正在根据 ${visibleKeywords.join("、")} 生成搭配企划。`
+                  : "AI 正在读取本次生成信息，生成企划出来后会自动展示在这里。"}
+              </p>
+              {visibleKeywords.length ? (
+                <div className="cw-loading-briefing-tags" aria-label="本次生成关键词">
+                  {visibleKeywords.map((keyword) => (
+                    <span key={keyword}>{keyword}</span>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
 
         <div className="cw-loading-look-stack" aria-hidden="true">
           <div className="cw-loading-look-card side left">
@@ -2264,14 +2456,62 @@ function GenerationLoadingScreen({
           预计剩余 <strong>{formatRemainingTime(estimatedRemainingSeconds)}</strong>
         </p>
 
-        <section className="cw-loading-keywords" aria-label="本次生成关键词">
-          <h2><Sparkles size={16} />本次生成关键词<Sparkles size={16} /></h2>
-          <div>
-            {visibleKeywords.map((keyword) => (
-              <span key={keyword}>{keyword}</span>
-            ))}
-          </div>
-        </section>
+        {planPreview ? (
+          <section className="cw-loading-plan-preview" aria-label="AI 搭配企划预览">
+            {planPreview.styleTags.length ? (
+              <div className="cw-loading-plan-tags" aria-label="风格标签">
+                {planPreview.styleTags.slice(0, 5).map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+            ) : null}
+
+            {planPreview.temperatureAdvice || planPreview.occasionReason ? (
+              <div className="cw-loading-plan-notes">
+                {planPreview.temperatureAdvice ? (
+                  <article>
+                    <small>体感建议</small>
+                    <p>{planPreview.temperatureAdvice}</p>
+                  </article>
+                ) : null}
+                {planPreview.occasionReason ? (
+                  <article>
+                    <small>场景理由</small>
+                    <p>{planPreview.occasionReason}</p>
+                  </article>
+                ) : null}
+              </div>
+            ) : null}
+
+            {previewItems.length ? (
+              <div className="cw-loading-plan-items">
+                {previewItems.map((item) => (
+                  <article
+                    className="cw-loading-plan-item"
+                    key={`${item.category}-${item.name}-${item.color}`}
+                  >
+                    <span>{item.category}</span>
+                    <strong>{item.name}</strong>
+                    <small>
+                      {[item.color, item.material].filter(Boolean).join(" · ")}
+                    </small>
+                    <p>{item.reason}</p>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : (
+          <section className="cw-loading-keywords" aria-label="本次生成关键词">
+            <h2><Sparkles size={16} />生成链路<Sparkles size={16} /></h2>
+            <div className="cw-loading-chain">
+              <span className={normalizedProgress >= 24 ? "is-done" : "is-current"}>需求分析</span>
+              <span className={normalizedProgress >= 44 ? "is-done" : normalizedProgress >= 24 ? "is-current" : ""}>风格匹配</span>
+              <span className={normalizedProgress >= 72 ? "is-done" : normalizedProgress >= 44 ? "is-current" : ""}>企划生成</span>
+              <span className={normalizedProgress >= 100 ? "is-done" : normalizedProgress >= 72 ? "is-current" : ""}>画面优化</span>
+            </div>
+          </section>
+        )}
 
         <p className="cw-loading-note">
           <Heart size={16} /> 温柔出门，也要带一点好心情。

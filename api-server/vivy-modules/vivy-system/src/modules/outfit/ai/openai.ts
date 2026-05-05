@@ -45,6 +45,7 @@ export interface StyleProfileAnalysisInput {
   photoType: StyleProfilePhotoType
   photoDataUrl: string
   currentProfile?: {
+    genderPreference?: string
     height?: string
     weight?: string
     clothingSize?: string
@@ -88,7 +89,7 @@ export interface StyleProfileAnalysisItem {
 
 export class MissingOpenAIConfigError extends Error {
   constructor(target: '文本' | '图片') {
-    super(`缺少 ${target} AI 配置。请在后台 H5 模型配置或 api-server 环境变量中配置后再生成穿搭。`)
+    super(`缺少 ${target} AI 配置。请先在后台 H5 模型配置中配置后再生成穿搭。`)
     this.name = 'MissingOpenAIConfigError'
   }
 }
@@ -96,16 +97,16 @@ export class MissingOpenAIConfigError extends Error {
 function createOpenAIClient(target: 'text' | 'keyword-image' | 'photo-image', config: OutfitAiConfig = {}) {
   const apiKey =
     target === 'text'
-      ? config.textApiKey || config.apiKey || process.env.OPENAI_TEXT_API_KEY || process.env.OPENAI_API_KEY
+      ? config.textApiKey || config.apiKey
       : target === 'photo-image'
-        ? config.photoImageApiKey || config.imageApiKey || config.apiKey || process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY
-        : config.keywordImageApiKey || config.imageApiKey || config.apiKey || process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY
+        ? config.photoImageApiKey || config.imageApiKey || config.apiKey
+        : config.keywordImageApiKey || config.imageApiKey || config.apiKey
   const baseURL =
     target === 'text'
-      ? config.textBaseUrl || config.baseUrl || process.env.OPENAI_TEXT_BASE_URL || process.env.OPENAI_BASE_URL
+      ? config.textBaseUrl || config.baseUrl
       : target === 'photo-image'
-        ? config.photoImageBaseUrl || config.imageBaseUrl || process.env.OPENAI_IMAGE_BASE_URL || defaultImageBaseUrl
-        : config.keywordImageBaseUrl || config.imageBaseUrl || process.env.OPENAI_IMAGE_BASE_URL || defaultImageBaseUrl
+        ? config.photoImageBaseUrl || config.imageBaseUrl || defaultImageBaseUrl
+        : config.keywordImageBaseUrl || config.imageBaseUrl || defaultImageBaseUrl
 
   if (!apiKey) {
     throw new MissingOpenAIConfigError(target === 'text' ? '文本' : '图片')
@@ -126,7 +127,7 @@ export async function generateOutfitPlan(
 ): Promise<OutfitPlan> {
   const startedAt = Date.now()
   const client = createOpenAIClient('text', config)
-  const model = config.textModel || process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini'
+  const model = config.textModel || 'gpt-5.4-mini'
   aiLogger.log({
     event: 'outfit.ai.plan.request.start',
     model,
@@ -169,7 +170,7 @@ export async function analyzeStyleProfilePhoto(
 ): Promise<StyleProfileAnalysisResult> {
   const startedAt = Date.now()
   const client = createOpenAIClient('text', config)
-  const model = config.textModel || process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini'
+  const model = config.textModel || 'gpt-5.4-mini'
 
   aiLogger.log({
     event: 'outfit.ai.style_profile.analysis.start',
@@ -234,7 +235,7 @@ export async function generateOutfitImage(
   const target = userPhotoDataUrl ? 'photo-image' : 'keyword-image'
   const client = createOpenAIClient(target, config)
   const configuredModel = userPhotoDataUrl ? config.photoImageModel : config.keywordImageModel
-  const model = imageModel || configuredModel || config.imageModel || process.env.OPENAI_IMAGE_MODEL || defaultImageModel
+  const model = imageModel || configuredModel || config.imageModel || defaultImageModel
   const imageRequestOptions = getImageRequestOptions(model)
   const traceContext = {
     ...trace,
@@ -493,7 +494,7 @@ async function generateImageFromPhotoWithImagesEdit(
 }
 
 function getResponsesImagePrimaryModel(config: OutfitAiConfig) {
-  return config.textModel || process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini'
+  return config.textModel || 'gpt-5.4-mini'
 }
 
 const styleProfileAnalysisSystemPrompt = [

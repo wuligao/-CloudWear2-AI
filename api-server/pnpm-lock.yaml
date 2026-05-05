@@ -301,6 +301,30 @@ importers:
 
   vivy-modules/vivy-system:
     dependencies:
+      '@vivy-common/config':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-plugin-config
+      '@vivy-common/core':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-core
+      '@vivy-common/datascope':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-datascope
+      '@vivy-common/excel':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-excel
+      '@vivy-common/logger':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-logger
+      '@vivy-common/mybatis':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-plugin-mybatis
+      '@vivy-common/security':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-security
+      '@vivy-common/swagger':
+        specifier: workspace:*
+        version: link:../../vivy-common/vivy-common-swagger
       ali-oss:
         specifier: ^6.23.0
         version: 6.23.0

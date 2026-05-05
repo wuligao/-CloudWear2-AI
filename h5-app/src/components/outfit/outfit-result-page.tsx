@@ -6,11 +6,13 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
   Check,
   CloudSun,
   Download,
   Heart,
   Home,
+  Layers,
   MapPin,
   RefreshCw,
   Save,
@@ -18,6 +20,7 @@ import {
   Shirt,
   Sparkles,
   Thermometer,
+  Wand2,
 } from "lucide-react";
 import { outfitApiEndpoints, resolveBackendAssetUrl } from "@/lib/api-endpoints";
 import {
@@ -222,6 +225,9 @@ export function OutfitResultPage() {
   }
 
   const saved = savedIds.includes(activeResult.id);
+  const wardrobeHref =
+    saved && isPersistedRecord(activeResult) ? `/history/${activeResult.id}` : "/history";
+  const outfitFormula = buildOutfitFormula(activeResult.items);
   return (
     <section className="outfit-result-page">
       <header className="outfit-result-topbar">
@@ -257,6 +263,16 @@ export function OutfitResultPage() {
           <RecommendationBrief context={activeResult.recommendationContext} />
         ) : null}
 
+        <WardrobeAssetCard
+          generation={activeResult}
+          index={activeIndex}
+          onSave={() => void saveCurrent()}
+          saved={saved}
+          saving={savingId === activeResult.id}
+          total={results.length}
+          wardrobeHref={wardrobeHref}
+        />
+
         <section className="outfit-result-hero">
           <button
             className="outfit-result-poster"
@@ -288,6 +304,12 @@ export function OutfitResultPage() {
             ))}
           </div>
         </section>
+
+        <OutfitBriefCard
+          formula={outfitFormula}
+          generation={activeResult}
+          saved={saved}
+        />
 
         <section className="outfit-result-pk-panel" aria-label="多套方案 PK">
           <div className="outfit-result-pk-title">
@@ -360,7 +382,7 @@ export function OutfitResultPage() {
         </section>
 
         <section className="outfit-result-panel">
-          <SectionTitle kicker="STYLE BRIEF" title="造型信息" />
+          <SectionTitle kicker="STYLE BRIEF" title="穿搭信息" />
           <div className="outfit-result-meta">
             <Info icon={<MapPin size={17} />} label="场景" value={activeResult.occasion} />
             <Info icon={<Shirt size={17} />} label="风格" value={activeResult.style} />
@@ -380,8 +402,10 @@ export function OutfitResultPage() {
           </div>
         </section>
 
+        <StyleProfileBrief generation={activeResult} />
+
         <section className="outfit-result-panel">
-          <SectionTitle kicker="ITEM LIST" title="单品清单" />
+          <SectionTitle kicker="ITEM LIST" title="单品拆解" />
           <div className="outfit-result-items">
             {activeResult.items.slice(0, 6).map((item, index) => (
               <OutfitItemCard
@@ -394,10 +418,11 @@ export function OutfitResultPage() {
         </section>
 
         <section className="outfit-result-panel">
-          <SectionTitle kicker="WHY IT WORKS" title="穿搭说明" />
+          <SectionTitle kicker="WHY IT WORKS" title="搭配逻辑" />
           <div className="outfit-result-advice">
             <TextBlock title="温度适配" value={activeResult.temperatureAdvice} />
             <TextBlock title="场景理由" value={activeResult.occasionReason} />
+            <TextBlock title="复用关键词" value={buildKeywordLine(activeResult)} />
           </div>
         </section>
       </main>
@@ -427,6 +452,141 @@ export function OutfitResultPage() {
       </footer>
 
       {toast ? <div className="outfit-result-toast">{toast.message}</div> : null}
+    </section>
+  );
+}
+
+function WardrobeAssetCard({
+  generation,
+  index,
+  onSave,
+  saved,
+  saving,
+  total,
+  wardrobeHref,
+}: {
+  generation: OutfitGeneration;
+  index: number;
+  onSave: () => void;
+  saved: boolean;
+  saving: boolean;
+  total: number;
+  wardrobeHref: string;
+}) {
+  const statusLabel = saved ? "已进入 AI 衣橱" : "待保存为衣橱资产";
+  const assetTime = formatResultTime(generation.createdAt);
+
+  return (
+    <section className={saved ? "outfit-result-asset is-saved" : "outfit-result-asset"}>
+      <div className="outfit-result-asset-mark">
+        {saved ? <BadgeCheck size={18} /> : <Heart size={18} />}
+      </div>
+      <div className="outfit-result-asset-copy">
+        <span>{statusLabel}</span>
+        <strong>Look {String(index).padStart(2, "0")} / {total}</strong>
+        <p>
+          {assetTime} 生成 · {generation.occasion} · {generation.weather}
+        </p>
+      </div>
+      {saved ? (
+        <Link className="outfit-result-asset-action" href={wardrobeHref}>
+          查看衣橱
+        </Link>
+      ) : (
+        <button
+          className="outfit-result-asset-action"
+          type="button"
+          disabled={saving}
+          onClick={onSave}
+        >
+          {saving ? "保存中" : "收进衣橱"}
+        </button>
+      )}
+    </section>
+  );
+}
+
+function OutfitBriefCard({
+  formula,
+  generation,
+  saved,
+}: {
+  formula: string;
+  generation: OutfitGeneration;
+  saved: boolean;
+}) {
+  const sourceLabel = generation.recommendationContext
+    ? getRecommendationContextLabel(generation.recommendationContext)
+    : generation.photoMode
+      ? getPhotoModeLabel(generation.photoMode)
+      : generation.source === "photo"
+        ? "照片生成"
+        : "关键词生成";
+
+  return (
+    <section className="outfit-result-brief-card">
+      <div className="outfit-result-brief-head">
+        <div>
+          <span>LOOK CARD</span>
+          <h2>这套可以怎么穿</h2>
+        </div>
+        <small>{saved ? "已归档" : "可保存"}</small>
+      </div>
+
+      <div className="outfit-result-formula">
+        <span>
+          <Layers size={16} />
+          搭配公式
+        </span>
+        <strong>{formula}</strong>
+      </div>
+
+      <div className="outfit-result-signal-grid">
+        <BriefSignal label="来源" value={sourceLabel} />
+        <BriefSignal
+          label="天气"
+          value={`${generation.temperature}°C · ${generation.weather}`}
+        />
+        <BriefSignal label="场景" value={generation.occasion} />
+        <BriefSignal label="主色" value={generation.colorPreference || "未指定"} />
+      </div>
+
+      <div className="outfit-result-keywords" aria-label="穿搭关键词">
+        {generation.styleTags.slice(0, 6).map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BriefSignal({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <small>{label}</small>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function StyleProfileBrief({ generation }: { generation: OutfitGeneration }) {
+  const insights = buildStyleProfileInsights(generation);
+  if (!insights.length) return null;
+
+  return (
+    <section className="outfit-result-panel outfit-result-profile-brief">
+      <SectionTitle kicker="PROFILE MATCH" title="为什么适合你" />
+      <div className="outfit-result-profile-list">
+        {insights.map((item) => (
+          <div key={item.label}>
+            <span>
+              <Wand2 size={15} />
+            </span>
+            <small>{item.label}</small>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -480,13 +640,16 @@ function Info({
 }
 
 function OutfitItemCard({ index, item }: { index: number; item: OutfitItem }) {
+  const itemMeta = [item.color, item.material].filter(Boolean).join(" / ");
+
   return (
     <article>
       <span>{String(index + 1).padStart(2, "0")}</span>
       <div>
         <small>{item.category}</small>
         <strong>{item.name}</strong>
-        <p>{[item.color, item.material].filter(Boolean).join(" / ")}</p>
+        {itemMeta ? <p>{itemMeta}</p> : null}
+        {item.reason ? <em>{item.reason}</em> : null}
       </div>
     </article>
   );
@@ -503,6 +666,61 @@ function TextBlock({ title, value }: { title: string; value: string }) {
 
 function sanitizeDownloadName(name: string) {
   return name.replace(/[\\/:*?"<>|]/g, "").slice(0, 40) || "cloudwear-outfit";
+}
+
+function buildOutfitFormula(items: OutfitItem[]) {
+  const names = items
+    .slice(0, 4)
+    .map((item) => item.name || item.category)
+    .filter(Boolean);
+
+  return names.length ? names.join(" + ") : "暂无完整单品拆解";
+}
+
+function buildKeywordLine(generation: OutfitGeneration) {
+  const keywords = [
+    generation.occasion,
+    generation.style,
+    generation.colorPreference,
+    ...generation.styleTags.slice(0, 4),
+  ].filter(Boolean);
+
+  return keywords.length
+    ? keywords.join(" · ")
+    : "本套方案暂未生成额外关键词。";
+}
+
+function buildStyleProfileInsights(generation: OutfitGeneration) {
+  const profile = generation.styleProfileContext;
+  if (!profile) return [];
+
+  return [
+    profile.bodySummary ? { label: "身形线索", value: profile.bodySummary } : null,
+    profile.favoriteStyles?.length
+      ? { label: "偏好风格", value: profile.favoriteStyles.slice(0, 4).join(" / ") }
+      : null,
+    profile.favoriteColors?.length
+      ? { label: "偏好颜色", value: profile.favoriteColors.slice(0, 4).join(" / ") }
+      : null,
+    profile.fitPreferences?.length
+      ? { label: "版型偏好", value: profile.fitPreferences.slice(0, 4).join(" / ") }
+      : null,
+    profile.commonOccasions?.length
+      ? { label: "常用场景", value: profile.commonOccasions.slice(0, 4).join(" / ") }
+      : null,
+  ].filter((item): item is { label: string; value: string } => Boolean(item));
+}
+
+function formatResultTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+
+  return `${month}.${day} ${hour}:${minute}`;
 }
 
 function isPersistedRecord(generation: OutfitGeneration) {

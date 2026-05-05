@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { PaginateDto } from '@vivy-common/core'
 import { Allow } from 'class-validator'
-import { outfitPhotoModeContextSchema, outfitRecommendationContextSchema } from '../ai/schema'
+import { outfitPhotoModeContextSchema, outfitRecommendationContextSchema, outfitStyleProfileContextSchema } from '../ai/schema'
 
 const outfitItemSchema = z.object({
   category: z.string().trim().min(1).max(80),
@@ -35,6 +35,7 @@ export const createOutfitRecordSchema = z.object({
     imageModel: z.string().trim().max(120).optional(),
     recommendationContext: outfitRecommendationContextSchema.optional(),
     photoMode: outfitPhotoModeContextSchema.optional(),
+    styleProfileContext: outfitStyleProfileContextSchema.optional(),
     outfitTitle: z.string().trim().min(1).max(160),
     summary: z.string().trim().min(1).max(1000),
     styleTags: z.array(z.string().trim().min(1).max(40)).min(1).max(10),

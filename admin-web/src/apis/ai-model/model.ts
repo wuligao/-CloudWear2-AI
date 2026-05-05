@@ -110,17 +110,78 @@ export interface H5OutfitOptionItem {
 export interface H5LoginConfig {
   heroImage: string
   heroAlt: string
+  heroImages: H5LoginHeroImageConfig[]
   brandTitle: string
   subtitle: string
+  poems: H5LoginPoemConfig[]
   phonePasswordEnabled: boolean
   registerEnabled: boolean
   wechatEnabled: boolean
+}
+
+export interface H5LoginHeroImageConfig {
+  image: string
+  alt: string
+}
+
+export interface H5LoginPoemConfig {
+  kicker: string
+  line1: string
+  line2: string
+  footer: string
+}
+
+export interface H5HomeHeroConfig {
+  kicker: string
+  titleLine1: string
+  titleLine2: string
+  subtitle: string
+  primaryAction: string
+  secondaryAction: string
+  lensText: string
+  backgroundImage: string
+  backgroundAlt: string
+  generatedAt?: string
+}
+
+export interface H5HomeDailyRefreshConfig {
+  enabled: boolean
+  refreshHour: number
+  lastRefreshDateKey?: string
+  lastRefreshAt?: string
+  lastError?: string
+  isRefreshing?: boolean
+  runningMessage?: string
+}
+
+export interface H5LoginDailyRefreshConfig {
+  enabled: boolean
+  refreshHour: number
+  lastRefreshDateKey?: string
+  lastRefreshAt?: string
+  lastError?: string
+  isRefreshing?: boolean
+  runningMessage?: string
+}
+
+export interface H5ChatAssistantConfig {
+  enabled: boolean
+  welcomeMessage: string
+  quickPrompts: string[]
+  useStyleProfile: boolean
+  useRecentRecords: boolean
+  dailyLimit: number
+  maxHistoryMessages: number
 }
 
 export interface H5OutfitOptionConfig {
   dailyFreeGenerationLimit: number
   tomorrowRecommendationStartHour: number
   login: H5LoginConfig
+  homeHero: H5HomeHeroConfig
+  homeDailyRefresh: H5HomeDailyRefreshConfig
+  loginDailyRefresh: H5LoginDailyRefreshConfig
+  chatAssistant: H5ChatAssistantConfig
   inspirationKeywords: string[]
   homeCategories: string[]
   homeLooks: H5OutfitOptionItem[]

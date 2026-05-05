@@ -8,6 +8,7 @@ interface AppShellProps {
   hideHeader?: boolean;
   hideBottomNav?: boolean;
   hideTopHeader?: boolean;
+  contentClassName?: string;
 }
 
 export function AppShell({
@@ -15,6 +16,7 @@ export function AppShell({
   hideBottomNav = false,
   hideHeader = false,
   hideTopHeader = false,
+  contentClassName,
 }: AppShellProps) {
   const frameClassName = [
     hideHeader ? "app-frame app-frame-full" : "app-frame px-3 py-4 md:px-6 md:py-8",
@@ -29,6 +31,7 @@ export function AppShell({
         ? "app-main-with-nav app-main-immersive"
         : "app-main-with-nav px-4 pt-3",
     hideBottomNav ? "app-main-no-bottom-nav" : "",
+    contentClassName,
   ]
     .filter(Boolean)
     .join(" ");
