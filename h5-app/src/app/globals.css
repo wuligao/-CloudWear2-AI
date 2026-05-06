@@ -103,6 +103,13 @@
   z-index: -1;
 }
 
+.cw-home-hero-bg-image {
+  position: absolute;
+  z-index: -2;
+  object-fit: cover;
+  object-position: center;
+}
+
 .cw-hero-copy {
   position: relative;
   z-index: 2;
@@ -11871,10 +11878,7 @@ a {
 .cw-home-hero.has-background {
   background:
     linear-gradient(145deg, rgba(18, 19, 24, 0.84), rgba(42, 43, 48, 0.58) 48%, rgba(120, 82, 72, 0.42)),
-    var(--cw-home-hero-bg),
     #24252a;
-  background-position: center;
-  background-size: cover;
 }
 
 .cw-home-hero.has-background::before {
@@ -14459,10 +14463,7 @@ html,
 .cw-app.cw-theme-showcase .cw-home-hero.has-background {
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--cw-weather-hero-start) 86%, transparent), color-mix(in srgb, var(--cw-weather-hero-end) 52%, transparent)),
-    var(--cw-home-hero-bg),
     var(--cw-weather-hero-start);
-  background-position: center;
-  background-size: cover;
 }
 
 .cw-app.cw-theme-editorial .cw-quick-header span,

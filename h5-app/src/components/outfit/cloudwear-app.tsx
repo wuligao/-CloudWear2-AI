@@ -1450,16 +1450,18 @@ function HomeScreen({
 
   return (
     <section className="cw-home">
-      <section
-        className={heroBackgroundImage ? "cw-home-hero has-background" : "cw-home-hero"}
-        style={
-          heroBackgroundImage
-            ? ({
-                "--cw-home-hero-bg": `url("${heroBackgroundImage}")`,
-              } as CSSProperties)
-            : undefined
-        }
-      >
+      <section className={heroBackgroundImage ? "cw-home-hero has-background" : "cw-home-hero"}>
+        {heroBackgroundImage ? (
+          <Image
+            alt={heroConfig.backgroundAlt || "AI 穿搭首页背景图"}
+            className="cw-home-hero-bg-image"
+            fill
+            priority
+            quality={72}
+            sizes="(max-width: 430px) 100vw, 430px"
+            src={heroBackgroundImage}
+          />
+        ) : null}
         <div className="cw-hero-copy">
           <span>{heroConfig.kicker}</span>
           <h1>
@@ -1492,7 +1494,9 @@ function HomeScreen({
                 src={resolveBackendAssetUrl(look.image) || fallbackOutfitImage}
                 width={188}
                 height={252}
-                unoptimized
+                priority={index === 0}
+                quality={68}
+                sizes="(max-width: 430px) 32vw, 136px"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -1619,7 +1623,9 @@ function HomeScreen({
                 src={resolveBackendAssetUrl(look.image) || fallbackOutfitImage}
                 width={210}
                 height={284}
-                unoptimized
+                loading="lazy"
+                quality={66}
+                sizes="132px"
                 className="h-full w-full object-cover"
               />
               <span>{look.label}</span>
@@ -1930,6 +1936,7 @@ function GenerateScreen({
                     width={420}
                     height={520}
                     unoptimized
+                    sizes="100vw"
                     className="cw-upload-preview"
                   />
                   <button
@@ -2592,7 +2599,9 @@ function QuickStylePicker({
                   src={resolveBackendAssetUrl(style.image) || fallbackOutfitImage}
                   width={56}
                   height={56}
-                  unoptimized
+                  loading="lazy"
+                  quality={60}
+                  sizes="56px"
                   className="h-full w-full object-cover"
                 />
               </span>
