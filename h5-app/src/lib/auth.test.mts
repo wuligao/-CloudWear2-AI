@@ -8,6 +8,7 @@ const authModule = (
 const {
   clearH5AuthSession,
   getH5AuthHeader,
+  guestLoginH5User,
   logoutH5User,
   normalizeH5RedirectPath,
   normalizeLoginPhone,
@@ -230,6 +231,57 @@ test("logout clears local H5 account data", async () => {
     (window.history as typeof window.history & { replacedUrl: string }).replacedUrl,
     "/history",
   );
+})
+
+test("guest login posts an empty body and stores the returned session", async () => {
+  const localStorage = new MemoryStorage();
+  const sessionStorage = new MemoryStorage();
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      localStorage,
+      sessionStorage,
+      dispatchEvent() {},
+    },
+  });
+  Object.defineProperty(globalThis, "fetch", {
+    configurable: true,
+    value: async (url: string, init?: RequestInit) => {
+      requestUrl = url;
+      requestInit = init;
+      return {
+        ok: true,
+        async json() {
+          return {
+            code: 200,
+            data: {
+              token: "guest-token",
+              expiresIn: 720,
+              user: {
+                userId: 8,
+                userName: "19000000008",
+                phone: "19000000008",
+                nickName: "云裳游客0008",
+              },
+            },
+          };
+        },
+      };
+    },
+  });
+
+  const session = await guestLoginH5User({ remember: false });
+
+  assert.equal(requestUrl, "http://localhost:9200/api/h5/auth/guest");
+  assert.equal(requestInit?.method, "POST");
+  assert.deepEqual(requestInit?.headers, { "Content-Type": "application/json" });
+  assert.deepEqual(JSON.parse(String(requestInit?.body)), {});
+  assert.equal(session.user.nickName, "云裳游客0008");
+  assert.equal(localStorage.getItem("cloudwear.h5-auth-session.v1"), null);
+  assert.equal(readH5AuthSession()?.token, "guest-token");
 })
 
 test("profile updates are sent with bearer auth and refresh the saved user", async () => {

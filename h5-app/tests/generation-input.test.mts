@@ -42,6 +42,7 @@ const emptyConfigOptions: H5OutfitConfigOptions = {
     registerEnabled: true,
     subtitle: "",
     wechatEnabled: true,
+    guestEnabled: true,
   },
   locations: [],
   scenes: [],

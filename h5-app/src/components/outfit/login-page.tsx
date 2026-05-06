@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   fetchH5Profile,
+  guestLoginH5User,
   loginH5User,
   normalizeH5RedirectPath,
   normalizeLoginPhone,
@@ -145,7 +146,8 @@ export function LoginPage() {
   const phonePasswordEnabled = activeLoginConfig.phonePasswordEnabled !== false;
   const registerEnabled = phonePasswordEnabled && activeLoginConfig.registerEnabled !== false;
   const wechatEnabled = activeLoginConfig.wechatEnabled !== false;
-  const hasAvailableLoginMethod = phonePasswordEnabled || wechatEnabled;
+  const guestEnabled = activeLoginConfig.guestEnabled !== false;
+  const hasAvailableLoginMethod = phonePasswordEnabled || wechatEnabled || guestEnabled;
 
   useEffect(() => {
     let cancelled = false;
@@ -230,6 +232,33 @@ export function LoginPage() {
     } catch (caughtError) {
       await minimumLoading;
       setError(caughtError instanceof Error ? caughtError.message : "登录失败，请稍后再试。");
+      setIsSubmitting(false);
+    }
+  }
+
+  async function submitGuestLogin() {
+    setError("");
+
+    if (!guestEnabled) {
+      setError("游客登录暂未开放。");
+      return;
+    }
+
+    if (!accepted) {
+      setError("请先阅读并同意用户协议和隐私政策。");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const minimumLoading = wait(authLoadingMinimumMs);
+    try {
+      await guestLoginH5User({ remember });
+      await preloadH5LandingData(h5Options || defaultH5OutfitConfigOptions);
+      await minimumLoading;
+      router.replace(redirectTo);
+    } catch (caughtError) {
+      await minimumLoading;
+      setError(caughtError instanceof Error ? caughtError.message : "游客登录失败，请稍后再试。");
       setIsSubmitting(false);
     }
   }
@@ -389,6 +418,18 @@ export function LoginPage() {
               />
             ) : null}
 
+            {guestEnabled ? (
+              <button
+                className="cw-login-guest"
+                disabled={isSubmitting}
+                type="button"
+                onClick={submitGuestLogin}
+              >
+                <Sparkles size={18} />
+                <span>游客体验</span>
+              </button>
+            ) : null}
+
             <label className="cw-login-agreement">
               <input
                 checked={accepted}
@@ -408,19 +449,50 @@ export function LoginPage() {
               </span>
             </label>
           </form>
-        ) : wechatEnabled ? (
+        ) : wechatEnabled || guestEnabled ? (
           <div className="cw-login-wechat-only">
             {error ? <p className="cw-login-error">{error}</p> : null}
-            <WechatLoginButton
-              disabled={isSubmitting}
-              onClick={() => setError("微信登录暂未接入，请联系管理员完成接入。")}
-            />
+            {wechatEnabled ? (
+              <WechatLoginButton
+                disabled={isSubmitting}
+                onClick={() => setError("微信登录暂未接入，请联系管理员完成接入。")}
+              />
+            ) : null}
+            {guestEnabled ? (
+              <button
+                className="cw-login-guest primary-guest"
+                disabled={isSubmitting}
+                type="button"
+                onClick={submitGuestLogin}
+              >
+                <Sparkles size={18} />
+                <span>游客体验</span>
+              </button>
+            ) : null}
+            <label className="cw-login-agreement">
+              <input
+                checked={accepted}
+                disabled={isSubmitting}
+                type="checkbox"
+                onChange={(event) => setAccepted(event.target.checked)}
+              />
+              <span>
+                我已阅读并同意{" "}
+                <button type="button" onClick={(event) => openLegalDoc(event, "terms")}>
+                  《用户协议》
+                </button>{" "}
+                和{" "}
+                <button type="button" onClick={(event) => openLegalDoc(event, "privacy")}>
+                  《隐私政策》
+                </button>
+              </span>
+            </label>
           </div>
         ) : (
           <div className="cw-login-disabled">
             <LockKeyhole size={26} />
             <strong>当前没有开放的登录方式</strong>
-            <span>可在后台 H5 配置中心开启手机号或微信登录入口。</span>
+            <span>可在后台 H5 配置中心开启手机号、游客或微信登录入口。</span>
           </div>
         )}
 

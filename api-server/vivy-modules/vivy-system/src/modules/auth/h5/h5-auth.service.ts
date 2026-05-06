@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { ServiceException } from '@vivy-common/core'
 import { TokenService } from '@vivy-common/security'
+import { randomInt, randomUUID } from 'crypto'
 import { LoginService } from '@/modules/auth/login/login.service'
+import { AiModelService } from '@/modules/ai-model/ai-model.service'
 import { CreateUserDto } from '@/modules/system/user/dto/user.dto'
 import { UserService } from '@/modules/system/user/user.service'
 import { H5LoginDto, H5RegisterDto, H5UpdateProfileDto } from './dto/h5-auth.dto'
 import {
   assertH5Password,
   buildH5CreateUser,
+  buildH5GuestNickName,
   normalizeH5Phone,
   toH5AuthUser,
   type H5AuthUser,
@@ -19,12 +22,15 @@ export interface H5AuthSession {
   user: H5AuthUser
 }
 
+const guestIdentityRetryLimit = 8
+
 @Injectable()
 export class H5AuthService {
   constructor(
     private readonly loginService: LoginService,
     private readonly tokenService: TokenService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly aiModelService: AiModelService
   ) {}
 
   async register(form: H5RegisterDto): Promise<H5AuthSession> {
@@ -39,6 +45,18 @@ export class H5AuthService {
     await this.createH5User(phone, form.password, form.nickName)
 
     return this.login({ phone, password: form.password })
+  }
+
+  async guest(): Promise<H5AuthSession> {
+    const isEnabled = await this.aiModelService.isH5GuestLoginEnabled()
+    if (!isEnabled) {
+      throw new ServiceException('游客登录暂未开放')
+    }
+
+    const { phone, password, nickName } = await this.createGuestCredentials()
+    await this.createH5User(phone, password, nickName)
+
+    return this.login({ phone, password })
   }
 
   async login(form: H5LoginDto): Promise<H5AuthSession> {
@@ -115,6 +133,34 @@ export class H5AuthService {
   private async createH5User(phone: string, password: string, nickName?: string): Promise<void> {
     const user = buildH5CreateUser({ phone, password, nickName }) as CreateUserDto
     await this.userService.add(user)
+  }
+
+  private async createGuestCredentials() {
+    for (let attempt = 0; attempt < guestIdentityRetryLimit; attempt += 1) {
+      const phone = this.generateGuestPhone()
+      const [isPhoneUnique, isUserNameUnique] = await Promise.all([
+        this.userService.checkUserPhoneUnique(phone),
+        this.userService.checkUserNameUnique(phone),
+      ])
+
+      if (isPhoneUnique && isUserNameUnique) {
+        return {
+          phone,
+          password: this.generateGuestPassword(),
+          nickName: buildH5GuestNickName(phone),
+        }
+      }
+    }
+
+    throw new ServiceException('游客登录暂时不可用，请稍后重试')
+  }
+
+  private generateGuestPhone() {
+    return `19${randomInt(0, 1_000_000_000).toString().padStart(9, '0')}`
+  }
+
+  private generateGuestPassword() {
+    return randomUUID().replace(/-/g, '').slice(0, 24)
   }
 
   private async getCurrentLoginUser() {

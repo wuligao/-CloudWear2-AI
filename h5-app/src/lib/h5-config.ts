@@ -1,5 +1,5 @@
-import { outfitApiEndpoints } from "@/lib/api-endpoints";
-import { fetchWithTimeout } from "@/lib/request-timeout";
+import { outfitApiEndpoints } from "./api-endpoints.ts";
+import { fetchWithTimeout } from "./request-timeout.ts";
 
 export interface H5OptionItem {
   label: string;
@@ -21,6 +21,7 @@ export interface H5LoginConfig {
   phonePasswordEnabled: boolean;
   registerEnabled: boolean;
   wechatEnabled: boolean;
+  guestEnabled: boolean;
 }
 
 export interface H5LoginHeroImageConfig {
@@ -158,6 +159,7 @@ export const defaultH5OutfitConfigOptions: H5OutfitConfigOptions = {
     phonePasswordEnabled: true,
     registerEnabled: true,
     wechatEnabled: true,
+    guestEnabled: true,
   },
   homeHero: {
     kicker: "AI STYLING STUDIO",

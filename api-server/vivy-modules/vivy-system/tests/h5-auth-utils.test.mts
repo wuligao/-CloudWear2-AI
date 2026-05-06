@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   assertH5Password,
   buildH5CreateUser,
+  buildH5GuestNickName,
   normalizeH5Phone,
   toH5AuthUser,
 } from '../src/modules/auth/h5/h5-auth.utils.ts'
@@ -32,6 +33,10 @@ test('buildH5CreateUser creates an active mobile H5 account payload', () => {
     status: '0',
     sex: '3',
   })
+})
+
+test('buildH5GuestNickName uses the generated internal phone suffix', () => {
+  assert.equal(buildH5GuestNickName('19000001234'), '云裳游客1234')
 })
 
 test('toH5AuthUser exposes only public profile fields', () => {

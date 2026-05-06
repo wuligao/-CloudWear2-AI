@@ -44,6 +44,7 @@ export const outfitApiEndpoints = {
   h5Config: () => buildApiUrl("/ai-model/public/app-configs/h5-outfit"),
   h5AuthLogin: () => buildApiUrl("/api/h5/auth/login"),
   h5AuthRegister: () => buildApiUrl("/api/h5/auth/register"),
+  h5AuthGuest: () => buildApiUrl("/api/h5/auth/guest"),
   h5AuthMe: () => buildApiUrl("/api/h5/auth/me"),
   h5AuthLogout: () => buildApiUrl("/api/h5/auth/logout"),
   h5AvatarUpload: () => buildApiUrl("/files/upload-base64"),

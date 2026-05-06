@@ -130,6 +130,7 @@ const defaultLoginConfig: H5LoginConfig = {
   phonePasswordEnabled: true,
   registerEnabled: true,
   wechatEnabled: true,
+  guestEnabled: true,
 }
 
 const defaultHomeHeroConfig: H5HomeHeroConfig = {
@@ -365,6 +366,7 @@ const H5ConfigPage = () => {
         loginPhonePasswordEnabled: nextOptions.login.phonePasswordEnabled,
         loginRegisterEnabled: nextOptions.login.registerEnabled,
         loginWechatEnabled: nextOptions.login.wechatEnabled,
+        loginGuestEnabled: nextOptions.login.guestEnabled,
       })
     } finally {
       setLoading(false)
@@ -465,6 +467,7 @@ const H5ConfigPage = () => {
           ),
           registerEnabled: readBooleanSetting(values.loginRegisterEnabled, currentLogin.registerEnabled),
           wechatEnabled: readBooleanSetting(values.loginWechatEnabled, currentLogin.wechatEnabled),
+          guestEnabled: readBooleanSetting(values.loginGuestEnabled, currentLogin.guestEnabled),
         },
       }
       await updateH5ModelConfig({
@@ -640,6 +643,7 @@ const H5ConfigPage = () => {
                       form.getFieldValue('loginPhonePasswordEnabled'),
                       form.getFieldValue('loginRegisterEnabled'),
                       form.getFieldValue('loginWechatEnabled'),
+                      form.getFieldValue('loginGuestEnabled'),
                     ].filter(Boolean).length
                 : ((options[section.key] as H5OutfitOptionItem[]) || []).length
               return (
@@ -957,6 +961,9 @@ function LoginContentEditor({
               <Switch checkedChildren="显示" unCheckedChildren="隐藏" />
             </Form.Item>
             <Form.Item name="loginWechatEnabled" label="微信登录入口" valuePropName="checked">
+              <Switch checkedChildren="显示" unCheckedChildren="隐藏" />
+            </Form.Item>
+            <Form.Item name="loginGuestEnabled" label="游客登录入口" valuePropName="checked">
               <Switch checkedChildren="显示" unCheckedChildren="隐藏" />
             </Form.Item>
           </div>

@@ -21,6 +21,19 @@ test("mergeH5ConfigOptions reads tomorrow recommendation start hour from backend
   assert.equal(options.tomorrowRecommendationStartHour, 22);
 });
 
+test("mergeH5ConfigOptions defaults guest login on and preserves explicit disable", () => {
+  assert.equal(defaultH5OutfitConfigOptions.login.guestEnabled, true);
+
+  const options = mergeH5ConfigOptions({
+    login: {
+      guestEnabled: false,
+    } as Partial<typeof defaultH5OutfitConfigOptions.login>,
+  });
+
+  assert.equal(options.login.guestEnabled, false);
+  assert.equal(options.login.phonePasswordEnabled, true);
+});
+
 test("default H5 image model matches the enabled runtime image model", () => {
   assert.deepEqual(defaultH5OutfitConfigOptions.imageModels, [
     { label: "gpt-image-2", value: "gpt-image-2" },

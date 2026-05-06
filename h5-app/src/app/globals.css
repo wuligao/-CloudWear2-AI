@@ -7160,6 +7160,30 @@ a {
   font-weight: 850;
 }
 
+.cw-login-guest {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  border: 1px solid rgba(117, 96, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #4b3fc0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(68, 56, 140, 0.08);
+}
+
+.cw-login-guest.primary-guest {
+  max-width: 260px;
+}
+
+.cw-login-guest:active {
+  transform: scale(0.98);
+}
+
 .cw-login-wechat-only {
   display: grid;
   justify-items: center;
@@ -14475,7 +14499,8 @@ html,
 .profile-menu-entry,
 .profile-order-item,
 .cw-login-mode,
-.cw-wechat-button {
+.cw-wechat-button,
+.cw-login-guest {
   border-color: var(--h5-line);
   background: var(--h5-surface-solid);
   color: var(--h5-soft);

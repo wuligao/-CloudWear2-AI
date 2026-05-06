@@ -394,6 +394,13 @@ export class AiModelService implements OnModuleInit, OnModuleDestroy {
     return normalizeDailyFreeGenerationLimit(this.parseH5Options(config.optionConfig).dailyFreeGenerationLimit)
   }
 
+  async isH5GuestLoginEnabled() {
+    const config = await this.ensureH5Config()
+    if (config.status !== BaseStatusEnum.NORMAL) return false
+
+    return this.parseH5Options(config.optionConfig).login.guestEnabled !== false
+  }
+
   async completeH5Chat(messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]) {
     const config = await this.ensureH5Config()
     if (config.status !== BaseStatusEnum.NORMAL) throw new ServiceException('H5模型配置已停用')

@@ -117,6 +117,7 @@ export interface H5LoginConfig {
   phonePasswordEnabled: boolean
   registerEnabled: boolean
   wechatEnabled: boolean
+  guestEnabled: boolean
 }
 
 export interface H5LoginHeroImageConfig {

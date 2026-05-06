@@ -198,6 +198,13 @@ export async function registerH5User({
   return session;
 }
 
+export async function guestLoginH5User({ remember }: { remember: boolean }) {
+  const endpoints = await getOutfitApiEndpoints();
+  const session = await postAuth<H5AuthSession>(endpoints.h5AuthGuest(), {});
+  writeH5AuthSession(session, remember ? "local" : "session");
+  return session;
+}
+
 export async function fetchH5Profile() {
   const endpoints = await getOutfitApiEndpoints();
   const payload = await requestAuth<H5AuthUser>(endpoints.h5AuthMe(), {

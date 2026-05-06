@@ -23,6 +23,12 @@ export class H5AuthController {
     return AjaxResult.success(await this.h5AuthService.login(form), '登录成功')
   }
 
+  @Post('guest')
+  @Public()
+  async guest(): Promise<AjaxResult> {
+    return AjaxResult.success(await this.h5AuthService.guest(), '游客登录成功')
+  }
+
   @Get('me')
   async profile(): Promise<AjaxResult> {
     return AjaxResult.success(await this.h5AuthService.profile())

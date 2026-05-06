@@ -18,6 +18,7 @@ export interface H5LoginConfig {
   phonePasswordEnabled: boolean
   registerEnabled: boolean
   wechatEnabled: boolean
+  guestEnabled: boolean
 }
 
 export interface H5LoginHeroImageConfig {
@@ -143,6 +144,7 @@ export const defaultH5OutfitOptions: H5OutfitOptionConfig = {
     phonePasswordEnabled: true,
     registerEnabled: true,
     wechatEnabled: true,
+    guestEnabled: true,
   },
   homeHero: {
     kicker: 'AI STYLING STUDIO',

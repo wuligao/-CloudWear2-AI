@@ -51,6 +51,10 @@ export function buildH5NickName(phone: string, nickName?: string): string {
   return `云裳用户${phone.slice(-4)}`
 }
 
+export function buildH5GuestNickName(phone: string): string {
+  return `云裳游客${phone.slice(-4)}`
+}
+
 export function buildH5CreateUser({
   phone,
   password,
