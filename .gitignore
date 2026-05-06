@@ -42,6 +42,8 @@ api-server/vivy-modules/vivy-system/dist/config/config.*.local.yaml
 **/.vercel/
 .serena/
 **/.serena/
+.codex/
+.superpowers/
 
 # Generated / local data
 server/docker/mysql/data/
