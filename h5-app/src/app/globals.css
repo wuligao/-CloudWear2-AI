@@ -14262,6 +14262,126 @@ a {
   color: var(--h5-ink);
 }
 
+.cw-app.cw-theme-editorial {
+  --h5-bg: #f6f7f2;
+  --h5-bg-2: #eef2f5;
+  --h5-surface: rgba(255, 254, 250, 0.94);
+  --h5-surface-solid: #fffefa;
+  --h5-panel: #eef4f8;
+  --h5-ink: #151922;
+  --h5-soft: #5f6876;
+  --h5-muted: #8792a0;
+  --h5-line: rgba(47, 82, 117, 0.12);
+  --h5-primary: #151922;
+  --h5-primary-2: #243246;
+  --h5-accent: #2f6fb2;
+  --h5-accent-2: #4e8eca;
+  --h5-blue: #2f6fb2;
+  --h5-mint: #2e806c;
+  --h5-warning: #9a7a5a;
+  --cw-weather-hero-start: #182235;
+  --cw-weather-hero-end: #2f4f72;
+  --cw-weather-daily-start: #4aa4ed;
+  --cw-weather-daily-mid: #86c6fa;
+  --cw-weather-daily-end: #effbff;
+}
+
+.cw-app.cw-theme-soft {
+  --h5-bg: #f8f1ec;
+  --h5-bg-2: #f2e5dd;
+  --h5-surface: rgba(255, 250, 247, 0.94);
+  --h5-surface-solid: #fffaf7;
+  --h5-panel: #f4e6df;
+  --h5-ink: #211b19;
+  --h5-soft: #74645e;
+  --h5-muted: #9a8a82;
+  --h5-line: rgba(122, 70, 65, 0.14);
+  --h5-primary: #743c42;
+  --h5-primary-2: #a8545f;
+  --h5-accent: #b55f69;
+  --h5-accent-2: #d58d86;
+  --h5-blue: #506b58;
+  --h5-mint: #506b58;
+  --h5-warning: #a17043;
+  --cw-weather-hero-start: #6e3f43;
+  --cw-weather-hero-end: #a66b62;
+  --cw-weather-daily-start: #d89a90;
+  --cw-weather-daily-mid: #e9c2ad;
+  --cw-weather-daily-end: #fff5ed;
+}
+
+.cw-app.cw-theme-utility {
+  --h5-bg: #eef2ed;
+  --h5-bg-2: #e3ebe5;
+  --h5-surface: rgba(251, 252, 248, 0.94);
+  --h5-surface-solid: #fbfcf8;
+  --h5-panel: #e4ece5;
+  --h5-ink: #17201b;
+  --h5-soft: #58685f;
+  --h5-muted: #7c8a82;
+  --h5-line: rgba(35, 67, 58, 0.13);
+  --h5-primary: #26473e;
+  --h5-primary-2: #376a5a;
+  --h5-accent: #2f6f5d;
+  --h5-accent-2: #5e927f;
+  --h5-blue: #315b82;
+  --h5-mint: #2f6f5d;
+  --h5-warning: #d99a35;
+  --cw-weather-hero-start: #23362e;
+  --cw-weather-hero-end: #4f5a34;
+  --cw-weather-daily-start: #5f8879;
+  --cw-weather-daily-mid: #9eb2a6;
+  --cw-weather-daily-end: #e5ece7;
+}
+
+.cw-app.cw-theme-cold-editorial {
+  --h5-bg: #f4f7f8;
+  --h5-bg-2: #e8eef3;
+  --h5-surface: rgba(253, 254, 252, 0.94);
+  --h5-surface-solid: #fdfffc;
+  --h5-panel: #edf4f7;
+  --h5-ink: #17212b;
+  --h5-soft: #607080;
+  --h5-muted: #8b98a6;
+  --h5-line: rgba(56, 89, 116, 0.13);
+  --h5-primary: #17212b;
+  --h5-primary-2: #31516b;
+  --h5-accent: #3e7fab;
+  --h5-accent-2: #81abc8;
+  --h5-blue: #3e7fab;
+  --h5-mint: #4d806f;
+  --h5-warning: #9d8466;
+  --cw-weather-hero-start: #193042;
+  --cw-weather-hero-end: #4b7795;
+  --cw-weather-daily-start: #74a9dc;
+  --cw-weather-daily-mid: #a7c9ed;
+  --cw-weather-daily-end: #edf7ff;
+}
+
+.cw-app.cw-theme-showcase {
+  --h5-bg: #11141a;
+  --h5-bg-2: #171b23;
+  --h5-surface: rgba(27, 32, 41, 0.96);
+  --h5-surface-solid: #1b2029;
+  --h5-panel: #252b36;
+  --h5-ink: #f6f2ec;
+  --h5-soft: #c0c6d1;
+  --h5-muted: #8f98a8;
+  --h5-line: rgba(237, 239, 244, 0.12);
+  --h5-primary: #f3c85b;
+  --h5-primary-2: #d84d4d;
+  --h5-accent: #f3c85b;
+  --h5-accent-2: #4e8dff;
+  --h5-blue: #4e8dff;
+  --h5-mint: #7cc8a1;
+  --h5-warning: #f3c85b;
+  --cw-weather-hero-start: #07090d;
+  --cw-weather-hero-end: #431a1d;
+  --cw-weather-daily-start: #151923;
+  --cw-weather-daily-mid: #253044;
+  --cw-weather-daily-end: #42191d;
+}
+
 html,
 .app-frame {
   background:
@@ -14294,6 +14414,159 @@ html,
   border-color: rgba(32, 35, 44, 0.12);
   background: var(--h5-surface-solid);
   box-shadow: 0 24px 64px rgba(31, 32, 38, 0.16);
+}
+
+.cw-app.cw-theme-editorial,
+.cw-app.cw-theme-soft,
+.cw-app.cw-theme-utility,
+.cw-app.cw-theme-cold-editorial,
+.cw-app.cw-theme-showcase {
+  background:
+    linear-gradient(180deg, var(--h5-bg) 0%, var(--h5-bg-2) 46%, var(--h5-surface-solid) 100%),
+    var(--h5-bg);
+}
+
+.cw-app.cw-theme-editorial .cw-home,
+.cw-app.cw-theme-soft .cw-home,
+.cw-app.cw-theme-utility .cw-home,
+.cw-app.cw-theme-cold-editorial .cw-home,
+.cw-app.cw-theme-showcase .cw-home,
+.cw-app.cw-theme-editorial .cw-flow-screen,
+.cw-app.cw-theme-soft .cw-flow-screen,
+.cw-app.cw-theme-utility .cw-flow-screen,
+.cw-app.cw-theme-cold-editorial .cw-flow-screen,
+.cw-app.cw-theme-showcase .cw-flow-screen {
+  background:
+    linear-gradient(180deg, var(--h5-bg) 0%, var(--h5-bg-2) 46%, var(--h5-surface-solid) 100%),
+    var(--h5-bg);
+}
+
+.cw-app.cw-theme-editorial .cw-home-hero,
+.cw-app.cw-theme-soft .cw-home-hero,
+.cw-app.cw-theme-utility .cw-home-hero,
+.cw-app.cw-theme-cold-editorial .cw-home-hero,
+.cw-app.cw-theme-showcase .cw-home-hero {
+  background:
+    linear-gradient(145deg, var(--cw-weather-hero-start), var(--cw-weather-hero-end)),
+    var(--cw-weather-hero-start);
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--cw-weather-hero-start) 38%, transparent);
+}
+
+.cw-app.cw-theme-editorial .cw-home-hero.has-background,
+.cw-app.cw-theme-soft .cw-home-hero.has-background,
+.cw-app.cw-theme-utility .cw-home-hero.has-background,
+.cw-app.cw-theme-cold-editorial .cw-home-hero.has-background,
+.cw-app.cw-theme-showcase .cw-home-hero.has-background {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--cw-weather-hero-start) 86%, transparent), color-mix(in srgb, var(--cw-weather-hero-end) 52%, transparent)),
+    var(--cw-home-hero-bg),
+    var(--cw-weather-hero-start);
+  background-position: center;
+  background-size: cover;
+}
+
+.cw-app.cw-theme-editorial .cw-quick-header span,
+.cw-app.cw-theme-soft .cw-quick-header span,
+.cw-app.cw-theme-utility .cw-quick-header span,
+.cw-app.cw-theme-cold-editorial .cw-quick-header span,
+.cw-app.cw-theme-showcase .cw-quick-header span {
+  color: var(--h5-accent);
+}
+
+.cw-app.cw-theme-editorial .cw-quick-header small,
+.cw-app.cw-theme-soft .cw-quick-header small,
+.cw-app.cw-theme-utility .cw-quick-header small,
+.cw-app.cw-theme-cold-editorial .cw-quick-header small,
+.cw-app.cw-theme-showcase .cw-quick-header small {
+  background: color-mix(in srgb, var(--h5-accent) 12%, var(--h5-surface-solid));
+  color: var(--h5-accent);
+}
+
+.cw-app.cw-theme-editorial .cw-entry-card.purple,
+.cw-app.cw-theme-soft .cw-entry-card.purple,
+.cw-app.cw-theme-utility .cw-entry-card.purple,
+.cw-app.cw-theme-cold-editorial .cw-entry-card.purple,
+.cw-app.cw-theme-showcase .cw-entry-card.purple {
+  background:
+    linear-gradient(145deg, var(--h5-surface-solid) 0%, color-mix(in srgb, var(--h5-accent) 10%, var(--h5-surface-solid)) 58%, color-mix(in srgb, var(--h5-accent) 18%, var(--h5-surface-solid)) 100%);
+}
+
+.cw-app.cw-theme-editorial .cw-entry-card.blue,
+.cw-app.cw-theme-soft .cw-entry-card.blue,
+.cw-app.cw-theme-utility .cw-entry-card.blue,
+.cw-app.cw-theme-cold-editorial .cw-entry-card.blue,
+.cw-app.cw-theme-showcase .cw-entry-card.blue {
+  background:
+    linear-gradient(145deg, var(--h5-surface-solid) 0%, color-mix(in srgb, var(--h5-blue) 10%, var(--h5-surface-solid)) 58%, color-mix(in srgb, var(--h5-mint) 14%, var(--h5-surface-solid)) 100%);
+}
+
+.cw-app.cw-theme-editorial .cw-entry-card.purple i,
+.cw-app.cw-theme-soft .cw-entry-card.purple i,
+.cw-app.cw-theme-utility .cw-entry-card.purple i,
+.cw-app.cw-theme-cold-editorial .cw-entry-card.purple i,
+.cw-app.cw-theme-showcase .cw-entry-card.purple i {
+  background: color-mix(in srgb, var(--h5-accent) 14%, var(--h5-surface-solid));
+  color: var(--h5-accent);
+}
+
+.cw-app.cw-theme-editorial .cw-entry-card.blue i,
+.cw-app.cw-theme-soft .cw-entry-card.blue i,
+.cw-app.cw-theme-utility .cw-entry-card.blue i,
+.cw-app.cw-theme-cold-editorial .cw-entry-card.blue i,
+.cw-app.cw-theme-showcase .cw-entry-card.blue i {
+  background: color-mix(in srgb, var(--h5-blue) 13%, var(--h5-surface-solid));
+  color: var(--h5-blue);
+}
+
+.cw-app.cw-theme-editorial .cw-daily-task-panel,
+.cw-app.cw-theme-soft .cw-daily-task-panel,
+.cw-app.cw-theme-utility .cw-daily-task-panel,
+.cw-app.cw-theme-cold-editorial .cw-daily-task-panel,
+.cw-app.cw-theme-showcase .cw-daily-task-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cw-weather-daily-start) 14%, transparent), color-mix(in srgb, var(--cw-weather-daily-end) 8%, transparent)),
+    var(--cw-weather-daily-mid);
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--cw-weather-hero-start) 24%, transparent);
+}
+
+.cw-app.cw-theme-editorial .cw-daily-task-panel::before,
+.cw-app.cw-theme-soft .cw-daily-task-panel::before,
+.cw-app.cw-theme-utility .cw-daily-task-panel::before,
+.cw-app.cw-theme-cold-editorial .cw-daily-task-panel::before,
+.cw-app.cw-theme-showcase .cw-daily-task-panel::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 38%, color-mix(in srgb, var(--cw-weather-hero-start) 18%, transparent)),
+    linear-gradient(150deg, var(--cw-weather-daily-start) 0%, var(--cw-weather-daily-mid) 52%, var(--cw-weather-daily-end) 100%);
+}
+
+.cw-app.cw-theme-showcase .cw-category-row button,
+.cw-app.cw-theme-showcase .cw-keyword-grid button,
+.cw-app.cw-theme-showcase .cw-chip-row button,
+.cw-app.cw-theme-showcase .cw-recommend-row button,
+.cw-app.cw-theme-showcase .cw-segment-row button,
+.cw-app.cw-theme-showcase .cw-weather-row button,
+.cw-app.cw-theme-showcase .cw-temperature-row button,
+.cw-app.cw-theme-showcase .cw-location-grid button,
+.cw-app.cw-theme-showcase .cw-generation-count-row button,
+.cw-app.cw-theme-showcase .cw-scene-grid button {
+  border-color: var(--h5-line);
+  background: color-mix(in srgb, var(--h5-panel) 82%, transparent);
+  color: var(--h5-soft);
+}
+
+.cw-app.cw-theme-showcase .cw-chip-row button.active,
+.cw-app.cw-theme-showcase .cw-recommend-row button.active,
+.cw-app.cw-theme-showcase .cw-keyword-grid button.copied,
+.cw-app.cw-theme-showcase .cw-keyword-grid button:hover,
+.cw-app.cw-theme-showcase .cw-segment-row button.active,
+.cw-app.cw-theme-showcase .cw-weather-row button.active,
+.cw-app.cw-theme-showcase .cw-temperature-row button.active,
+.cw-app.cw-theme-showcase .cw-location-grid button.active,
+.cw-app.cw-theme-showcase .cw-generation-count-row button.active,
+.cw-app.cw-theme-showcase .cw-scene-grid button.active {
+  border-color: color-mix(in srgb, var(--h5-primary) 42%, transparent);
+  background: color-mix(in srgb, var(--h5-primary) 18%, var(--h5-panel));
+  color: var(--h5-primary);
 }
 
 .profile-atmosphere,

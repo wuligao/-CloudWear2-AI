@@ -1,4 +1,5 @@
 import type { OutfitInput } from '../types/outfit'
+import { buildImageSubjectDirective, resolveSpecificGenderPreference } from './gender-subject'
 
 export const outfitSystemPrompt = [
   'You are Yunshang AI, a practical fashion styling assistant.',
@@ -9,6 +10,9 @@ export const outfitSystemPrompt = [
 ].join(' ')
 
 export function buildOutfitUserPrompt(input: OutfitInput) {
+  const genderPreference = resolveSpecificGenderPreference(input)
+  const imageSubjectDirective = buildImageSubjectDirective(genderPreference)
+
   return [
     'Create one complete outfit plan for this user context:',
     `Season: ${input.season}`,
@@ -18,13 +22,17 @@ export function buildOutfitUserPrompt(input: OutfitInput) {
     `Occasion: ${input.occasion}`,
     `Personal style: ${input.style}`,
     `Color preference: ${input.colorPreference || 'no specific preference'}`,
-    `Gender expression preference: ${input.genderPreference || 'no specific preference'}`,
+    `Gender expression preference: ${genderPreference || 'no specific preference'}`,
+    `Image subject directive: ${imageSubjectDirective || 'no specific subject constraint'}`,
     buildStyleProfilePrompt(input),
     '',
     input.styleProfileContext
       ? 'If style profile guidance conflicts with the current generation request, prioritize the current request and use the style profile only to personalize fit, colors, details, and wearability.'
       : '',
     'The imagePrompt must be in English and describe a full-body editorial fashion image of one adult model.',
+    imageSubjectDirective
+      ? 'When an image subject directive is present, the imagePrompt must follow the image subject directive explicitly and must not drift to a different gender presentation.'
+      : '',
     'The imagePrompt must include weather, temperature feeling, occasion, style, colors, realistic fabric texture, and the phrase: no text, no logo, no watermark.',
     'Use Chinese for all user-facing text fields except imagePrompt.',
   ].join('\n')

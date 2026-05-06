@@ -4,7 +4,7 @@ const defaultForm = {
   location: "上海 静安寺",
   scene: "日常出行",
   style: "休闲简约",
-  gender: "女",
+  gender: "不限",
   budget: "500-1000元",
   bodyTags: ["显瘦"],
 };

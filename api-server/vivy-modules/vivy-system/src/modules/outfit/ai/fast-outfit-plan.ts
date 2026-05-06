@@ -1,13 +1,15 @@
 import type { OutfitInput, OutfitPlan } from '../types/outfit'
+import { buildImageSubjectDirective, resolveSpecificGenderPreference } from './gender-subject'
 
 export function buildFastOutfitPlan(input: OutfitInput): OutfitPlan {
   const styleTags = splitPhrases(input.style).slice(0, 6)
   const primaryStyle = styleTags[0] || input.style.trim()
   const colorText = input.colorPreference?.trim()
-  const genderText = input.genderPreference?.trim()
+  const genderText = resolveSpecificGenderPreference(input)
+  const imageSubjectDirective = buildImageSubjectDirective(genderText)
   const profileText = buildStyleProfileText(input)
   const imagePrompt = [
-    'Full-body realistic fashion editorial image of one adult model.',
+    `Full-body realistic fashion editorial image of ${imageSubjectDirective || 'one adult model'}.`,
     `Outfit keywords from the user: ${input.style}.`,
     `Season: ${input.season}.`,
     `Temperature feeling: ${input.temperature} Celsius.`,
@@ -16,6 +18,7 @@ export function buildFastOutfitPlan(input: OutfitInput): OutfitPlan {
     `Occasion: ${input.occasion}.`,
     colorText ? `Color preference: ${colorText}.` : '',
     genderText ? `Gender expression preference: ${genderText}.` : '',
+    imageSubjectDirective ? `Image subject directive: ${imageSubjectDirective}.` : '',
     profileText ? `Personal style profile guidance: ${profileText}.` : '',
     'Create wearable clothing, shoes, and accessories that match the keywords and context.',
     'Use realistic fabric texture, natural lighting, clean composition, no text, no logo, no watermark.',

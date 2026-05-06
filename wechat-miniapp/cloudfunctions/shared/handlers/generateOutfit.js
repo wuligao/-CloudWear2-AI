@@ -49,7 +49,7 @@ function normalizeInput(event = {}) {
     location: event.location || "城市街区",
     scene: event.scene || "日常出行",
     style: event.style || "休闲简约",
-    gender: event.gender || "女",
+    gender: event.gender || "不限",
     budget: event.budget || "500-1000元",
     bodyTags: Array.isArray(event.bodyTags) ? event.bodyTags : [],
   };

@@ -76,6 +76,10 @@ import {
   readCachedDailyWeatherContext,
 } from "@/lib/daily-weather";
 import {
+  getCloudWearWeatherTheme,
+  getDailyWeatherVisualTheme,
+} from "@/lib/weather-theme";
+import {
   defaultH5ProfileOverview,
   fetchH5ProfileOverview,
   readCachedH5ProfileOverview,
@@ -172,24 +176,6 @@ const scenarioTaskIconMap = {
   shirt: Shirt,
   sparkles: Sparkles,
 };
-
-function getDailyWeatherVisualTheme(weather: DailyWeatherContext) {
-  const currentHour = new Date().getHours();
-  if (/夜|晚/u.test(weather.weather)) return "night";
-  if (
-    weather.periodLabel === "今日" &&
-    (currentHour >= 18 || currentHour < 6) &&
-    /晴|云/u.test(weather.weather)
-  ) return "night";
-  if (/雪|冷|降温|寒/u.test(weather.weather) || weather.temperature <= 6) return "snowy";
-  if (/雨|阵雨|雷/u.test(weather.weather)) return "rainy";
-  if (/阴|雾|霾/u.test(weather.weather)) return "overcast";
-  if (/风/u.test(weather.weather)) return "windy";
-  if (/晴|热/u.test(weather.weather) || weather.temperature >= 30) return "sunny";
-  if (/云|雾|阴/u.test(weather.weather)) return "cloudy";
-  if (/冷|降温|寒/u.test(weather.weather) || weather.temperature <= 12) return "snowy";
-  return "mild";
-}
 
 function getDailyWeatherFooter(theme: string) {
   if (theme === "rainy") return "雨天出行记得带伞，安全第一";
@@ -430,6 +416,8 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
       }),
     [dailyScenarioProfile, dailyWeather],
   );
+  const dailyWeatherTheme = getDailyWeatherVisualTheme(dailyWeather);
+  const weatherColorTheme = getCloudWearWeatherTheme(dailyWeatherTheme);
   const styleProfileReady = useMemo(
     () => hasStyleProfileGenerationContext(styleProfileContext),
     [styleProfileContext],
@@ -1165,7 +1153,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
   }
 
   return (
-    <div className="cw-app">
+    <div className={`cw-app cw-theme-${weatherColorTheme}`}>
       {screen === "home" ? (
         <HomeScreen
           categories={h5Options.homeCategories}
@@ -1173,7 +1161,7 @@ export function CloudWearApp({ initialScreen = "home" }: { initialScreen?: Scree
           dailyTasks={dailyScenarioTasks}
           dailyTaskTitle={dailyRecommendationTitle}
           dailyWeather={dailyWeather}
-          dailyWeatherTheme={getDailyWeatherVisualTheme(dailyWeather)}
+          dailyWeatherTheme={dailyWeatherTheme}
           homeHero={h5Options.homeHero}
           homeLooks={h5Options.homeLooks}
           keywords={rotatedKeywords}

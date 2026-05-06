@@ -13,6 +13,7 @@ export function buildPhotoStyleGuidePrompt(plan: OutfitPlan) {
     'Create a polished vertical fashion style guide poster, not a simple portrait edit.',
     'Use the uploaded person as the main character and identity reference for the poster.',
     'Preserve recognizable face, hair, and overall presence, but you may change pose, framing, and background to fit the poster composition.',
+    "Respect the uploaded person's apparent gender presentation and do not feminize or masculinize them unless explicitly requested in the fashion image direction.",
     'Design the final image like a premium summer outfit guide board with a clean editorial layout.',
     'Include a full-body hero portrait, a secondary half-body portrait, an outfit recommendation cards section, a color palette section, a fabric recommendation section, and a styling tips section.',
     'Use card-based visual grouping, soft blue and white summer tones, airy spacing, fashion magazine polish, subtle icons, and realistic clothing textures.',
